@@ -114,7 +114,6 @@ export const useApp = create<AppStore>((set) => ({
     })
   },
   splitView: (viewPath, direction) => {
-
     set((state) => {
       const currentDirection = viewPath.length % 2 === 0 ? Direction.Vertical : Direction.Horizontal
       const views = [...state.views]
@@ -160,13 +159,11 @@ export const useApp = create<AppStore>((set) => ({
     console.log('resizeView', viewPath, size)
 
     set((state) => {
-
       const views = [...state.views]
       const view = evalPathArray(viewPath, { views }) as Views
       view.size = size
 
-
-      console.log('resizeView', viewPath, size,views)
+      console.log('resizeView', viewPath, size, views)
       return { views }
     })
   },
@@ -201,6 +198,9 @@ function cleanUp(views: Views): Views {
         const cleaned = cleanViews(item)
         if (cleaned.length > 0) {
           acc.push({ views: cleaned, size: item.size })
+          if (cleaned.length === 1 && cleaned[0]) {
+            cleaned[0].size = undefined
+          }
         }
       }
       return acc
