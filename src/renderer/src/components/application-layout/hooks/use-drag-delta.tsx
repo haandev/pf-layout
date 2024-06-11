@@ -8,6 +8,12 @@ export interface RefOrRefTakingFunction<T> {
 
 function useDragDelta<T extends HTMLElement>(options: {
   ref?: React.RefObject<T>
+  safetyMargins?: {
+    top?: number
+    right?: number
+    bottom?: number
+    left?: number
+  }
   onDragStart?: (e: MouseEvent) => void
   onDrag?: (e: MouseEvent, xDelta: number, yDelta: number) => void
   onDragEnd?: (e: MouseEvent) => void
@@ -32,6 +38,11 @@ function useDragDelta<T extends HTMLElement>(options: {
     initials.current.y = e.clientY
 
     const onMouseMove = (e: MouseEvent) => {
+      const isSafeY = (options.safetyMargins?.top || 0) < e.clientY && e.clientY < window.innerHeight - (options.safetyMargins?.bottom || 0)
+      const isSafeX = (options.safetyMargins?.left || 0) < e.clientX && e.clientX < window.innerWidth - (options.safetyMargins?.right || 0)
+      const isSafe = isSafeX && isSafeY
+      if (!isSafe) return
+
       initials.current.dragging = true
       const xDelta = e.clientX - initials.current.x
       const yDelta = e.clientY - initials.current.y

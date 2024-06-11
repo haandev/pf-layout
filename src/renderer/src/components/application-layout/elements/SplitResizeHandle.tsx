@@ -1,46 +1,29 @@
-import { FC, useEffect, useRef, useCallback } from 'react';
-import { Direction } from '../types';
+import { FC, useEffect, useRef, useCallback } from 'react'
+import { Direction } from '../types'
+import useDragDelta from '../hooks/use-drag-delta'
+import useEvent from 'react-use-event-hook'
 
 interface SplitResizeHandleProps {
-  direction: Direction;
-  onResize?: (firstItemSize: number, lastItemSize: number) => void;
+  direction: Direction
+  onResize?: (firstItemSize: number, lastItemSize: number) => void
 }
 
 export const SplitResizeHandle: FC<SplitResizeHandleProps> = ({ direction, onResize }) => {
-  const ref = useRef<HTMLDivElement>(null);
+  //const ref = useRef<HTMLDivElement>(null);
 
-  const resizeHandler = useCallback((e: MouseEvent) => {
-    const element = ref.current;
-    if (!element || !element.parentElement || !element.parentElement.nextElementSibling) return;
+  const onDrag = useEvent((e, xDelta, yDelta) => {
+    const element = ref.current
+    if (!element || !element.parentElement || !element.parentElement.nextElementSibling) return
 
-    const initialPos = direction === Direction.Horizontal ? e.clientX : e.clientY;
-    const parentRect = element.parentElement.getBoundingClientRect();
-    const neighborRect = element.parentElement.nextElementSibling.getBoundingClientRect();
+    const parentRect = element.parentElement.getBoundingClientRect()
+    const neighborRect = element.parentElement.nextElementSibling.getBoundingClientRect()
 
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const currentPos = direction === Direction.Horizontal ? moveEvent.clientX : moveEvent.clientY;
-      const delta = currentPos - initialPos;
-      const firstItemSize = (direction === Direction.Horizontal ? parentRect.width : parentRect.height) + delta;
-      const lastItemSize = (direction === Direction.Horizontal ? neighborRect.width : neighborRect.height) - delta;
-      onResize?.(firstItemSize, lastItemSize);
-    };
+    const delta = direction === Direction.Horizontal ? xDelta : yDelta
+    const firstItemSize = (direction === Direction.Horizontal ? parentRect.width : parentRect.height) + delta
+    const lastItemSize = (direction === Direction.Horizontal ? neighborRect.width : neighborRect.height) - delta
+    onResize?.(firstItemSize, lastItemSize)
+  })
+  const ref = useDragDelta<HTMLDivElement>({ onDrag })
 
-    const onMouseUp = () => {
-      window.removeEventListener('mousemove', onMouseMove);
-      window.removeEventListener('mouseup', onMouseUp);
-    };
-
-    window.addEventListener('mousemove', onMouseMove);
-    window.addEventListener('mouseup', onMouseUp);
-  }, [direction, onResize]);
-
-  useEffect(() => {
-    const element = ref.current;
-    element?.addEventListener('mousedown', resizeHandler);
-    return () => {
-      element?.removeEventListener('mousedown', resizeHandler);
-    };
-  }, [resizeHandler]);
-
-  return <div ref={ref} className="pf-split-resize-handle"></div>;
-};
+  return <div ref={ref} className="pf-split-resize-handle"></div>
+}

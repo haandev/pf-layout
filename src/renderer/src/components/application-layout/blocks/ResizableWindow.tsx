@@ -24,7 +24,7 @@ export interface ResizableWindowProps extends PropsWithChildren {
 export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
   const _path = props.path || [props.index || 0]
   const { width = 0, height = 0 } = useWindowSize()
-  const safetyPaddings = {
+  const safetyMargins = {
     top: 50,
     left: 50,
     right: 50,
@@ -33,26 +33,15 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
   const rootRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  const moveFloatingWindowHandler = useEvent((e, xDelta, yDelta) => {
-    const isSafeMove =
-      e.clientX > safetyPaddings.left &&
-      e.clientX < window.innerWidth - safetyPaddings.right &&
-      e.clientY > safetyPaddings.top &&
-      e.clientY < window.innerHeight - safetyPaddings.bottom
-    if (!isSafeMove) return
+  const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
+    console.log(_e, xDelta, yDelta)
     const element = rootRef.current
     if (!element) return
     const initialRect = element.getBoundingClientRect()
     props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, _path)
   })
   const resizeHandler = useCallback(
-    (e: MouseEvent, handle: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', xDelta: number, yDelta) => {
-      const isSafeMove =
-        e.clientX > safetyPaddings.left &&
-        e.clientX < window.innerWidth - safetyPaddings.right &&
-        e.clientY > safetyPaddings.top &&
-        e.clientY < window.innerHeight - safetyPaddings.bottom
-      if (!isSafeMove) return
+    (_e: MouseEvent, handle: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', xDelta: number, yDelta) => {
       if (!rootRef.current) return
       const initialRect = rootRef.current.getBoundingClientRect()
       switch (handle) {
@@ -87,45 +76,54 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
   const leftEdge = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'left', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const rightEdge = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'right', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const topEdge = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'top', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const bottomEdge = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'bottom', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const topLeftCorner = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'top-left', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const topRightCorner = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'top-right', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const bottomLeftCorner = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'bottom-left', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const bottomRightCorner = useDragDelta<HTMLDivElement>({
     onDrag: (e, xDelta, yDelta) => {
       resizeHandler(e, 'bottom-right', xDelta, yDelta)
-    }
+    },
+    safetyMargins
   })
   const header = useDragDelta<HTMLDivElement>({
-    onDrag: moveFloatingWindowHandler
+    onDrag: moveFloatingWindowHandler,
+    safetyMargins
   })
 
   const _direction = props.direction || Direction.Horizontal
