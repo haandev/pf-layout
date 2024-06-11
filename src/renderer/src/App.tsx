@@ -61,17 +61,16 @@ import { DefaultToolbarStackHeader } from './components/layout-preset/DefaultToo
 import { ToolbarStackGroup } from './components/application-layout/blocks/ToolbarStackGroup'
 
 import { useApp } from './store/app-store'
-import { WindowGroup } from './components/application-layout/blocks/WindowGroup'
 import { AppToolsStickySvgButton } from './components/layout-preset/AppStickyButton'
 import { AppStickyGroupButton } from './components/layout-preset/AppStickyGroupButton'
 import IconSplitSquareHorizontal from './components/application-layout/icons/IconSplitSquareHorizontal'
 import IconSplitSquareVertical from './components/application-layout/icons/IconSplitSquareVertical'
 import { NestedTabView } from './components/application-layout/blocks/NestedTabView'
 import { FlowPageProvided } from './components/FlowPage'
+import { ResizableWindow } from './components/application-layout/blocks/ResizableWindow'
 
 function App(): JSX.Element {
   const app = useApp()
-
   return (
     <>
       <ApplicationLayout>
@@ -196,34 +195,46 @@ function App(): JSX.Element {
                 </Toolbar>
               </ToolbarStack>
             </ToolbarStackGroup>
-            <WindowGroup direction={Direction.Horizontal}>
-              <NestedTabView
-                views={{ views: app.views }}
-                direction={Direction.Horizontal}
-                onTabChange={app.changeTab}
-                onTabClose={app.closeTab}
-                onTabMove={app.moveTab}
-                onResize={app.resizeView}
-                onAddNewClick={(path) => {
-                  const id = Math.random().toString(36).substring(7)
-                  const title = `Flow ${id}`
-                  const content = <FlowPageProvided id={id} />
-                  app.addTab(path, { id, title, content })
-                }}
-                headerControls={[
-                  {
-                    isVisible: (tabs) => tabs.length > 1,
-                    render: <IconSplitSquareHorizontal width={16} height={16} />,
-                    onClick: (path) => app.splitView(path, Direction.Horizontal)
-                  },
-                  {
-                    isVisible: (tabs) => tabs.length > 1,
-                    render: <IconSplitSquareVertical width={16} height={16} />,
-                    onClick: (path) => app.splitView(path, Direction.Vertical)
-                  }
-                ]}
-              />
-            </WindowGroup>
+            {app.windows.length > 0 &&
+              app.windows.map((win, index) => (
+                <ResizableWindow
+                  index={index}
+                  floating={win.floating}
+                  key={index}
+                  width={win.width}
+                  height={win.height}
+                  top={win.top}
+                  left={win.left}
+                  onWindowResize={app.resizeWindow}
+                >
+                  <NestedTabView
+                    index={index}
+                    view={app.windows[index]}
+                    onTabChange={app.changeTab}
+                    onTabClose={app.closeTab}
+                    onTabMove={app.moveTab}
+                    onResize={app.resizeView}
+                    onAddNewClick={(path) => {
+                      const id = Math.random().toString(36).substring(7)
+                      const title = `Flow ${id}`
+                      const content = <FlowPageProvided id={id} />
+                      app.addTab(path, { id, title, content })
+                    }}
+                    headerControls={[
+                      {
+                        isVisible: (tabs) => tabs.length > 1,
+                        render: <IconSplitSquareHorizontal width={16} height={16} />,
+                        onClick: (path) => app.splitView(path, Direction.Horizontal)
+                      },
+                      {
+                        isVisible: (tabs) => tabs.length > 1,
+                        render: <IconSplitSquareVertical width={16} height={16} />,
+                        onClick: (path) => app.splitView(path, Direction.Vertical)
+                      }
+                    ]}
+                  />
+                </ResizableWindow>
+              ))}
           </Container>
         </AlignedContainers>
         <FloatingContainers />

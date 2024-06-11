@@ -4,14 +4,15 @@ import clsx from 'clsx'
 import React from 'react'
 import { Direction } from '../types'
 import { useSizeStyle } from '../hooks/use-size-style'
-import { OnResizeHandler } from './TabView'
-import { ResizeHandle } from '../elements/ResizeHandle'
+import { OnSplitResizeHandler } from './TabView'
+import { SplitResizeHandle } from '../elements/SplitResizeHandle'
 
 export interface WindowGroupProps extends PropsWithChildren {
   direction: Direction
-  size?: number
+  width?: number
+  height?: number
   path?: number[]
-  onResize?: OnResizeHandler
+  onResize?: OnSplitResizeHandler
 }
 
 export const WindowGroup: FC<WindowGroupProps> = React.memo((props) => {
@@ -19,18 +20,19 @@ export const WindowGroup: FC<WindowGroupProps> = React.memo((props) => {
 
   const rootRef = useRef<HTMLDivElement>(null)
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-window-group' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-window-group,.pf-resizable-window_content' } }, (validation) => {
     if (!validation) {
       throw new Error('WindowGroup must be used within a Container or another WindowGroup.')
     }
   })
 
-  const onResize = (size: number) => {
-    props.onResize?.(size, props.path || [0])
+  const onResize = (size: number, nextItemSize?: number) => {
+    props.onResize?.(oppositeDirection, size, props.path || [0], nextItemSize)
   }
-
-  const style = useSizeStyle(props.size, oppositeDirection)
-
+  const style = {
+    width: props.width,
+    height: props.height
+  }
   return (
     <div
       ref={rootRef}
@@ -41,7 +43,7 @@ export const WindowGroup: FC<WindowGroupProps> = React.memo((props) => {
       })}
       style={style}
     >
-      <ResizeHandle direction={oppositeDirection} onResize={onResize} />
+      <SplitResizeHandle direction={oppositeDirection} onResize={onResize} />
       {props.children}
     </div>
   )

@@ -8,25 +8,35 @@ export interface TabItem {
   title: string
   content: React.ReactNode
 }
-export interface TabViewItem {
+export interface TabView {
   tabs: TabItem[]
   activeTabId?: string
-  size?: number
+  width?: number
+  height?: number
 }
-export type ViewsItem = TabViewItem | Views | null
-export type Views = {
+export type ViewsItem = TabView | ContainerView
+export type ContainerView = {
   views: ViewsItem[]
-  size?: number
+  width?: number
+  height?: number
+}
+export type Window = {
+  views: ViewsItem[]
+  floating?: boolean
+  width?: number
+  height?: number
+  top?: number
+  left?: number
 }
 export interface AppStore {
-  views: ViewsItem[]
-  //activeTabs: { [key: string]: string }
+  windows: Window[]
+  resizeWindow: (width: number, height: number, top: number, left: number, viewPath: number[]) => void
   changeTab: (tabId: string, viewPath: number[]) => void
   closeTab: (tabId: string, viewPath: number[]) => void
   addTab: (viewPath: number[], tab: TabItem) => void
   moveTab: (options: { tabId: string; fromPath: number[]; toPath: number[]; beforeTabId?: string }) => void
   splitView: (viewPath: number[], direction: Direction) => void
-  resizeView: (size: number, viewPath: number[]) => void
+  resizeView: (direction: Direction, size: number, viewPath: number[], nextItemSize?: number) => void
   flow?: ReactFlowInstance
   setFlow: (flow: ReactFlowInstance) => void
   tool: string
@@ -35,56 +45,92 @@ export interface AppStore {
   setToolbarColSize: (size: number) => void
 }
 export const useApp = create<AppStore>((set) => ({
-  views: [
+  windows: [
     {
-      tabs: [
+      views: [
         {
-          id: 'flow-tab-1',
-          title: 'Flow 1',
-          content: <FlowPageProvided id="flow-tab-1" />
+          tabs: [
+            {
+              id: 'flow-tab-1',
+              title: 'Flow 1',
+              content: <FlowPageProvided id="flow-tab-1" />
+            }
+          ]
         }
-      ]
+      ],
+      floating: false
+    },
+    {
+      views: [
+        {
+          tabs: [
+            {
+              id: 'flow-tab-1',
+              title: 'Flow 2',
+              content: <FlowPageProvided id="flow-tab-2" />
+            }
+          ]
+        }
+      ],
+      floating: true
     }
   ],
+  resizeWindow: (width, height, top, left, viewPath) => {
+    set((state) => {
+      const windows = [...state.windows]
+      const window = evalPathArray(viewPath, windows) as Window
+      const widthChange = window.width ? width / window.width : 1
+      const heightChange = window.height ? height / window.height : 1
+      console.log(widthChange, heightChange)
+      updateSizes(window, widthChange, heightChange)
+
+      window.width = width
+      window.height = height
+      window.top = top
+      window.left = left
+
+      return { windows }
+    })
+  },
   activeTabs: {},
   changeTab: (tabId, viewPath) => {
     set((state) => {
-      const views = [...state.views]
+      const windows = [...state.windows]
 
-      const view = evalPathArray(viewPath, { views }) as TabViewItem
+      const view = evalPathArray(viewPath, windows) as TabView
       view.activeTabId = tabId
 
-      return { views }
+      return { windows }
     })
   },
   closeTab: (tabId, viewPath) => {
     set((state) => {
-      let views = [...state.views]
-      const view = evalPathArray(viewPath, { views })
+      const windows = [...state.windows]
+      const view = evalPathArray(viewPath, windows)
       const tabs = 'tabs' in view ? view.tabs : []
       const tabIndex = tabs.findIndex((tab) => tab.id === tabId)
 
       tabs.splice(tabIndex, 1)
-      const clean = cleanUp({ views })
+      const clean = cleanUp(windows)
 
-      return { views: clean.views }
+      return { windows: clean }
     })
   },
   addTab: (viewPath, tab) => {
-    set(({ views }) => {
-      const view = evalPathArray(viewPath, { views }) as TabViewItem
+    set(({ windows }) => {
+      const view = evalPathArray(viewPath, windows) as TabView
       view.tabs.push(tab)
       view.activeTabId = tab.id
-      return { views }
+      return { windows }
     })
   },
   moveTab: ({ tabId, fromPath, toPath, beforeTabId }) => {
     set((state) => {
-      let views = [...state.views]
-      const fromView = evalPathArray(fromPath, { views }) as TabViewItem
-      const toView = evalPathArray(toPath, { views }) as TabViewItem
+      let windows = [...state.windows]
+      const fromView = evalPathArray(fromPath, windows) as TabView
+      const toView = evalPathArray(toPath, windows) as TabView
       const tab = fromView.tabs.find((tab) => tab.id === tabId)
-      if (!tab) return { views }
+      if (!tab) return state
       //just reorder
       if (fromView === toView) {
         if (beforeTabId) {
@@ -109,16 +155,16 @@ export const useApp = create<AppStore>((set) => ({
           toView.tabs.push(tab)
         }
       }
-      const clean = cleanUp({ views })
-      return { views: clean.views }
+      const clean = cleanUp(windows)
+      return { windows: clean }
     })
   },
   splitView: (viewPath, direction) => {
     set((state) => {
-      const currentDirection = viewPath.length % 2 === 0 ? Direction.Vertical : Direction.Horizontal
-      const views = [...state.views]
-      const parentView = evalPathArray(viewPath.slice(0, -1), { views }) as Views
-      const view = evalPathArray(viewPath, { views }) as TabViewItem
+      const currentDirection = viewPath.length % 2 === 1 ? Direction.Vertical : Direction.Horizontal
+      let windows = [...state.windows]
+      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView
+      const view = evalPathArray(viewPath, windows) as TabView
       const activeTabIndex = view.tabs.findIndex((tab) => tab.id === view.activeTabId)
       const activeTabId = view.activeTabId
       const activeTab = view.tabs[activeTabIndex]
@@ -136,7 +182,6 @@ export const useApp = create<AppStore>((set) => ({
         tabs.splice(activeTabIndex, 1)
         parentView.views.push(newView)
       } else {
-        console.log('call2')
         const remainingTabs = tabs.filter((tab) => tab.id !== activeTabId)
         const newView = {
           views: [
@@ -152,19 +197,26 @@ export const useApp = create<AppStore>((set) => ({
         }
         parentView.views[viewIndex] = newView
       }
-      return { views }
+      return { windows }
     })
   },
-  resizeView: (size, viewPath) => {
-    console.log('resizeView', viewPath, size)
-
+  resizeView: (direction: Direction, size, viewPath, nextItemSize) => {
     set((state) => {
-      const views = [...state.views]
-      const view = evalPathArray(viewPath, { views }) as Views
-      view.size = size
+      if (size < 200) return state
+      if (nextItemSize && nextItemSize < 200) return state
+      const windows = [...state.windows]
+      const view = evalPathArray(viewPath, windows) as ContainerView
+      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView
+      const viewIndex = Array.isArray(parentView.views) ? parentView.views.findIndex((v) => v === view) : -2
+      const nextView = parentView.views[viewIndex + 1]
 
-      console.log('resizeView', viewPath, size, views)
-      return { views }
+      const sizeProp = direction === Direction.Horizontal ? 'width' : 'height'
+      view[sizeProp] = size
+      if (nextView) {
+        nextView[sizeProp] = nextItemSize
+      }
+
+      return { windows }
     })
   },
   flow: undefined,
@@ -175,46 +227,67 @@ export const useApp = create<AppStore>((set) => ({
   setToolbarColSize: (size) => set({ toolbarColSize: size })
 }))
 
-const evalPathArray = (pathArray: number[], views: Views) => {
-  let view: TabViewItem | Views = views
+const evalPathArray = (pathArray: number[], windows: Window[]) => {
+  let view: TabView | ContainerView | Window | Window[] = windows
   for (const path of pathArray) {
     if ('views' in view) {
-      view = view.views[path] as Views
+      view = view.views[path] as ContainerView
     } else {
-      view = view[path] as TabViewItem
+      view = view[path] as TabView
     }
   }
   return view
 }
 
-function cleanUp(views: Views): Views {
-  function cleanViews(currentViews: Views): ViewsItem[] {
-    return currentViews.views.reduce((acc: ViewsItem[], item: ViewsItem) => {
-      if (isTabViewItem(item)) {
+function cleanUp(windows: Window[]): Window[] {
+  function cleanViews(currentViews: ContainerView[] | Window[] | TabView[]): ViewsItem[] {
+    const arr = currentViews.reduce((acc: ViewsItem[], item: ViewsItem) => {
+      if (isTabView(item)) {
         if (item.tabs.length > 0) {
           acc.push(item)
         }
-      } else if (isViews(item)) {
-        const cleaned = cleanViews(item)
+      } else if (isWindowOrContainerView(item)) {
+        const cleaned = cleanViews(item.views as any)
         if (cleaned.length > 0) {
-          acc.push({ views: cleaned, size: item.size })
+          const { views, ...rest } = item
+          acc.push({ views: cleaned, ...rest })
           if (cleaned.length === 1 && cleaned[0]) {
-            cleaned[0].size = undefined
+            cleaned[0].width = undefined
+            cleaned[0].height = undefined
           }
         }
       }
       return acc
     }, [])
+    if (arr[0] && arr.length === 1) {
+      arr[0].width = undefined
+      arr[0].height = undefined
+    }
+    return arr
   }
 
-  function isTabViewItem(item: any): item is TabViewItem {
+  function isTabView(item: any): item is TabView {
     return item && typeof item === 'object' && 'tabs' in item
   }
 
-  function isViews(item: any): item is Views {
+  function isWindowOrContainerView(item: any): item is ContainerView | Window {
     return item && typeof item === 'object' && 'views' in item
   }
 
-  const cleanedItems = cleanViews(views)
-  return { views: cleanedItems, size: views.size }
+  const cleanedItems = cleanViews(windows) as Window[]
+  return cleanedItems
+}
+
+const updateSizes = (win: Window, widthChange: number, heightChange: number) => {
+  win.views.forEach((window) => {
+    window.width = window.width ? window.width * widthChange : undefined
+    window.height = window.height ? window.height * heightChange : undefined
+    if ('views' in window) {
+      window.views.forEach((view) => {
+        if ('views' in view) {
+          updateSizes(view, widthChange, heightChange)
+        }
+      })
+    }
+  })
 }

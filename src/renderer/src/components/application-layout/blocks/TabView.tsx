@@ -4,19 +4,19 @@ import clsx from 'clsx'
 import IconXmark from '../icons/IconXmark'
 import IconAdd from '../icons/IconAdd'
 import { useDrag, useDrop } from 'react-dnd'
-import { TabViewItem } from '@renderer/store/app-store'
 import { useSizeStyle } from '../hooks/use-size-style'
 import { Direction } from '../types'
-import { ResizeHandle } from '../elements/ResizeHandle'
+import { SplitResizeHandle } from '../elements/SplitResizeHandle'
+import { TabView as TabViewType } from '@renderer/store/app-store'
 
 export type OnTabChangeHandler = (tabId: string, viewPath: number[]) => void
 export type OnTabCloseHandler = (tabId: string, viewPath: number[]) => void
 export type OnAddNewClickHandler = (viewPath: number[]) => void
 export type IsActiveHandler = (tabId: string, viewPath: number[]) => boolean
 export type OnTabMoveHandler = (options: { tabId: string; fromPath: number[]; toPath: number[]; beforeTabId?: string }) => void
-export type OnResizeHandler = (size: number, viewPath:number[]) => void
+export type OnSplitResizeHandler = (direction: Direction, size: number, viewPath: number[], nextItemSize?: number) => void
 
-export interface TabViewProps extends TabViewItem {
+export interface TabViewProps extends TabViewType {
   noCache?: boolean
   activeTabId?: string
   onTabChange?: OnTabChangeHandler
@@ -24,20 +24,20 @@ export interface TabViewProps extends TabViewItem {
   headerControls?: React.ReactNode
   onAddNewClick?: OnAddNewClickHandler
   onTabMove?: OnTabMoveHandler
-  onResize?: OnResizeHandler
+  onResize?: OnSplitResizeHandler
+  index?: number
   //don't call directly, used for recursion
   path?: number[]
-  size?: number
   direction?: Direction
 }
-const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, ...props }) => {
+const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props }) => {
   const rootRef = useRef<HTMLDivElement>(null)
-  useValidateElement(rootRef, { $parent: { $match: '.pf-window-group' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-window-group,.pf-resizable-window_content' } }, (validation) => {
     if (!validation) {
       throw new Error('TabView must be used within a Container.')
     }
   })
-  const _path = path || [0]
+  const _path = path || [index || 0]
   useEffect(() => {
     if (activeTabId === undefined && tabs.length > 0) {
       props.onTabChange?.(tabs[0].id, _path)
@@ -51,7 +51,13 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, ...props }) => {
   }
 
   const direction = useParentDirection(rootRef, '.pf-window-group')
-  const style = useSizeStyle(props.size,direction)
+  const style = {
+    width: props.width,
+    height: props.height,
+    minWidth: props.width,
+    minHeight: props.height,
+
+  }
 
   const onTabClose = (tabId: string) => {
     const previousTabIndex = tabs.findIndex((tab) => tab.id === tabId) - 1
@@ -67,8 +73,8 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, ...props }) => {
     props.onAddNewClick?.(_path)
   }
 
-  const onResize = (size: number) => {
-    props.onResize?.(size, _path)
+  const onResize = (size: number, nextItemSize?: number) => {
+    props.onResize?.(direction, size, _path, nextItemSize)
   }
 
   const [collected, drop] = useDrop<TabDraggingProps, any, any>(() => ({
@@ -86,16 +92,14 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, ...props }) => {
   }
   const content = tabs.find((tab) => tab.id === activeTabId)?.content
   return (
-    <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-highlight': collected.fromExternalView })}
-
-    style={style}
-    >
-      <ResizeHandle direction={direction} onResize={onResize} />
+    <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
+      <SplitResizeHandle direction={direction} onResize={onResize} />
+      <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.fromExternalView })} />
       <div ref={drop} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(tabs).length === 0 })}>
         <div className="pf-tab-title-list">
-          {tabs.map((tab, index) => (
+          {tabs.map((tab, idx) => (
             <Tab
-              index={index}
+              index={idx}
               path={_path}
               className="pf-tab-view__tab-title"
               key={tab.id}
@@ -111,7 +115,7 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, ...props }) => {
             <IconAdd width={16} height={16} />
           </button>
         </div>
-        <div>{props.headerControls}</div>
+        <div className="pf-view-controls">{props.headerControls}</div>
       </div>
       <div className="pf-tab-view__content">
         {props.noCache ? (

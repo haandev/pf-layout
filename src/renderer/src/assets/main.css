@@ -9,6 +9,34 @@
   --default-border-color: #888888;
   --dark-border-color: #383838;
 }
+
+body {
+  --sb-track-color: #232e33;
+  --sb-thumb-color: #6baf8d;
+  --sb-size: 7px;
+}
+
+body::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 3px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 3px;
+  border: 1px solid #232e33;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
 * {
   font-size: 12px;
   box-sizing: border-box;
@@ -311,11 +339,24 @@ body {
 .pf-container.pf-horizontal .pf-toolbar-stack-group {
   flex-direction: row;
 }
-
-.pf-window-group {
+.pf-resizable-window-host {
+  display: flex;
+  flex: 1;
+  overflow:hidden
+}
+.pf-window-group,
+.pf-resizable-window_content {
   position: relative;
   display: flex;
   flex: 1;
+  overflow: hidden;
+}
+.pf-resizable-window {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  position: relative;
+  max-width: 100%;
 }
 
 .pf-tab-view {
@@ -341,6 +382,9 @@ body {
   flex-direction: row;
   justify-content: flex-start;
   align-items: center;
+}
+.pf-tab-view__tabs > .pf-view-controls {
+  border-left: 15px solid var(--secondary-color);
 }
 .pf-tab-view__tabs .pf-tab.pf-tab-view__tab-title {
   outline: none;
@@ -439,33 +483,22 @@ body {
 .pf-tab-is-dragging {
   opacity: 0.2;
 }
-.pf-highlight {
-  position: relative;
-}
-.pf-highlight::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: cornflowerblue;
-}
 
 .pf-tab-title-list {
   flex: 1;
-  overflow: hidden;
+  overflow-x: scroll;
+  overflow-y: hidden;
 }
 
-div:last-child > .pf-resize-handle {
+div:last-child > .pf-split-resize-handle {
   display: none;
 }
-div:not(:last-child) > .pf-resize-handle {
+div:not(:last-child) > .pf-split-resize-handle {
   position: absolute;
   z-index: 100;
 }
 
-.pf-horizontal > div > .pf-resize-handle {
+.pf-horizontal > div > .pf-split-resize-handle {
   top: 0px;
   right: -2px;
   bottom: 0px;
@@ -473,7 +506,7 @@ div:not(:last-child) > .pf-resize-handle {
   cursor: col-resize;
 }
 
-.pf-vertical > div > .pf-resize-handle {
+.pf-vertical > div > .pf-split-resize-handle {
   left: 0px;
   right: 0px;
   bottom: -2px;
@@ -481,14 +514,114 @@ div:not(:last-child) > .pf-resize-handle {
   cursor: row-resize;
 }
 
-.pf-horizontal > div > .pf-resize-handle .pf-fake-resize-handle {
-  border: 1px dashed silver;
-  height: 100%;
+.pf-floating-window {
+  box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
   position: absolute;
+  z-index: 100;
+  min-width: 300px;
+  min-height: 300px;
+  top: 300px;
+  left: 300px;
+  border: 2px solid var(--dark-border-color);
+  border-radius: 5px;
 }
 
-.pf-vertical > div > .pf-resize-handle .pf-fake-resize-handle {
-  border: 1px dashed silver;
-  width: 100%;
+.pf-drop-zone {
   position: absolute;
+  box-sizing: border-box;
+  z-index: 100;
+  height: 100%;
+  width: 100%;
+  border: 4px dashed rgba(0, 0, 0, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+.pf-drop-zone.pf-highlight {
+  opacity: 1;
+  border: 2px solid cornflowerblue;
+}
+.pf-floating-window_header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--secondary-color);
+  border-bottom: 1px solid var(--dark-border-color);
+  padding: 5px;
+}
+
+.pf-resizable-window.pf-vertical,
+.pf-resizable-window.pf-horizontal > pf-resizable-window_content {
+  flex-direction: row;
+}
+.pf-resizable-window.pf-horizontal,
+.pf-resizable-window.pf-vertical > pf-resizable-window_content {
+  flex-direction: column;
+}
+
+.pf-resizable-window_resize-handle {
+  display: none;
+}
+.pf-floating-window .pf-resizable-window_resize-handle {
+  display: block;
+}
+.pf-floating-window .pf-resizable-window_resize-handle > div {
+  position: absolute;
+  z-index: 100;
+}
+
+.pf-left-edge {
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+.pf-right-edge {
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+.pf-top-edge {
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+}
+.pf-bottom-edge {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+}
+.pf-top-left-corner {
+  top: -10px;
+  left: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nwse-resize;
+}
+.pf-top-right-corner {
+  top: -10px;
+  right: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nesw-resize;
+}
+.pf-bottom-left-corner {
+  bottom: -10px;
+  left: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nesw-resize;
+}
+.pf-bottom-right-corner {
+  bottom: -10px;
+  right: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nwse-resize;
 }
