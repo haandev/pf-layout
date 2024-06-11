@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 import useEvent from 'react-use-event-hook'
 import { useClickAnyWhere } from 'usehooks-ts'
+import { validateElement } from './use-validate-element'
 
 export interface RefOrRefTakingFunction<T> {
   (ref: React.MutableRefObject<T>): void
@@ -32,12 +33,15 @@ function useDragDelta<T extends HTMLElement>(options: {
   useClickAnyWhere((e) => onMouseUp(e))
 
   const onMouseMove = useEvent((e) => {
+    if (validateElement(e.target, { $ancestors: { $match: '.no-drag' } })) {
+      e.stopPropagation()
+      return
+    }
     const isSafeY = (options.safetyMargins?.top || 0) < e.clientY && e.clientY < window.innerHeight - (options.safetyMargins?.bottom || 0)
     const isSafeX = (options.safetyMargins?.left || 0) < e.clientX && e.clientX < window.innerWidth - (options.safetyMargins?.right || 0)
     const isSafe = isSafeX && isSafeY
     if (!isSafe) return
 
-    initials.current.dragging = true
     const xDelta = e.clientX - initials.current.x
     const yDelta = e.clientY - initials.current.y
     initials.current.xDelta = xDelta
@@ -50,12 +54,19 @@ function useDragDelta<T extends HTMLElement>(options: {
   const onMouseUp = useEvent((e) => {
     if (!initials.current.dragging) return
     initials.current.dragging = false
+    console.log('mousemove event removed')
     document.removeEventListener('mousemove', onMouseMove)
     document.removeEventListener('mouseup', onMouseUp)
     options.onDragEnd?.(e)
   })
 
   const handler = useCallback((e) => {
+    if (validateElement(e.target, { $ancestors: { $match: '.no-drag' } })) {
+      e.stopPropagation()
+      return
+    }
+    initials.current.dragging = true
+
     initials.current.x = e.clientX
     initials.current.y = e.clientY
 

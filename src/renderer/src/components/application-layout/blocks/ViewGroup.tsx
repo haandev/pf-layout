@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useRef } from 'react'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 import clsx from 'clsx'
 import React from 'react'
 import { Direction } from '../types'

@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, cloneElement, useRef } from 'react'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 import clsx from 'clsx'
 
 export interface ToolbarStackGroupProps extends PropsWithChildren {

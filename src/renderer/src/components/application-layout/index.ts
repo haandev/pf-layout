@@ -15,8 +15,10 @@ export { Label } from './elements/Label'
 export { StickyButton } from './elements/StickyButton'
 export { StickyGroupButton } from './elements/StickyGroupButton'
 export { ToolbarStackHeader } from './elements/ToolbarStackHeader'
+export { SplitResizeHandle } from './elements/SplitResizeHandle'
 
 //hooks
-export { useValidateElement, useParentDirection, useValidateElements } from './hooks'
+export { useValidateElement, useValidateElements } from './hooks/use-validate-element'
+export { useParentDirection } from './hooks/use-parent-direction'
 
 //context

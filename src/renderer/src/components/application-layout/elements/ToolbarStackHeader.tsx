@@ -1,6 +1,6 @@
 import React, { FC, useRef } from 'react'
 import clsx from 'clsx'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 
 export interface ToolbarStackHeaderProps {
   left?: React.ReactNode | React.ReactNode[]

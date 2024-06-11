@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useRef } from 'react'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 
 export interface ToolbarItemProps extends PropsWithChildren {}
 export const ToolbarItem: FC<ToolbarItemProps> = ({ children }) => {

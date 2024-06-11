@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useCallback, useEffect, useRef } from 'react'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 import clsx from 'clsx'
 import React from 'react'
 import { useWindowSize } from 'usehooks-ts'
@@ -12,7 +12,7 @@ import IconMinus from '../icons/IconMinus'
 import IconPlus from '../icons/IconPlus'
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, viewPath: string[]) => void
-export interface ResizableWindowProps extends PropsWithChildren {
+export interface WindowProps extends PropsWithChildren {
   onWindowResize?: OnResizeHandler
   direction?: Direction
   floating?: boolean
@@ -24,7 +24,7 @@ export interface ResizableWindowProps extends PropsWithChildren {
   path?: string[]
 }
 
-export const ResizableWindow: FC<ResizableWindowProps> = React.memo(({ path, id, ...props }) => {
+export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   const currentPath = [...(path || []), id]
   const { width = 0, height = 0 } = useWindowSize()
   const safetyMargins = { top: 50, left: 50, right: 50, bottom: 50 }
@@ -138,7 +138,7 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo(({ path, id,
 
   useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group' } }, (validation) => {
     if (!validation) {
-      throw new Error('ResizableWindow must be used within a Container or another ResizableWindow.')
+      throw new Error('Window must be used within a Container or another Window.')
     }
   })
 
@@ -146,7 +146,7 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo(({ path, id,
     if (!props.floating) return null
     return (
       <div ref={header} className="pf-floating-window_header">
-        <div className="pf-window-controls">
+        <div className="pf-window-controls no-drag">
           <div className="pf-icon pf-icon__close">
             <IconXmark width={8} height={8}/>
           </div>
@@ -157,8 +157,8 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo(({ path, id,
             <IconPlus  width={8} height={8}/>
           </div>
         </div>
-        başlık
-        <div></div>
+        <span></span>
+
       </div>
     )
   }

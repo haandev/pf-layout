@@ -1,7 +1,7 @@
 import React, { FC, PropsWithChildren, useRef } from 'react'
 import { Direction } from '../types'
 import clsx from 'clsx'
-import {  useValidateElement } from '../hooks'
+import {  useValidateElement } from '../hooks/use-validate-element'
 
 export interface ContainerProps extends PropsWithChildren {
   className?: string

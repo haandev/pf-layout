@@ -1,6 +1,5 @@
 import clsx from 'clsx'
-import { useEffect, useState } from 'react'
-import { Direction } from './types'
+import { useEffect } from 'react'
 
 export const getParent = (ref: React.RefObject<Element> | null) => {
   let parent: null | Element = null
@@ -146,6 +145,9 @@ export const validateElement = (element: Element | null | undefined, rules: Elem
       if (maxItems && matchingAncestorCount > maxItems) {
         return false
       }
+      if (matchingAncestorCount >= (minItems || 1)) {
+        break
+      }
     }
     if (matchingAncestorCount < (minItems || 1)) {
       return false
@@ -244,17 +246,4 @@ export const useValidateElements = (
     const validation = validateElements(elements, rules, maxRecursion)
     callback(validation)
   }, [...elements])
-}
-
-export const useParentDirection = (ref: React.RefObject<Element>, parentMatch: string, defaultDirection = Direction.Horizontal) => {
-  const [parentDirection, setParentDirection] = useState<Direction>(defaultDirection)
-
-  useEffect(() => {
-    const parent = ref.current?.closest(parentMatch)
-    if (parent) {
-      setParentDirection(parent.classList.contains('pf-vertical') ? Direction.Vertical : Direction.Horizontal)
-    }
-  }, [ref])
-
-  return parentDirection
 }

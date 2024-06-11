@@ -1,12 +1,13 @@
-import React, { FC, PropsWithChildren, useEffect, useRef } from 'react'
-import { useParentDirection, useValidateElement } from '../hooks'
+
 import clsx from 'clsx'
+import { useDrag, useDrop } from 'react-dnd'
+
+import React, { FC, PropsWithChildren, useEffect, useRef } from 'react'
+import { useParentDirection, useValidateElement, SplitResizeHandle } from '..'
+import { Direction } from '../types'
+
 import IconXmark from '../icons/IconXmark'
 import IconAdd from '../icons/IconAdd'
-import { useDrag, useDrop } from 'react-dnd'
-import { useSizeStyle } from '../hooks/use-size-style'
-import { Direction } from '../types'
-import { SplitResizeHandle } from '../elements/SplitResizeHandle'
 import { TabView as TabViewType } from '@renderer/store/app-store'
 
 export type OnTabChangeHandler = (tabId: string, viewPath: string[]) => void

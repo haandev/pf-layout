@@ -67,7 +67,7 @@ import IconSplitSquareHorizontal from './components/application-layout/icons/Ico
 import IconSplitSquareVertical from './components/application-layout/icons/IconSplitSquareVertical'
 import { NestedTabView } from './components/application-layout/blocks/NestedTabView'
 import { FlowPageProvided } from './components/FlowPage'
-import { ResizableWindow } from './components/application-layout/blocks/ResizableWindow'
+import { Window } from './components/application-layout/blocks/Window'
 
 function App(): JSX.Element {
   const app = useApp()
@@ -197,7 +197,7 @@ function App(): JSX.Element {
             </ToolbarStackGroup>
             {Object.entries(app.windows).length > 0 &&
               Object.entries(app.windows).map(([id, win], index) => (
-                <ResizableWindow
+                <Window
                   id={id}
                   floating={win.floating}
                   key={index}
@@ -233,7 +233,7 @@ function App(): JSX.Element {
                       }
                     ]}
                   />
-                </ResizableWindow>
+                </Window>
               ))}
           </Container>
         </AlignedContainers>

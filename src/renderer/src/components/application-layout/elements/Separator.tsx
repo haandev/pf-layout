@@ -1,8 +1,10 @@
 import { FC, useRef } from 'react'
+
+import { useParentDirection, useValidateElement } from '..'
 import { Direction } from '../types'
-import IconVerticalLine from '../icons/IconVerticalLine'
-import { useParentDirection, useValidateElement } from '../hooks'
+
 import IconLine from '../icons/IconLine'
+import IconVerticalLine from '../icons/IconVerticalLine'
 
 export const Separator: FC = () => {
   const rootRef = useRef<HTMLDivElement>(null)

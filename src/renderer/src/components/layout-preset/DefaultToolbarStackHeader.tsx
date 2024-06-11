@@ -1,9 +1,11 @@
 import { FC, useRef } from 'react'
 import clsx from 'clsx'
-import { useParentDirection, useValidateElement } from '../application-layout/hooks'
+
+import { useParentDirection, useValidateElement } from '../application-layout/'
+import { Direction } from '../application-layout/types'
+
 import IconChevronsRight from '../application-layout/icons/IconChevronsRight'
 import IconChevronsLeft from '../application-layout/icons/IconChevronsLeft'
-import { Direction } from '../application-layout/types'
 import IconChevronsDown from '../application-layout/icons/IconChevronsDown'
 import IconChevronsUp from '../application-layout/icons/IconChevronsUp'
 import IconXmark from '../application-layout/icons/IconXmark'

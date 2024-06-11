@@ -1,6 +1,6 @@
 import React, { FC, PropsWithChildren, useRef } from 'react'
 import { Direction } from '../types'
-import { useValidateElement } from '../hooks'
+import { useValidateElement } from '../hooks/use-validate-element'
 import clsx from 'clsx'
 
 export interface ToolbarStackProps extends PropsWithChildren {
