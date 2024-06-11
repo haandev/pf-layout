@@ -9,6 +9,8 @@ import useEvent from 'react-use-event-hook'
 import IconXmark from '../icons/IconXmark'
 import IconMinus from '../icons/IconMinus'
 import IconPlus from '../icons/IconPlus'
+import { useDrag } from 'react-dnd'
+import useBoxResize from '../hooks/use-box-resize'
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, viewPath: string[]) => void
 export interface WindowProps extends PropsWithChildren {
@@ -36,95 +38,24 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     const initialRect = element.getBoundingClientRect()
     props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, currentPath)
   })
-  const resizeHandler = useCallback(
-    (_e: MouseEvent, handle: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', xDelta: number, yDelta) => {
-      if (!rootRef.current) return
-      const initialRect = rootRef.current.getBoundingClientRect()
-      switch (handle) {
-        case 'left':
-          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height, initialRect.top, initialRect.left + xDelta, currentPath)
-          break
-        case 'right':
-          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height, initialRect.top, initialRect.left, currentPath)
-          break
-        case 'top':
-          props.onWindowResize?.(initialRect.width, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left, currentPath)
-          break
-        case 'bottom':
-          props.onWindowResize?.(initialRect.width, initialRect.height + yDelta, initialRect.top, initialRect.left, currentPath)
-          break
-        case 'top-left':
-          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left + xDelta, currentPath)
-          break
-        case 'top-right':
-          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left, currentPath)
-          break
-        case 'bottom-left':
-          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height + yDelta, initialRect.top, initialRect.left + xDelta, currentPath)
-          break
-        case 'bottom-right':
-          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height + yDelta, initialRect.top, initialRect.left, currentPath)
-          break
-      }
-    },
-    []
-  )
-  const leftEdge = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'left', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const rightEdge = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'right', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const topEdge = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'top', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const bottomEdge = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'bottom', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const topLeftCorner = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'top-left', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const topRightCorner = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'top-right', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const bottomLeftCorner = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'bottom-left', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const bottomRightCorner = useDragDelta<HTMLDivElement>({
-    onDrag: (e, xDelta, yDelta) => {
-      resizeHandler(e, 'bottom-right', xDelta, yDelta)
-    },
-    safetyMargins
-  })
-  const header = useDragDelta<HTMLDivElement>({
-    onDrag: moveFloatingWindowHandler,
-    onDragStart: (e) => {
-      console.log(e)
-    },
-    safetyMargins
-  })
 
+  const box = useBoxResize<HTMLDivElement>({
+    ref: rootRef,
+    handler: (_e, ...args) => props.onWindowResize?.(...args, currentPath),
+    safetyMargins
+  })
+  const header2 = useDragDelta<HTMLDivElement>({
+    onDrag: moveFloatingWindowHandler,
+    safetyMargins
+  })
+  const header = useRef<HTMLDivElement>(null)
+  const [, drag] = useDrag({
+    type: 'window',
+    item: {
+      id
+    }
+  })
+  drag(header)
   const _direction = props.direction || Direction.Horizontal
   const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical'
 
@@ -188,14 +119,14 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
       <div className="pf-window">
         {floatingHeaderRender()}
 
-        <div ref={leftEdge} className="pf-resize pf-resize-l" />
-        <div ref={rightEdge} className="pf-resize pf-resize-r" />
-        <div ref={topEdge} className="pf-resize pf-resize-t" />
-        <div ref={bottomEdge} className="pf-resize pf-resize-b" />
-        <div ref={topLeftCorner} className="pf-resize pf-resize-tl" />
-        <div ref={topRightCorner} className="pf-resize pf-resize-tr" />
-        <div ref={bottomLeftCorner} className="pf-resize pf-resize-bl" />
-        <div ref={bottomRightCorner} className="pf-resize pf-resize-br" />
+        <div ref={box.left} className="pf-resize pf-resize-l" />
+        <div ref={box.right} className="pf-resize pf-resize-r" />
+        <div ref={box.top} className="pf-resize pf-resize-t" />
+        <div ref={box.bottom} className="pf-resize pf-resize-b" />
+        <div ref={box.topLeft} className="pf-resize pf-resize-tl" />
+        <div ref={box.topRight} className="pf-resize pf-resize-tr" />
+        <div ref={box.bottomLeft} className="pf-resize pf-resize-bl" />
+        <div ref={box.bottomRight} className="pf-resize pf-resize-br" />
 
         <div
           ref={contentRef}

@@ -80,9 +80,11 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, id, ...props }) =>
 
   const [collected, drop] = useDrop<TabDraggingProps, any, any>(() => ({
     accept: 'tab',
-    collect: (monitor) => ({
-      fromExternalView: monitor.isOver() && monitor.getItem()?.fromPath?.join('/') !== currentPath?.join('/')
-    }),
+    collect: (monitor) => {
+      return ({
+        fromExternalView: monitor.isOver() && monitor.getItem()?.fromPath?.join('/') !== currentPath?.join('/')
+      })
+    },
     drop: (item) => {
       props.onTabMove?.({ tabId: item.id, fromPath: item.fromPath, toPath: currentPath })
     }

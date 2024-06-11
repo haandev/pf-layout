@@ -61,20 +61,6 @@ export const useApp = create<AppStore>((set) => ({
       },
       floating: false
     },
-    second: {
-      views: {
-        initialView: {
-          tabs: {
-            'flow-tab-1': {
-              id: 'flow-tab-1',
-              title: 'Flow 1',
-              content: <FlowPageProvided id="flow-tab-1" />
-            }
-          }
-        }
-      },
-      floating: false
-    },
     mainFloatingWindow: {
       views: {
         'main-view': {

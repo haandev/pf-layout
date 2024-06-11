@@ -2,12 +2,6 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import useEvent from 'react-use-event-hook'
 import { useClickAnyWhere } from 'usehooks-ts'
 import { validateElement } from './use-validate-element'
-import { on } from 'events'
-
-export interface RefOrRefTakingFunction<T> {
-  (ref: React.MutableRefObject<T>): void
-  current?: T | null
-}
 
 function useDragDelta<T extends HTMLElement>(options: {
   ref?: React.RefObject<T>
@@ -44,6 +38,7 @@ function useDragDelta<T extends HTMLElement>(options: {
     const isSafe = isSafeX && isSafeY
     if (!isSafe) return
     !initials.current.dragStartFired && options.onDragStart?.(e)
+    initials.current.dragStartFired = true
 
     const xDelta = e.clientX - initials.current.x
     const yDelta = e.clientY - initials.current.y
@@ -75,7 +70,6 @@ function useDragDelta<T extends HTMLElement>(options: {
 
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
-    options.onDragStart?.(new MouseEvent('mousedown'))
   }, [])
 
   useEffect(() => {
