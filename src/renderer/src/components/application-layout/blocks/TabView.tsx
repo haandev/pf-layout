@@ -9,12 +9,12 @@ import { Direction } from '../types'
 import { SplitResizeHandle } from '../elements/SplitResizeHandle'
 import { TabView as TabViewType } from '@renderer/store/app-store'
 
-export type OnTabChangeHandler = (tabId: string, viewPath: number[]) => void
-export type OnTabCloseHandler = (tabId: string, viewPath: number[]) => void
-export type OnAddNewClickHandler = (viewPath: number[]) => void
-export type IsActiveHandler = (tabId: string, viewPath: number[]) => boolean
-export type OnTabMoveHandler = (options: { tabId: string; fromPath: number[]; toPath: number[]; beforeTabId?: string }) => void
-export type OnSplitResizeHandler = (direction: Direction, size: number, viewPath: number[], nextItemSize?: number) => void
+export type OnTabChangeHandler = (tabId: string, viewPath: string[]) => void
+export type OnTabCloseHandler = (tabId: string, viewPath: string[]) => void
+export type OnAddNewClickHandler = (viewPath: string[]) => void
+export type IsActiveHandler = (tabId: string, viewPath: string[]) => boolean
+export type OnTabMoveHandler = (options: { tabId: string; fromPath: string[]; toPath: string[]; beforeTabId?: string }) => void
+export type OnSplitResizeHandler = (direction: Direction, size: number, viewPath: string[], nextItemSize?: number) => void
 
 export interface TabViewProps extends TabViewType {
   noCache?: boolean
@@ -25,28 +25,31 @@ export interface TabViewProps extends TabViewType {
   onAddNewClick?: OnAddNewClickHandler
   onTabMove?: OnTabMoveHandler
   onResize?: OnSplitResizeHandler
-  index?: number
+  id: string //path member
   //don't call directly, used for recursion
-  path?: number[]
+  path?: string[]
   direction?: Direction
 }
-const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props }) => {
+const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, id, ...props }) => {
   const rootRef = useRef<HTMLDivElement>(null)
-  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-resizable-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-window_content' } }, (validation) => {
     if (!validation) {
       throw new Error('TabView must be used within a Container.')
     }
   })
-  const _path = path || [index || 0]
+  const currentPath = [...(path || []), id]
+
+  const tabsEntries = Object.entries(tabs)
   useEffect(() => {
-    if (activeTabId === undefined && tabs.length > 0) {
-      props.onTabChange?.(tabs[0].id, _path)
+    if (activeTabId === undefined && tabsEntries.length > 0) {
+      console.log({ tabsEntries, activeTabId, currentPath })
+      props.onTabChange?.(tabsEntries[0][0], currentPath)
     }
   }, [])
 
   const onTabChange = (tabId: string) => {
     if (activeTabId !== tabId) {
-      props.onTabChange?.(tabId, _path)
+      props.onTabChange?.(tabId, currentPath)
     }
   }
 
@@ -55,57 +58,55 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props })
     width: props.width,
     height: props.height,
     minWidth: props.width,
-    minHeight: props.height,
-
+    minHeight: props.height
   }
 
   const onTabClose = (tabId: string) => {
-    const previousTabIndex = tabs.findIndex((tab) => tab.id === tabId) - 1
-    const nextTabIndex = tabs.findIndex((tab) => tab.id === tabId) + 1
+    const previousTabIndex = tabsEntries.findIndex(([id]) => id === tabId) - 1
+    const nextTabIndex = tabsEntries.findIndex(([id]) => id === tabId) + 1
     if (previousTabIndex >= 0) {
-      props.onTabChange?.(tabs[previousTabIndex].id, _path)
-    } else if (nextTabIndex < tabs.length) {
-      props.onTabChange?.(tabs[nextTabIndex].id, _path)
+      props.onTabChange?.(tabsEntries[previousTabIndex][0], currentPath)
+    } else if (nextTabIndex < tabsEntries.length) {
+      props.onTabChange?.(tabsEntries[nextTabIndex][0], currentPath)
     }
-    props.onTabClose?.(tabId, _path)
+    props.onTabClose?.(tabId, currentPath)
   }
   const onAddNew = () => {
-    props.onAddNewClick?.(_path)
+    props.onAddNewClick?.(currentPath)
   }
 
   const onResize = (size: number, nextItemSize?: number) => {
-    props.onResize?.(direction, size, _path, nextItemSize)
+    props.onResize?.(direction, size, currentPath, nextItemSize)
   }
 
   const [collected, drop] = useDrop<TabDraggingProps, any, any>(() => ({
     accept: 'tab',
     collect: (monitor) => ({
-      fromExternalView: monitor.getItem()?.fromPath.join('/') !== _path.join('/') && monitor.isOver()
+      fromExternalView: monitor.isOver() && monitor.getItem()?.fromPath?.join('/') !== currentPath?.join('/')
     }),
     drop: (item) => {
-      props.onTabMove?.({ tabId: item.id, fromPath: item.fromPath, toPath: _path })
+      props.onTabMove?.({ tabId: item.id, fromPath: item.fromPath, toPath: currentPath })
     }
   }))
 
-  const onDrop = (tabId: string, beforeTabId: string, path: number[]) => {
-    props.onTabMove?.({ tabId, fromPath: path, toPath: _path, beforeTabId })
+  const onDrop = (tabId: string, beforeTabId: string, path: string[]) => {
+    props.onTabMove?.({ tabId, fromPath: path, toPath: currentPath, beforeTabId })
   }
-  const content = tabs.find((tab) => tab.id === activeTabId)?.content
+  const content = activeTabId ? tabs[activeTabId].content : null
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.fromExternalView })} />
       <div ref={drop} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(tabs).length === 0 })}>
         <div className="pf-tab-title-list">
-          {tabs.map((tab, idx) => (
+          {Object.entries(tabs).map(([id, tab]) => (
             <Tab
-              index={idx}
-              path={_path}
+              id={id}
+              path={currentPath}
               className="pf-tab-view__tab-title"
-              key={tab.id}
-              id={tab.id}
+              key={id}
               children={tab.title}
-              isActive={tab.id === activeTabId}
+              isActive={id === activeTabId}
               onClick={onTabChange}
               onClose={onTabClose}
               onDrop={onDrop}
@@ -121,12 +122,12 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props })
         {props.noCache ? (
           <div className="pf-tab-view__content-inner">{content}</div>
         ) : (
-          tabs.map((tab) => (
+          tabsEntries.map(([id, tab]) => (
             <div
-              key={tab.id}
+              key={id}
               className={clsx({
                 'pf-tab-view__content-inner': true,
-                'pf-hidden': tab.id !== activeTabId
+                'pf-hidden': id !== activeTabId
               })}
             >
               {tab.content}
@@ -142,14 +143,13 @@ interface TabProps extends PropsWithChildren {
   isActive?: boolean
   onClose?: (tabId: string) => void
   onClick?: (tabId: string) => void
-  onDrop?: (tabId: string, beforeTabId: string, path: number[]) => void
+  onDrop?: (tabId: string, beforeTabId: string, path: string[]) => void
   className?: string
-  path: number[]
-  index: number
+  path: string[]
 }
 export interface TabDraggingProps {
   id: string
-  fromPath: number[]
+  fromPath: string[]
 }
 const Tab: FC<TabProps> = (props) => {
   const ref = useRef(null)

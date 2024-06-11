@@ -25,5 +25,5 @@ export const SplitResizeHandle: FC<SplitResizeHandleProps> = ({ direction, onRes
   })
   const ref = useDragDelta<HTMLDivElement>({ onDrag })
 
-  return <div ref={ref} className="pf-split-resize-handle"></div>
+  return <div ref={ref} className="pf-split"></div>
 }

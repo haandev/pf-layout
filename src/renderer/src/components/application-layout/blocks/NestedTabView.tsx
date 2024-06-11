@@ -14,17 +14,17 @@ export interface NestedTabViewProps {
   isActive?: IsActiveHandler
 
   headerControls?: {
-    isVisible: (tabs: TabItem[], viewPath: number[]) => boolean
-    onClick: (viewPath: number[]) => void
+    isVisible: (tabs: Record<string, TabItem>, viewPath: string[]) => boolean
+    onClick: (viewPath: string[]) => void
     render: JSX.Element
   }[]
 
   onAddNewClick?: OnAddNewClickHandler
   onTabMove?: OnTabMoveHandler
 
-  index?: number
+  id: string //path member
   //don't call directly, used for recursion
-  path?: number[]
+  path?: string[]
 }
 export const NestedTabView: FC<NestedTabViewProps> = ({
   view,
@@ -36,31 +36,32 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
   onAddNewClick,
   onTabMove,
   onResize,
-  index
+  id
 }) => {
   const _direction = direction || Direction.Horizontal
-  const _path = path || [index || 0]
+  const currentPath = [...(path || []), id]
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal
-  return view.views.map((viewItem, idx) => {
-    const __path = _path ? [..._path, idx] : [idx]
-    const pathKey = __path.join('/')
+  return Object.entries(view.views).map(([_id, viewItem]) => {
+    const nextPath = [...(currentPath || []), _id]
+    const pathKey = nextPath.join('/')
     if (!viewItem) return null
     if ('tabs' in viewItem) {
       const activeTabId = viewItem.activeTabId
       const renderedHeaderControls = headerControls?.map(
         (control, idx) =>
-          control.isVisible(viewItem.tabs, __path) && (
-            <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(__path)}>
+          control.isVisible(viewItem.tabs, nextPath) && (
+            <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(nextPath)}>
               {control.render}
             </button>
           )
       )
       return (
         <TabView
+          id={_id}
           direction={_direction}
           onResize={onResize}
           key={pathKey}
-          path={__path}
+          path={currentPath}
           tabs={viewItem.tabs}
           activeTabId={activeTabId}
           onTabChange={onTabChange}
@@ -74,16 +75,15 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
       )
     } else {
       return (
-        <ViewGroup key={pathKey} direction={oppositeDirection}
-        width={viewItem.width} height={viewItem.height}
-
-        path={__path} onResize={onResize}>
+        //TODO: move viewgroup to tabview map
+        <ViewGroup id={_id} key={pathKey} direction={oppositeDirection} width={viewItem.width} height={viewItem.height} path={currentPath} onResize={onResize}>
           <NestedTabView
+            id={_id}
             onResize={onResize}
             onTabMove={onTabMove}
             view={viewItem}
             direction={oppositeDirection}
-            path={__path}
+            path={currentPath}
             onTabChange={onTabChange}
             onTabClose={onTabClose}
             headerControls={headerControls}

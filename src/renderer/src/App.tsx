@@ -195,10 +195,10 @@ function App(): JSX.Element {
                 </Toolbar>
               </ToolbarStack>
             </ToolbarStackGroup>
-            {app.windows.length > 0 &&
-              app.windows.map((win, index) => (
+            {Object.entries(app.windows).length > 0 &&
+              Object.entries(app.windows).map(([id, win], index) => (
                 <ResizableWindow
-                  index={index}
+                  id={id}
                   floating={win.floating}
                   key={index}
                   width={win.width}
@@ -208,8 +208,8 @@ function App(): JSX.Element {
                   onWindowResize={app.resizeWindow}
                 >
                   <NestedTabView
-                    index={index}
-                    view={app.windows[index]}
+                    id={id}
+                    view={win}
                     onTabChange={app.changeTab}
                     onTabClose={app.closeTab}
                     onTabMove={app.moveTab}
@@ -218,16 +218,16 @@ function App(): JSX.Element {
                       const id = Math.random().toString(36).substring(7)
                       const title = `Flow ${id}`
                       const content = <FlowPageProvided id={id} />
-                      app.addTab(path, { id, title, content })
+                      app.addTab(path, { title, content })
                     }}
                     headerControls={[
                       {
-                        isVisible: (tabs) => tabs.length > 1,
+                        isVisible: (tabs) => Object.keys(tabs).length > 1,
                         render: <IconSplitSquareHorizontal width={16} height={16} />,
                         onClick: (path) => app.splitView(path, Direction.Horizontal)
                       },
                       {
-                        isVisible: (tabs) => tabs.length > 1,
+                        isVisible: (tabs) => Object.keys(tabs).length > 1,
                         render: <IconSplitSquareVertical width={16} height={16} />,
                         onClick: (path) => app.splitView(path, Direction.Vertical)
                       }

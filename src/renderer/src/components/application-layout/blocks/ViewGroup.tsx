@@ -3,7 +3,6 @@ import { useValidateElement } from '../hooks'
 import clsx from 'clsx'
 import React from 'react'
 import { Direction } from '../types'
-import { useSizeStyle } from '../hooks/use-size-style'
 import { OnSplitResizeHandler } from './TabView'
 import { SplitResizeHandle } from '../elements/SplitResizeHandle'
 
@@ -11,27 +10,30 @@ export interface ViewGroupProps extends PropsWithChildren {
   direction: Direction
   width?: number
   height?: number
-  path?: number[]
+  path?: string[]
   onResize?: OnSplitResizeHandler
+  id: string
 }
 
-export const ViewGroup: FC<ViewGroupProps> = React.memo((props) => {
+export const ViewGroup: FC<ViewGroupProps> = React.memo(({ path, id, ...props }) => {
   const oppositeDirection = props.direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal
-
+  const currentPath = [...(path || []), id]
   const rootRef = useRef<HTMLDivElement>(null)
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-resizable-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-window_content' } }, (validation) => {
     if (!validation) {
       throw new Error('ViewGroup must be used within a Container or another ViewGroup.')
     }
   })
 
   const onResize = (size: number, nextItemSize?: number) => {
-    props.onResize?.(oppositeDirection, size, props.path || [0], nextItemSize)
+    props.onResize?.(oppositeDirection, size, currentPath, nextItemSize)
   }
   const style = {
     width: props.width,
-    height: props.height
+    minWidth: props.width,
+    height: props.height,
+    minHeight: props.height
   }
   return (
     <div
