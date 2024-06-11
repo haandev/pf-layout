@@ -1,16 +1,23 @@
 import React, { useCallback, useEffect, useRef } from 'react'
+import { useClickAnyWhere } from 'usehooks-ts'
 
 export interface RefOrRefTakingFunction<T> {
-  (ref: React.RefObject<T>): void
+  (ref: React.MutableRefObject<T>): void
   current?: T | null
 }
-const useDragDelta = (options: {
-  ref?: React.RefObject<HTMLElement>
+
+function useDragDelta<T extends HTMLElement>(options: {
+  ref?: React.RefObject<T>
   onDragStart?: (e: MouseEvent) => void
-  onDragEnd?: (e: MouseEvent, xDelta: number, yDelta: number) => void
-}) => {
-  const internalRef = useRef<HTMLElement>(null)
+  onDrag?: (e: MouseEvent, xDelta: number, yDelta: number) => void
+  onDragEnd?: (e: MouseEvent) => void
+}) {
+  const internalRef = useRef<T>(null)
   const ref = options.ref || internalRef
+  const mouseUpFunction = useRef<any>({})
+  useClickAnyWhere((e) => {
+    if (typeof mouseUpFunction.current === 'function') mouseUpFunction.current(e)
+  })
 
   const initials = useRef({
     x: 0,
@@ -21,8 +28,6 @@ const useDragDelta = (options: {
   })
 
   const handler = useCallback((e) => {
-    const onDragStart = options.onDragStart
-    const onDragEnd = options.onDragEnd
     initials.current.x = e.clientX
     initials.current.y = e.clientY
 
@@ -34,20 +39,20 @@ const useDragDelta = (options: {
       initials.current.yDelta = yDelta
       initials.current.x = e.clientX
       initials.current.y = e.clientY
+      options.onDrag?.(e, initials.current.xDelta, initials.current.yDelta)
     }
-
     const onMouseUp = (e: MouseEvent) => {
       if (!initials.current.dragging) return
       initials.current.dragging = false
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
-      onDragEnd?.(e, initials.current.xDelta, initials.current.yDelta)
+      options.onDragEnd?.(e)
     }
 
+    mouseUpFunction.current = onMouseUp
     document.addEventListener('mousemove', onMouseMove)
     document.addEventListener('mouseup', onMouseUp)
-
-    onDragStart?.(new MouseEvent('mousedown'))
+    options.onDragStart?.(new MouseEvent('mousedown'))
   }, [])
 
   useEffect(() => {
@@ -57,7 +62,7 @@ const useDragDelta = (options: {
     }
   }, [])
 
-  return { ref }
+  return ref
 }
 
 export default useDragDelta

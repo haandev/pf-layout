@@ -2,7 +2,7 @@ import { TabItem, ContainerView } from '@renderer/store/app-store'
 import { Direction } from '../types'
 import { FC } from 'react'
 import TabView, { IsActiveHandler, OnAddNewClickHandler, OnSplitResizeHandler, OnTabChangeHandler, OnTabCloseHandler, OnTabMoveHandler } from './TabView'
-import { WindowGroup } from './WindowGroup'
+import { ViewGroup } from './ViewGroup'
 
 export interface NestedTabViewProps {
   view: ContainerView
@@ -74,7 +74,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
       )
     } else {
       return (
-        <WindowGroup key={pathKey} direction={oppositeDirection}
+        <ViewGroup key={pathKey} direction={oppositeDirection}
         width={viewItem.width} height={viewItem.height}
 
         path={__path} onResize={onResize}>
@@ -89,7 +89,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
             headerControls={headerControls}
             onAddNewClick={onAddNewClick}
           />
-        </WindowGroup>
+        </ViewGroup>
       )
     }
   })

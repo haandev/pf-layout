@@ -5,6 +5,8 @@ import React from 'react'
 import { useResizeObserver, useWindowSize } from 'usehooks-ts'
 import { Direction } from '../types'
 import useWindowResize from '@renderer/hooks/use-window-resize'
+import useDragDelta from '../hooks/use-drag-delta'
+import useEvent from 'react-use-event-hook'
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, viewPath: number[]) => void
 export interface ResizableWindowProps extends PropsWithChildren {
@@ -22,123 +24,114 @@ export interface ResizableWindowProps extends PropsWithChildren {
 export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
   const _path = props.path || [props.index || 0]
   const { width = 0, height = 0 } = useWindowSize()
-
+  const safetyPaddings = {
+    top: 50,
+    left: 50,
+    right: 50,
+    bottom: 50
+  }
   const rootRef = useRef<HTMLDivElement>(null)
-  const resizeRef = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
-  const moveWindowRef = useRef<HTMLDivElement>(null)
 
+  const moveFloatingWindowHandler = useEvent((e, xDelta, yDelta) => {
+    const isSafeMove =
+      e.clientX > safetyPaddings.left &&
+      e.clientX < window.innerWidth - safetyPaddings.right &&
+      e.clientY > safetyPaddings.top &&
+      e.clientY < window.innerHeight - safetyPaddings.bottom
+    if (!isSafeMove) return
+    const element = rootRef.current
+    if (!element) return
+    const initialRect = element.getBoundingClientRect()
+    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, _path)
+  })
   const resizeHandler = useCallback(
-    (e: MouseEvent) => {
-      console.log(e.currentTarget)
-
-      const element = resizeRef.current
-      const content = rootRef.current
-      if (!element || !content) return
-
-      const initialRect = content.getBoundingClientRect()
-
-      const onMouseMove = (moveEvent: MouseEvent) => {
-        const delta = { xPos: 0, yPos: 0, width: 0, height: 0 }
-        const handle = e.target as HTMLDivElement
-        if (handle.classList.contains('pf-left-edge')) {
-          delta.xPos = moveEvent.clientX - e.clientX
-          delta.width = -delta.xPos
-        }
-        if (handle.classList.contains('pf-right-edge')) {
-          delta.width = moveEvent.clientX - initialRect.right
-        }
-        if (handle.classList.contains('pf-top-edge')) {
-          delta.yPos = moveEvent.clientY - e.clientY
-          delta.height = -delta.yPos
-        }
-        if (handle.classList.contains('pf-bottom-edge')) {
-          delta.height = moveEvent.clientY - initialRect.bottom
-        }
-        if (handle.classList.contains('pf-top-left-corner')) {
-          delta.xPos = moveEvent.clientX - e.clientX
-          delta.yPos = moveEvent.clientY - e.clientY
-          delta.width = -delta.xPos
-          delta.height = -delta.yPos
-        }
-        if (handle.classList.contains('pf-top-right-corner')) {
-          delta.yPos = moveEvent.clientY - e.clientY
-          delta.width = moveEvent.clientX - initialRect.right
-          delta.height = -delta.yPos
-        }
-        if (handle.classList.contains('pf-bottom-left-corner')) {
-          delta.xPos = moveEvent.clientX - e.clientX
-          delta.width = -delta.xPos
-          delta.height = moveEvent.clientY - initialRect.bottom
-        }
-        if (handle.classList.contains('pf-bottom-right-corner')) {
-          delta.width = moveEvent.clientX - initialRect.right
-          delta.height = moveEvent.clientY - initialRect.bottom
-        }
-        const result = {
-          width: initialRect.width + delta.width,
-          height: initialRect.height + delta.height,
-          top: initialRect.top + delta.yPos,
-          left: initialRect.left + delta.xPos
-        }
-        console.log('here getting fired')
-        props.onWindowResize?.(result.width, result.height, result.top, result.left, _path)
+    (e: MouseEvent, handle: 'left' | 'right' | 'top' | 'bottom' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right', xDelta: number, yDelta) => {
+      const isSafeMove =
+        e.clientX > safetyPaddings.left &&
+        e.clientX < window.innerWidth - safetyPaddings.right &&
+        e.clientY > safetyPaddings.top &&
+        e.clientY < window.innerHeight - safetyPaddings.bottom
+      if (!isSafeMove) return
+      if (!rootRef.current) return
+      const initialRect = rootRef.current.getBoundingClientRect()
+      switch (handle) {
+        case 'left':
+          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height, initialRect.top, initialRect.left + xDelta, _path)
+          break
+        case 'right':
+          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height, initialRect.top, initialRect.left, _path)
+          break
+        case 'top':
+          props.onWindowResize?.(initialRect.width, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left, _path)
+          break
+        case 'bottom':
+          props.onWindowResize?.(initialRect.width, initialRect.height + yDelta, initialRect.top, initialRect.left, _path)
+          break
+        case 'top-left':
+          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left + xDelta, _path)
+          break
+        case 'top-right':
+          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height - yDelta, initialRect.top + yDelta, initialRect.left, _path)
+          break
+        case 'bottom-left':
+          props.onWindowResize?.(initialRect.width - xDelta, initialRect.height + yDelta, initialRect.top, initialRect.left + xDelta, _path)
+          break
+        case 'bottom-right':
+          props.onWindowResize?.(initialRect.width + xDelta, initialRect.height + yDelta, initialRect.top, initialRect.left, _path)
+          break
       }
-
-      const onMouseUp = () => {
-        window.removeEventListener('mousemove', onMouseMove)
-        window.removeEventListener('mouseup', onMouseUp)
-      }
-
-      window.addEventListener('mousemove', onMouseMove)
-      window.addEventListener('mouseup', onMouseUp)
     },
-    [props.onWindowResize]
+    []
   )
-
-  const windowMoveHandler = useCallback(
-    (e: MouseEvent) => {
-      const element = moveWindowRef.current
-      if (!element) return
-      const initialRect = element.getBoundingClientRect()
-      const initialX = e.clientX
-      const initialY = e.clientY
-
-      const onMouseMove = (moveEvent: MouseEvent) => {
-        const deltaX = moveEvent.clientX - initialX
-        const deltaY = moveEvent.clientY - initialY
-        const result = {
-          top: initialRect.top + deltaY,
-          left: initialRect.left + deltaX
-        }
-        props.onWindowResize?.(props.width || 0, props.height || 0, result.top, result.left, _path)
-      }
-
-      const onMouseUp = () => {
-        window.removeEventListener('mousemove', onMouseMove)
-        window.removeEventListener('mouseup', onMouseUp)
-      }
-
-      window.addEventListener('mousemove', onMouseMove)
-      window.addEventListener('mouseup', onMouseUp)
-    },
-    [props.onWindowResize,props.width,props.height]
-  )
-
-  useEffect(() => {
-    const element = resizeRef.current
-    const moveElement = moveWindowRef.current
-    element?.addEventListener('mousedown', resizeHandler)
-    moveElement?.addEventListener('mousedown', windowMoveHandler)
-    return () => {
-      element?.removeEventListener('mousedown', resizeHandler)
-      moveElement?.removeEventListener('mousedown', windowMoveHandler)
+  const leftEdge = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'left', xDelta, yDelta)
     }
-  }, [resizeHandler, windowMoveHandler])
+  })
+  const rightEdge = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'right', xDelta, yDelta)
+    }
+  })
+  const topEdge = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'top', xDelta, yDelta)
+    }
+  })
+  const bottomEdge = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'bottom', xDelta, yDelta)
+    }
+  })
+  const topLeftCorner = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'top-left', xDelta, yDelta)
+    }
+  })
+  const topRightCorner = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'top-right', xDelta, yDelta)
+    }
+  })
+  const bottomLeftCorner = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'bottom-left', xDelta, yDelta)
+    }
+  })
+  const bottomRightCorner = useDragDelta<HTMLDivElement>({
+    onDrag: (e, xDelta, yDelta) => {
+      resizeHandler(e, 'bottom-right', xDelta, yDelta)
+    }
+  })
+  const header = useDragDelta<HTMLDivElement>({
+    onDrag: moveFloatingWindowHandler
+  })
 
   const _direction = props.direction || Direction.Horizontal
   const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical'
 
+  //handle attached window size props while browser window resize
   useEffect(() => {
     if (props.floating) return
     const element = rootRef.current
@@ -147,7 +140,7 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
     props.onWindowResize?.(visible.width, visible.height, props.top || 0, props.left || 0, _path)
   }, [width, height, props.floating])
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-window-group' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group' } }, (validation) => {
     if (!validation) {
       throw new Error('ResizableWindow must be used within a Container or another ResizableWindow.')
     }
@@ -156,7 +149,7 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
   const floatingHeaderRender = () => {
     if (!props.floating) return null
     return (
-      <div ref={moveWindowRef} className="pf-floating-window_header">
+      <div ref={header} className="pf-floating-window_header">
         başlık
       </div>
     )
@@ -174,21 +167,22 @@ export const ResizableWindow: FC<ResizableWindowProps> = React.memo((props) => {
       ref={rootRef}
       className={clsx({
         'pf-resizable-window-host': true,
-        'pf-floating-window': props.floating
+        'pf-floating-window': props.floating,
+        'pf-attached': !props.floating
       })}
       style={style}
     >
       <div className="pf-resizable-window">
         {floatingHeaderRender()}
-        <div ref={resizeRef} className="pf-resizable-window_resize-handle">
-          <div className="pf-left-edge" />
-          <div className="pf-right-edge" />
-          <div className="pf-top-edge" />
-          <div className="pf-bottom-edge" />
-          <div className="pf-top-left-corner" />
-          <div className="pf-top-right-corner" />
-          <div className="pf-bottom-left-corner" />
-          <div className="pf-bottom-right-corner" />
+        <div className="pf-edges">
+          <div ref={leftEdge} className="pf-left-edge" />
+          <div ref={rightEdge} className="pf-right-edge" />
+          <div ref={topEdge} className="pf-top-edge" />
+          <div ref={bottomEdge} className="pf-bottom-edge" />
+          <div ref={topLeftCorner} className="pf-top-left-corner" />
+          <div ref={topRightCorner} className="pf-top-right-corner" />
+          <div ref={bottomLeftCorner} className="pf-bottom-left-corner" />
+          <div ref={bottomRightCorner} className="pf-bottom-right-corner" />
         </div>
 
         <div

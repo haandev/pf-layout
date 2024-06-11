@@ -32,7 +32,7 @@ export interface TabViewProps extends TabViewType {
 }
 const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props }) => {
   const rootRef = useRef<HTMLDivElement>(null)
-  useValidateElement(rootRef, { $parent: { $match: '.pf-window-group,.pf-resizable-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-resizable-window_content' } }, (validation) => {
     if (!validation) {
       throw new Error('TabView must be used within a Container.')
     }
@@ -50,7 +50,7 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, index, ...props })
     }
   }
 
-  const direction = useParentDirection(rootRef, '.pf-window-group')
+  const direction = useParentDirection(rootRef, '.pf-view-group')
   const style = {
     width: props.width,
     height: props.height,

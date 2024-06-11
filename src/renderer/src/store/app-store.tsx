@@ -81,7 +81,6 @@ export const useApp = create<AppStore>((set) => ({
       const window = evalPathArray(viewPath, windows) as Window
       const widthChange = window.width ? width / window.width : 1
       const heightChange = window.height ? height / window.height : 1
-      console.log(widthChange, heightChange)
       updateSizes(window, widthChange, heightChange)
 
       window.width = width

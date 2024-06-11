@@ -7,7 +7,7 @@ import { useSizeStyle } from '../hooks/use-size-style'
 import { OnSplitResizeHandler } from './TabView'
 import { SplitResizeHandle } from '../elements/SplitResizeHandle'
 
-export interface WindowGroupProps extends PropsWithChildren {
+export interface ViewGroupProps extends PropsWithChildren {
   direction: Direction
   width?: number
   height?: number
@@ -15,14 +15,14 @@ export interface WindowGroupProps extends PropsWithChildren {
   onResize?: OnSplitResizeHandler
 }
 
-export const WindowGroup: FC<WindowGroupProps> = React.memo((props) => {
+export const ViewGroup: FC<ViewGroupProps> = React.memo((props) => {
   const oppositeDirection = props.direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal
 
   const rootRef = useRef<HTMLDivElement>(null)
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-window-group,.pf-resizable-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-resizable-window_content' } }, (validation) => {
     if (!validation) {
-      throw new Error('WindowGroup must be used within a Container or another WindowGroup.')
+      throw new Error('ViewGroup must be used within a Container or another ViewGroup.')
     }
   })
 
@@ -37,7 +37,7 @@ export const WindowGroup: FC<WindowGroupProps> = React.memo((props) => {
     <div
       ref={rootRef}
       className={clsx({
-        'pf-window-group': true,
+        'pf-view-group': true,
         'pf-horizontal': props.direction === Direction.Horizontal,
         'pf-vertical': props.direction === Direction.Vertical
       })}

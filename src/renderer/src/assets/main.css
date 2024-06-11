@@ -342,9 +342,9 @@ body {
 .pf-resizable-window-host {
   display: flex;
   flex: 1;
-  overflow:hidden
+  overflow: hidden;
 }
-.pf-window-group,
+.pf-view-group,
 .pf-resizable-window_content {
   position: relative;
   display: flex;
@@ -515,7 +515,13 @@ div:not(:last-child) > .pf-split-resize-handle {
 }
 
 .pf-floating-window {
-  box-shadow: rgba(0, 0, 0, 0.07) 0px 1px 2px, rgba(0, 0, 0, 0.07) 0px 2px 4px, rgba(0, 0, 0, 0.07) 0px 4px 8px, rgba(0, 0, 0, 0.07) 0px 8px 16px, rgba(0, 0, 0, 0.07) 0px 16px 32px, rgba(0, 0, 0, 0.07) 0px 32px 64px;
+  box-shadow:
+    rgba(0, 0, 0, 0.07) 0px 1px 2px,
+    rgba(0, 0, 0, 0.07) 0px 2px 4px,
+    rgba(0, 0, 0, 0.07) 0px 4px 8px,
+    rgba(0, 0, 0, 0.07) 0px 8px 16px,
+    rgba(0, 0, 0, 0.07) 0px 16px 32px,
+    rgba(0, 0, 0, 0.07) 0px 32px 64px;
   position: absolute;
   z-index: 100;
   min-width: 300px;
@@ -558,17 +564,23 @@ div:not(:last-child) > .pf-split-resize-handle {
   flex-direction: column;
 }
 
-.pf-resizable-window_resize-handle {
-  display: none;
-}
-.pf-floating-window .pf-resizable-window_resize-handle {
+.pf-floating-window .pf-edges {
   display: block;
 }
-.pf-floating-window .pf-resizable-window_resize-handle > div {
+.pf-edges > div {
   position: absolute;
   z-index: 100;
 }
-
+.pf-attached > div > .pf-edges > .pf-right-edge,
+.pf-attached > div > .pf-edges > .pf-bottom-edge,
+.pf-attached > div > .pf-edges > .pf-bottom-right-corner,
+.pf-attached > div > .pf-edges > .pf-top-right-corner,
+.pf-attached > div > .pf-edges > .pf-bottom-left-corner,
+.pf-attached > div > .pf-edges > .pf-top-left-corner,
+.pf-attached > div > .pf-edges > .pf-left-edge,
+.pf-attached > div > .pf-edges > .pf-top-edge {
+  cursor: default;
+}
 .pf-left-edge {
   left: 0;
   top: 0;
