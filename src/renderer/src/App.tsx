@@ -200,7 +200,7 @@ function App(): JSX.Element {
                 <Window
                   id={id}
                   floating={win.floating}
-                  key={index}
+                  key={id}
                   width={win.width}
                   height={win.height}
                   top={win.top}

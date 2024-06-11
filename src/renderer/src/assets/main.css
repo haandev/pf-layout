@@ -586,6 +586,7 @@ div:not(:last-child) > .pf-split {
 .pf-floating-window .pf-resize {
   display: block;
   position: absolute;
+  z-index:100;
 }
 
 .pf-resize-l,

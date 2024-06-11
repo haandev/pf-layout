@@ -6,7 +6,6 @@ import { useWindowSize } from 'usehooks-ts'
 import { Direction } from '../types'
 import useDragDelta from '../hooks/use-drag-delta'
 import useEvent from 'react-use-event-hook'
-import { useDrag } from 'react-dnd'
 import IconXmark from '../icons/IconXmark'
 import IconMinus from '../icons/IconMinus'
 import IconPlus from '../icons/IconPlus'
@@ -120,9 +119,11 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   })
   const header = useDragDelta<HTMLDivElement>({
     onDrag: moveFloatingWindowHandler,
+    onDragStart: (e) => {
+      console.log(e)
+    },
     safetyMargins
   })
-
 
   const _direction = props.direction || Direction.Horizontal
   const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical'
@@ -148,26 +149,30 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
       <div ref={header} className="pf-floating-window_header">
         <div className="pf-window-controls no-drag">
           <div className="pf-icon pf-icon__close">
-            <IconXmark width={8} height={8}/>
+            <IconXmark width={8} height={8} />
           </div>
           <div className="pf-icon pf-icon__minimize">
-            <IconMinus  width={8} height={8}/>
+            <IconMinus width={8} height={8} />
           </div>
           <div className="pf-icon pf-icon__maximize">
-            <IconPlus  width={8} height={8}/>
+            <IconPlus width={8} height={8} />
           </div>
         </div>
         <span></span>
-
       </div>
     )
   }
 
-  const style: React.CSSProperties = {
+  const styleFloating: React.CSSProperties = {
     top: props.floating && props.top ? `${props.top}px` : undefined,
     left: props.floating && props.left ? `${props.left}px` : undefined,
     width: props.width ? `${props.width}px` : undefined,
     height: props.height ? `${props.height}px` : undefined
+  }
+
+  const styleAttached: React.CSSProperties = {
+    width: props.width ? `${props.width}px` : undefined,
+    minHeight: props.height ? `${props.height}px` : undefined
   }
 
   return (
@@ -178,7 +183,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
         'pf-floating-window': props.floating,
         'pf-attached': !props.floating
       })}
-      style={style}
+      style={props.floating ? styleFloating : styleAttached}
     >
       <div className="pf-window">
         {floatingHeaderRender()}

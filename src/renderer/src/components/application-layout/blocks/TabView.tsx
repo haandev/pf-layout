@@ -1,4 +1,3 @@
-
 import clsx from 'clsx'
 import { useDrag, useDrop } from 'react-dnd'
 
@@ -43,7 +42,6 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, id, ...props }) =>
   const tabsEntries = Object.entries(tabs)
   useEffect(() => {
     if (activeTabId === undefined && tabsEntries.length > 0) {
-      console.log({ tabsEntries, activeTabId, currentPath })
       props.onTabChange?.(tabsEntries[0][0], currentPath)
     }
   }, [])

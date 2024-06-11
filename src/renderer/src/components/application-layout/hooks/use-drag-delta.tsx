@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react'
 import useEvent from 'react-use-event-hook'
 import { useClickAnyWhere } from 'usehooks-ts'
 import { validateElement } from './use-validate-element'
+import { on } from 'events'
 
 export interface RefOrRefTakingFunction<T> {
   (ref: React.MutableRefObject<T>): void
@@ -28,7 +29,8 @@ function useDragDelta<T extends HTMLElement>(options: {
     y: 0,
     xDelta: 0,
     yDelta: 0,
-    dragging: false
+    dragging: false,
+    dragStartFired: false
   })
   useClickAnyWhere((e) => onMouseUp(e))
 
@@ -41,6 +43,7 @@ function useDragDelta<T extends HTMLElement>(options: {
     const isSafeX = (options.safetyMargins?.left || 0) < e.clientX && e.clientX < window.innerWidth - (options.safetyMargins?.right || 0)
     const isSafe = isSafeX && isSafeY
     if (!isSafe) return
+    !initials.current.dragStartFired && options.onDragStart?.(e)
 
     const xDelta = e.clientX - initials.current.x
     const yDelta = e.clientY - initials.current.y
@@ -54,7 +57,7 @@ function useDragDelta<T extends HTMLElement>(options: {
   const onMouseUp = useEvent((e) => {
     if (!initials.current.dragging) return
     initials.current.dragging = false
-    console.log('mousemove event removed')
+    initials.current.dragStartFired = false
     document.removeEventListener('mousemove', onMouseMove)
     document.removeEventListener('mouseup', onMouseUp)
     options.onDragEnd?.(e)
