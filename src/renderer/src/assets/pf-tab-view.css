@@ -1,0 +1,122 @@
+.pf-tab-view {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--dark-border-color);
+  min-height: 100px;
+  min-width: 100px;
+}
+
+.pf-tab-view__tabs,
+.pf-tab-view__tabs > div {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.pf-tab-view__tabs {
+  justify-content: space-between;
+  height: 32px;
+  color: var(--default-color);
+  background: var(--secondary-color);
+  border-bottom: 1px solid var(--dark-border-color);
+}
+
+.pf-tab-view__tabs > div {
+  height: 100%;
+  justify-content: flex-start;
+}
+
+.pf-tab-view__tabs > .pf-view-controls {
+  border-left: 15px solid var(--secondary-color);
+}
+
+.pf-tab-header-button,
+.pf-tab-view__tabs .pf-tab.pf-tab-view__tab-title,
+.pf-tab__close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 0;
+  color: var(--default-color);
+}
+
+.pf-tab-view__tabs .pf-tab.pf-tab-view__tab-title {
+  background: var(--secondary-color);
+  padding: 0 15px 0 10px;
+  height: 100%;
+  border-right: 1px solid var(--dark-border-color);
+  text-wrap: nowrap;
+}
+
+.pf-tab-view__tabs .pf-tab:hover {
+  background: var(--primary-color);
+}
+
+.pf-tab-view__tabs .pf-tab:active {
+  background: var(--dark-border-color);
+}
+
+.pf-tab-view__tabs .pf-tab.pf-tab-active {
+  background: var(--primary-color);
+}
+
+.pf-tab-header-button,
+.pf-tab__close {
+  padding: 2px;
+  background: 0 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.pf-tab-header-button:hover,
+.pf-tab__close:hover {
+  border: 1px solid var(--default-border-color);
+}
+
+.pf-tab-header-button {
+  margin-right: 2px;
+  width: 20px;
+  height: 20px;
+}
+
+.pf-tab-header-button:last-child {
+  margin-right: 5px;
+}
+
+.pf-tab-view__content,
+.pf-tab-view__content-inner {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-tab-view__content--hidden {
+  display: none;
+}
+
+.pf-tab-view__content--active {
+  display: flex;
+}
+
+.pf-tab-title-list {
+  flex: 1;
+  overflow-x: scroll;
+  overflow-y: hidden;
+}
+.pf-tab-view__add {
+  border-right: 1px solid var(--dark-border-color);
+  align-self: flex-end;
+  padding: 0 5px;
+  height: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.pf-tab-is-dragging {
+  opacity: 0.2;
+}

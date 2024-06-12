@@ -1,0 +1,26 @@
+
+
+div:last-child > .pf-split {
+  display: none;
+}
+
+div:not(:last-child) > .pf-split {
+  position: absolute;
+  z-index: 100;
+}
+
+.pf-horizontal > div > .pf-split {
+  top: 0;
+  right: -2px;
+  bottom: 0;
+  width: 5px;
+  cursor: col-resize;
+}
+
+.pf-vertical > div > .pf-split {
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 5px;
+  cursor: row-resize;
+}

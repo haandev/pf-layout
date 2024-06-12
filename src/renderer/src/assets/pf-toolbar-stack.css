@@ -1,0 +1,77 @@
+
+.pf-toolbar-stack {
+  background: var(--primary-color);
+}
+
+.pf-toolbar-stack-header {
+  background: var(--secondary-color);
+  border: 1px solid var(--dark-border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pf-toolbar-stack.pf-vertical {
+  border-left: 1px solid var(--dark-border-color);
+  border-right: 1px solid var(--dark-border-color);
+}
+
+.pf-toolbar-stack.pf-horizontal {
+  border-top: 1px solid var(--dark-border-color);
+  border-bottom: 1px solid var(--dark-border-color);
+}
+
+.pf-toolbar-stack.pf-vertical > .pf-toolbar-stack-header {
+  margin-top: -1px;
+  height: var(--toolbar-stack-header-size);
+  flex-direction: row;
+}
+
+.pf-toolbar-stack.pf-horizontal > .pf-toolbar-stack-header {
+  width: var(--toolbar-stack-header-size);
+  flex-direction: column;
+  margin-left: -1px;
+}
+
+.pf-toolbar-stack-header button {
+  background: 0 0;
+  border: 1px solid transparent;
+  outline: 0;
+  color: var(--default-color);
+  padding: 0;
+  margin: 0;
+}
+
+.pf-toolbar-stack-header button:hover {
+  background: var(--primary-color);
+  border: 1px solid var(--dark-border-color);
+}
+
+.pf-toolbar-stack.pf-vertical > .pf-toolbar-stack-header button {
+  height: 100%;
+  margin-top: -1px;
+  margin-bottom: -1px;
+}
+
+.pf-toolbar-stack.pf-horizontal > .pf-toolbar-stack-header button {
+  width: 100%;
+}
+
+.pf-stack-header-left {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.pf-toolbar-stack-group {
+  display: flex;
+}
+
+.pf-container.pf-vertical .pf-toolbar-stack-group {
+  flex-direction: column;
+}
+
+.pf-container.pf-horizontal .pf-toolbar-stack-group {
+  flex-direction: row;
+}
+

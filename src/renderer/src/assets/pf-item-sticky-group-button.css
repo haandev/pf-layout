@@ -1,0 +1,62 @@
+
+
+.pf-button-corner {
+  position: absolute;
+  right: 2px;
+  bottom: 2px;
+}
+
+.pf-item-sticky-button-dropdown {
+  background: var(--primary-color);
+  position: absolute;
+  z-index: 100;
+  width: fit-content;
+  left: 0;
+  top: -1px;
+  transform: translateX(25px);
+  border: 1px solid #000;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.pf-item-sticky-button-dropdown-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 6px 10px;
+}
+
+.pf-item-sticky-button-dropdown-item:hover {
+  background: var(--lighter-color);
+}
+
+.pf-item-sticky-button-dropdown-item.pf-active .pf-item-sticky-button-dropdown-item-label {
+  color: #6495ed;
+}
+
+.pf-item-sticky-button-dropdown-item-label {
+  margin-left: 10px;
+  text-wrap: nowrap;
+}
+
+.pf-item-sticky-button-dropdown-item-bullet {
+  width: 10px;
+  margin-right: 10px;
+  margin-top: -4px;
+  visibility: hidden;
+}
+
+.pf-item-sticky-button-dropdown-item.pf-active .pf-item-sticky-button-dropdown-item-bullet {
+  visibility: visible;
+}
+
+.pf-item-sticky-button-render {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

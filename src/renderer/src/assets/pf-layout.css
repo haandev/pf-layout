@@ -1,0 +1,50 @@
+#root,
+.pf-app {
+  height: 100%;
+  display: block;
+}
+
+.pf-app {
+  width: 100%;
+  background: antrasite;
+}
+
+.pf-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.pf-horizontal {
+  display: flex;
+  flex-direction: row;
+}
+
+.pf-aligned-containers {
+  width: 100%;
+  height: 100%;
+  display: flex;
+}
+
+.pf-window-host {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.pf-window_content,
+.pf-view-group {
+  position: relative;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 100px;
+  min-width: 100px;
+}
+
+.pf-window {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}

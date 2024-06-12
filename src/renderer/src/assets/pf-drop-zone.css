@@ -1,0 +1,15 @@
+.pf-drop-zone {
+  position: absolute;
+  box-sizing: border-box;
+  z-index: 100;
+  height: 100%;
+  width: 100%;
+  border: 3px solid transparent;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.pf-drop-zone.pf-highlight {
+  opacity: 1;
+  border: 3px solid #6495ed;
+}
