@@ -1,0 +1,75 @@
+
+.pf-resize {
+  display: block;
+  position: absolute;
+  z-index: 100;
+}
+.pf-resize-box {
+  position: absolute;
+  z-index: 100;
+  width: 0;
+  height: 0;
+}
+.pf-resize-l,
+.pf-resize-r {
+  top: 0;
+  bottom: 0;
+  width: 6px;
+  cursor: col-resize;
+}
+
+.pf-resize-l {
+  left: 0;
+}
+
+.pf-resize-r {
+  right: 0;
+}
+
+.pf-resize-t,
+.pf-resize-b {
+  left: 0;
+  right: 0;
+  height: 6px;
+  cursor: row-resize;
+}
+
+.pf-resize-t {
+  top: 0;
+}
+
+.pf-resize-b {
+  bottom: 0;
+}
+
+.pf-resize-tl {
+  top: -10px;
+  left: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nwse-resize;
+}
+
+.pf-resize-tr {
+  top: -10px;
+  right: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nesw-resize;
+}
+
+.pf-resize-bl {
+  bottom: -10px;
+  left: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nesw-resize;
+}
+
+.pf-resize-br {
+  bottom: -10px;
+  right: -10px;
+  width: 25px;
+  height: 25px;
+  cursor: nwse-resize;
+}

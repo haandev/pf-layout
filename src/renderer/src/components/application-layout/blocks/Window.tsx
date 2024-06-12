@@ -1,16 +1,16 @@
-import { FC, PropsWithChildren, useCallback, useEffect, useRef } from 'react'
-import { useValidateElement } from '../hooks/use-validate-element'
+import React, { FC, PropsWithChildren, useEffect, useRef } from 'react'
 import clsx from 'clsx'
-import React from 'react'
-import { useWindowSize } from 'usehooks-ts'
-import { Direction } from '../types'
-import useDragDelta from '../hooks/use-drag-delta'
 import useEvent from 'react-use-event-hook'
+import { useWindowSize } from 'usehooks-ts'
+import { useDrag } from 'react-dnd'
+
+import { Direction } from '../types'
+import { useValidateElement, useDragDelta } from '..'
 import IconXmark from '../icons/IconXmark'
 import IconMinus from '../icons/IconMinus'
 import IconPlus from '../icons/IconPlus'
-import { useDrag } from 'react-dnd'
-import useBoxResize from '../hooks/use-box-resize'
+import { UseBoxResizeHandler } from '../hooks/use-box-resize'
+import ResizeBox from '../elements/ResizeBox'
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, viewPath: string[]) => void
 export interface WindowProps extends PropsWithChildren {
@@ -26,40 +26,19 @@ export interface WindowProps extends PropsWithChildren {
 }
 
 export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
-  const currentPath = [...(path || []), id]
-  const { width = 0, height = 0 } = useWindowSize()
-  const safetyMargins = { top: 50, left: 50, right: 50, bottom: 50 }
+  //validate parent
   const rootRef = useRef<HTMLDivElement>(null)
-  const contentRef = useRef<HTMLDivElement>(null)
-
-  const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
-    const element = rootRef.current
-    if (!element) return
-    const initialRect = element.getBoundingClientRect()
-    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, currentPath)
-  })
-
-  const box = useBoxResize<HTMLDivElement>({
-    ref: rootRef,
-    handler: (_e, ...args) => props.onWindowResize?.(...args, currentPath),
-    safetyMargins
-  })
-  const header2 = useDragDelta<HTMLDivElement>({
-    onDrag: moveFloatingWindowHandler,
-    safetyMargins
-  })
-  const header = useRef<HTMLDivElement>(null)
-  const [, drag] = useDrag({
-    type: 'window',
-    item: {
-      id
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group' } }, (validation) => {
+    if (!validation) {
+      throw new Error('Window must be used within a Container or another Window.')
     }
   })
-  drag(header)
-  const _direction = props.direction || Direction.Horizontal
-  const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical'
+
+  //concat path
+  const currentPath = [...(path || []), id]
 
   //handle attached window size props while browser window resize
+  const { width = 0, height = 0 } = useWindowSize()
   useEffect(() => {
     if (props.floating) return
     const element = rootRef.current
@@ -68,11 +47,34 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     props.onWindowResize?.(visible.width, visible.height, props.top || 0, props.left || 0, currentPath)
   }, [width, height, props.floating])
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group' } }, (validation) => {
-    if (!validation) {
-      throw new Error('Window must be used within a Container or another Window.')
+  //handle resize floating window
+  const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
+    props.onWindowResize?.(...args, currentPath)
+  }
+
+  //handle floating window move
+  const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
+    const element = rootRef.current
+    if (!element) return
+    const initialRect = element.getBoundingClientRect()
+    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, currentPath)
+  })
+
+  const header = useDragDelta<HTMLDivElement>({
+    onDrag: moveFloatingWindowHandler,
+    safetyMargins: { top: 50, left: 50, right: 50, bottom: 50 }
+  })
+  const header2 = useRef<HTMLDivElement>(null)
+  const [, drag] = useDrag({
+    type: 'window',
+    item: {
+      id
     }
   })
+
+  //drag(header)
+  const _direction = props.direction || Direction.Horizontal
+  const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical'
 
   const floatingHeaderRender = () => {
     if (!props.floating) return null
@@ -119,17 +121,9 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
       <div className="pf-window">
         {floatingHeaderRender()}
 
-        <div ref={box.left} className="pf-resize pf-resize-l" />
-        <div ref={box.right} className="pf-resize pf-resize-r" />
-        <div ref={box.top} className="pf-resize pf-resize-t" />
-        <div ref={box.bottom} className="pf-resize pf-resize-b" />
-        <div ref={box.topLeft} className="pf-resize pf-resize-tl" />
-        <div ref={box.topRight} className="pf-resize pf-resize-tr" />
-        <div ref={box.bottomLeft} className="pf-resize pf-resize-bl" />
-        <div ref={box.bottomRight} className="pf-resize pf-resize-br" />
+        {props.floating && <ResizeBox ref={rootRef} handler={resizeBoxHandler} safetyMargins={{ top: 50, left: 50, right: 50, bottom: 50 }} />}
 
         <div
-          ref={contentRef}
           className={clsx({
             'pf-window_content': true,
             [directionClass]: true

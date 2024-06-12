@@ -1,7 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
-import useDragDelta from './use-drag-delta'
+import { useDragDelta } from '..'
 
-function useBoxResize<T extends HTMLElement>(options: {
+export type UseBoxResizeHandler = (e: MouseEvent, width: number, height: number, top: number, left: number) => void
+export function useBoxResize<T extends HTMLElement>(options: {
   ref: React.RefObject<HTMLElement>
   safetyMargins?: {
     top?: number
@@ -9,7 +10,7 @@ function useBoxResize<T extends HTMLElement>(options: {
     bottom?: number
     left?: number
   }
-  handler: (e: MouseEvent, width: number, height: number, top: number, left: number) => void
+  handler: UseBoxResizeHandler
 }) {
   const resizeHandler = useCallback(
     (
@@ -18,8 +19,10 @@ function useBoxResize<T extends HTMLElement>(options: {
       xDelta: number,
       yDelta: number
     ) => {
+      console.log('resizeHandler', handle, xDelta, yDelta)
       if (!options.ref.current) return
       const initialRect = options.ref.current.getBoundingClientRect()
+      console.log(initialRect)
       switch (handle) {
         case 'left':
           options.handler(e, initialRect.width - xDelta, initialRect.height, initialRect.top, initialRect.left + xDelta)
@@ -112,5 +115,3 @@ function useBoxResize<T extends HTMLElement>(options: {
     []
   )
 }
-
-export default useBoxResize
