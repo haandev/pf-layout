@@ -20,5 +20,8 @@ export { SplitResizeHandle } from './elements/SplitResizeHandle'
 //hooks
 export { useValidateElement, useValidateElements } from './hooks/use-validate-element'
 export { useParentDirection } from './hooks/use-parent-direction'
+export { useDragDelta } from './hooks/use-drag-delta'
+export { useBoxResize } from './hooks/use-box-resize'
+export { useLongPress } from './hooks/use-long-press'
 
 //context

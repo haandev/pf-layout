@@ -238,3 +238,5 @@ export interface LayoutDefinition {
   tile: Tile
   free: Stack[]
 }
+
+export type { UseBoxResizeHandler } from './hooks/use-box-resize'
