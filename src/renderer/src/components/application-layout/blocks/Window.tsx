@@ -23,6 +23,7 @@ export interface WindowProps extends PropsWithChildren {
   left?: number
   id: string
   path?: string[]
+  zIndex?: number
   minimized?: boolean
   maximized?: boolean
   onMaximize?: (viewPath: string[]) => void
@@ -66,6 +67,11 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, currentPath)
   })
 
+  //handle set zIndex to the top
+  const onClickAnywhere = useEvent(() => {
+    props.onWindowResize?.(props.width || 0, props.height || 0, props.top || 0, props.left || 0, currentPath)
+  })
+
   const header = useDragDelta<HTMLDivElement>({
     onDrag: moveFloatingWindowHandler,
     safetyMargins: { top: 50, left: 50, right: 50, bottom: 50 }
@@ -87,12 +93,21 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     return (
       <div ref={header} className="pf-window__header">
         <div className="pf-window__controls no-drag">
-          <button className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })} onClick={() => props.onClose?.(currentPath)}>
+          <button
+            className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })}
+            onClick={(e) => {
+              e.stopPropagation()
+              return props.onClose?.(currentPath)
+            }}
+          >
             <IconXmark width={8} height={8} />
           </button>
           <button
             className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': !props.onMinimize || props.minimized })}
-            onClick={() => props.onMinimize?.(currentPath)}
+            onClick={(e) => {
+              e.stopPropagation()
+              return props.onMinimize?.(currentPath)
+            }}
           >
             <IconMinus width={8} height={8} />
           </button>
@@ -100,14 +115,20 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
           {props.minimized || props.maximized ? (
             <button
               className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onRestore })}
-              onClick={() => props.onRestore?.(currentPath)}
+              onClick={(e) => {
+                e.stopPropagation()
+                return props.onRestore?.(currentPath)
+              }}
             >
               <IconPlus width={8} height={8} /> {/*TODO: add restore icon here */}
             </button>
           ) : (
             <button
               className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onMaximize })}
-              onClick={() => props.onMaximize?.(currentPath)}
+              onClick={(e) => {
+                e.stopPropagation()
+                return props.onMaximize?.(currentPath)
+              }}
             >
               <IconPlus width={8} height={8} />
             </button>
@@ -122,7 +143,8 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     top: props.floating && props.top ? `${props.top}px` : undefined,
     left: props.floating && props.left ? `${props.left}px` : undefined,
     width: props.width ? `${props.width}px` : undefined,
-    height: props.height ? `${props.height}px` : undefined
+    height: props.height ? `${props.height}px` : undefined,
+    zIndex: (props.zIndex || 0) + 300
   }
 
   const styleAttached: React.CSSProperties = {
@@ -132,6 +154,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
 
   return (
     <div
+      onClick={onClickAnywhere}
       ref={rootRef}
       className={clsx({
         'pf-window': true,

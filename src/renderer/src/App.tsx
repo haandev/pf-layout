@@ -208,6 +208,7 @@ function App(): JSX.Element {
                   top={win.top}
                   left={win.left}
                   onWindowResize={app.resizeWindow}
+                  zIndex={win.zIndex}
                   minimized={win.minimized}
                   maximized={win.maximized}
                   onMaximize={app.maximizeWindow}
@@ -222,12 +223,16 @@ function App(): JSX.Element {
                     onTabClose={app.closeTab}
                     onTabMove={app.moveTab}
                     onResize={app.resizeView}
-                    onAddNewClick={ !win.minimized ? ((path) => {
-                      const id = Math.random().toString(36).substring(7)
-                      const title = `Flow ${id}`
-                      const content = <FlowPageProvided id={id} />
-                      app.addTab(path, { title, content })
-                    }) : undefined}
+                    onAddNewClick={
+                      !win.minimized
+                        ? (path) => {
+                            const id = Math.random().toString(36).substring(7)
+                            const title = `Flow ${id}`
+                            const content = <FlowPageProvided id={id} />
+                            app.addTab(path, { title, content })
+                          }
+                        : undefined
+                    }
                     headerControls={
                       !win.minimized
                         ? [

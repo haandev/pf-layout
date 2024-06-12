@@ -31,6 +31,7 @@ export type Window = {
   minimized?: boolean
   maximized?: boolean
   previousPosition?: { top: number; left: number; width?: number; height?: number }
+  zIndex?: number
 }
 export interface AppStore {
   windows: Record<string, Window>
@@ -72,11 +73,12 @@ export const useApp = create<AppStore>((set) => ({
         }
       },
       floating: false
-    },
+    }
   },
   resizeWindow: (width, height, top, left, viewPath) => {
     set((state) => {
       const windows = { ...state.windows }
+      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1
       const window = evalPathArray(viewPath, windows) as Window
       const widthChange = window.width ? width / window.width : 1
       const heightChange = window.height ? height / window.height : 1
@@ -86,6 +88,7 @@ export const useApp = create<AppStore>((set) => ({
       window.height = height
       window.top = top
       window.left = left
+      window.zIndex = lastZIndex
 
       return { windows }
     })
@@ -93,6 +96,8 @@ export const useApp = create<AppStore>((set) => ({
   maximizeWindow: (viewPath) => {
     set((state) => {
       const windows = { ...state.windows }
+      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1
+
       const window = evalPathArray(viewPath, windows) as Window
       window.maximized = true
       window.previousPosition = {
@@ -109,6 +114,7 @@ export const useApp = create<AppStore>((set) => ({
       window.top = newTop
       window.left = newLeft
       window.width = newWidth
+      window.zIndex = lastZIndex
 
       return { windows }
     })
@@ -118,7 +124,7 @@ export const useApp = create<AppStore>((set) => ({
       const windows = { ...state.windows }
       const window = evalPathArray(viewPath, windows) as Window
       window.minimized = true
-      window.previousPosition = {
+      window.previousPosition = window.previousPosition || {
         top: window.top || 0,
         left: window.left || 0,
         width: window.width || 0,
@@ -126,7 +132,8 @@ export const useApp = create<AppStore>((set) => ({
       }
       window.width = 200
       window.height = 58
-      window.top = document.documentElement.clientHeight - 60 - 60 * minimizeOffsetRow
+      window.zIndex = 0
+      window.top = document.documentElement.clientHeight - 60 - 60 * (minimizeOffsetRow % 4)
       window.left = 10 + minimizeOffset * 210 + 105 * (minimizeOffsetRow % 2)
       minimizeOffset++
       if (window.left + 400 > document.documentElement.clientWidth) {
@@ -140,10 +147,11 @@ export const useApp = create<AppStore>((set) => ({
   restoreWindowSize: (viewPath) => {
     set((state) => {
       const windows = { ...state.windows }
+      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1
       const window = evalPathArray(viewPath, windows) as Window
       window.minimized = false
       window.maximized = false
-
+      window.zIndex = lastZIndex
       window.top = window.previousPosition?.top
       window.left = window.previousPosition?.left
       window.width = window.previousPosition?.width
