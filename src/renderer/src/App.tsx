@@ -196,7 +196,7 @@ function App(): JSX.Element {
               </ToolbarStack>
             </ToolbarStackGroup>
             {Object.entries(app.windows).length > 0 &&
-              Object.entries(app.windows).map(([id, win], index) => (
+              Object.entries(app.windows).map(([id, win]) => (
                 <Window
                   id={id}
                   floating={win.floating}

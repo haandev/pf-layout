@@ -6,7 +6,7 @@ type UseLongPressOptions = {
   delay?: number
 }
 
-const useLongPress = (
+export const useLongPress = (
   onLongPress: (event: MouseEvent | TouchEvent) => void,
   onClick: (event?: MouseEvent | TouchEvent) => void,
   { shouldPreventDefault = true, delay = 300 }: UseLongPressOptions = {}
@@ -62,5 +62,3 @@ const preventDefault = (event: any) => {
     event.preventDefault()
   }
 }
-
-export default useLongPress

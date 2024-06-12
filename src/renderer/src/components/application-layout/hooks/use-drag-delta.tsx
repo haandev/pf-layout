@@ -3,7 +3,7 @@ import useEvent from 'react-use-event-hook'
 import { useClickAnyWhere } from 'usehooks-ts'
 import { validateElement } from './use-validate-element'
 
-function useDragDelta<T extends HTMLElement>(options: {
+export function useDragDelta<T extends HTMLElement>(options: {
   ref?: React.RefObject<T>
   safetyMargins?: {
     top?: number
@@ -82,4 +82,3 @@ function useDragDelta<T extends HTMLElement>(options: {
   return ref
 }
 
-export default useDragDelta

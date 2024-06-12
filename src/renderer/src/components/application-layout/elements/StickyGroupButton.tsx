@@ -2,7 +2,7 @@ import React, { FC, useRef, useState } from 'react'
 import IconCornerRightBottom from '../icons/IconCornerRightBottom'
 
 import clsx from 'clsx'
-import useLongPress from '../hooks/use-long-press'
+import { useLongPress } from '..'
 import useEvent from 'react-use-event-hook'
 import { useOnClickOutside } from 'usehooks-ts'
 

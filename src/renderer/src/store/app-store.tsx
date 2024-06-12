@@ -283,7 +283,7 @@ const cleanUp = (windows: Record<string, Window>) => {
 }
 
 const updateSizes = (win: Window, widthChange: number, heightChange: number) => {
-  Object.entries(win.views).forEach(([id, window]) => {
+  Object.entries(win.views).forEach(([_id, window]) => {
     window.width = window.width ? window.width * widthChange : undefined
     window.height = window.height ? window.height * heightChange : undefined
     if ('views' in window) {
@@ -316,7 +316,7 @@ const splice = (
 
   if (generateRandomKeysIfMatching) {
     insertionEntries.forEach((insertionEntry) => {
-      if (entries.find(([k, v]) => k === insertionEntry[0])) {
+      if (entries.find(([k, _v]) => k === insertionEntry[0])) {
         const newKey = v4()
         insertionEntry[0] = newKey
       }

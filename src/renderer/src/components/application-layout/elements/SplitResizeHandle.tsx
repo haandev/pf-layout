@@ -1,7 +1,8 @@
-import { FC, useEffect, useRef, useCallback } from 'react'
-import { Direction } from '../types'
-import useDragDelta from '../hooks/use-drag-delta'
+import { FC } from 'react'
 import useEvent from 'react-use-event-hook'
+
+import { useDragDelta } from '../'
+import { Direction } from '../types'
 
 interface SplitResizeHandleProps {
   direction: Direction
@@ -11,7 +12,7 @@ interface SplitResizeHandleProps {
 export const SplitResizeHandle: FC<SplitResizeHandleProps> = ({ direction, onResize }) => {
   //const ref = useRef<HTMLDivElement>(null);
 
-  const onDrag = useEvent((e, xDelta, yDelta) => {
+  const onDrag = useEvent((_e, xDelta, yDelta) => {
     const element = ref.current
     if (!element || !element.parentElement || !element.parentElement.nextElementSibling) return
 
