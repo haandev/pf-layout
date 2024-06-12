@@ -1,5 +1,5 @@
-import { FC } from 'react'
+import { FC } from 'react';
 
 export const Button: FC = () => {
-  return <button className="pf-item-button">Button</button>
-}
+  return <button className="pf-item-button">Button</button>;
+};

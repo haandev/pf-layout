@@ -61,10 +61,9 @@ body {
   user-select: none;
   overflow: hidden;
 }
-#root{
+#root {
   height: 100vh;
   display: block;
-
 }
 
 .pf-item-icon-button,
@@ -112,4 +111,3 @@ body {
 .pf-hidden {
   display: none;
 }
-

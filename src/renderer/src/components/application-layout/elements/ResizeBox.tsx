@@ -1,30 +1,30 @@
-import { forwardRef, useRef } from 'react'
-import { useBoxResize } from '../'
-import { UseBoxResizeHandler } from '../types'
+import { forwardRef, useRef } from 'react';
+import { useBoxResize } from '../';
+import { UseBoxResizeHandler } from '../types';
 
 const ResizeBox = forwardRef(
   (
     props: {
-      handler: UseBoxResizeHandler
+      handler: UseBoxResizeHandler;
       safetyMargins?: {
-        top?: number
-        right?: number
-        bottom?: number
-        left?: number
-      }
+        top?: number;
+        right?: number;
+        bottom?: number;
+        left?: number;
+      };
     },
     forwardedRef
   ) => {
-    const ref = useRef<HTMLDivElement>(null)
-    const parent = ref.current?.parentElement || null
-    const parentRef = useRef<HTMLElement | null>(parent)
-    parentRef.current = parent
+    const ref = useRef<HTMLDivElement>(null);
+    const parent = ref.current?.parentElement || null;
+    const parentRef = useRef<HTMLElement | null>(parent);
+    parentRef.current = parent;
 
     const box = useBoxResize<HTMLDivElement>({
       ref: forwardedRef as any,
       handler: props.handler,
       safetyMargins: props.safetyMargins
-    })
+    });
     return (
       <>
         <div className="pf-resize-box" ref={ref} />
@@ -37,8 +37,8 @@ const ResizeBox = forwardRef(
         <div ref={box.bottomLeft} className="pf-resize pf-resize-bl" />
         <div ref={box.bottomRight} className="pf-resize pf-resize-br" />
       </>
-    )
+    );
   }
-)
+);
 
-export default ResizeBox
+export default ResizeBox;

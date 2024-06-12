@@ -9,70 +9,70 @@ import {
   ToolbarStack,
   Separator,
   Label
-} from './components/application-layout'
+} from './components/application-layout';
 
-import { Direction } from './components/application-layout/types'
+import { Direction } from './components/application-layout/types';
 
-import IconFolderOpen from './icons/IconFolderOpen'
-import IconHome from './icons/IconHome'
-import IconSave from './icons/IconSave'
-import InlineSvg from './components/application-layout/elements/InlineSvg'
+import IconFolderOpen from './icons/IconFolderOpen';
+import IconHome from './icons/IconHome';
+import IconSave from './icons/IconSave';
+import InlineSvg from './components/application-layout/elements/InlineSvg';
 
-import addAnchor from './icons/illustrator/add-anchor.svg'
-import anchorPointTool from './icons/illustrator/anchor-point-tool.svg'
-import arcTool from './icons/illustrator/arc-tool.svg'
-import areaTypeTool from './icons/illustrator/area-type-tool.svg'
-import curvatureTool from './icons/illustrator/curvature-tool.svg'
-import directSelectTool from './icons/illustrator/direct-select-tool.svg'
-import ellipsesTool from './icons/illustrator/ellipses-tool.svg'
-import gridTool from './icons/illustrator/grid-tool.svg'
-import groupSelectionTool from './icons/illustrator/group-selection-tool.svg'
-import lassoTool from './icons/illustrator/lasso-tool.svg'
-import lineSegmentTool from './icons/illustrator/line-segment-tool.svg'
-import magicWandTool from './icons/illustrator/magic-wand-tool.svg'
-import minusAnchor from './icons/illustrator/minus-anchor.svg'
-import penTool from './icons/illustrator/pen-tool.svg'
-import polarGridTool from './icons/illustrator/polar-grid-tool.svg'
-import rectangleTool from './icons/illustrator/rectangle-tool.svg'
-import roundedRectangleTool from './icons/illustrator/rounded-rectangle-tool.svg'
-import selectionTool from './icons/illustrator/selection-tool.svg'
-import spiralTool from './icons/illustrator/spiral-tool.svg'
-import touchTypeTool from './icons/illustrator/touch-type-tool.svg'
-import typeOnAPathTool from './icons/illustrator/type-on-a-path-tool.svg'
-import typeTool from './icons/illustrator/type-tool.svg'
-import verticalAreaTypeTool from './icons/illustrator/vertical-area-type-tool.svg'
-import verticalTypeOnAPathTool from './icons/illustrator/vertical-type-on-a-path-tool.svg'
-import verticalTypeTool from './icons/illustrator/vertical-type-tool.svg'
-import areaGraphTool from './icons/illustrator/area-graph-tool.svg'
-import columnGraphTool from './icons/illustrator/column-graph-tool.svg'
-import lineGraphTool from './icons/illustrator/line-graph-tool.svg'
-import pieGraphTool from './icons/illustrator/pie-graph-tool.svg'
-import scatterGraphTool from './icons/illustrator/scatter-graph-tool.svg'
-import barGraphTool from './icons/illustrator/bar-graph-tool.svg'
-import polygonTOol from './icons/illustrator/polygon-tool.svg'
-import starTool from './icons/illustrator/star-tool.svg'
-import flareTool from './icons/illustrator/flare-tool.svg'
+import addAnchor from './icons/illustrator/add-anchor.svg';
+import anchorPointTool from './icons/illustrator/anchor-point-tool.svg';
+import arcTool from './icons/illustrator/arc-tool.svg';
+import areaTypeTool from './icons/illustrator/area-type-tool.svg';
+import curvatureTool from './icons/illustrator/curvature-tool.svg';
+import directSelectTool from './icons/illustrator/direct-select-tool.svg';
+import ellipsesTool from './icons/illustrator/ellipses-tool.svg';
+import gridTool from './icons/illustrator/grid-tool.svg';
+import groupSelectionTool from './icons/illustrator/group-selection-tool.svg';
+import lassoTool from './icons/illustrator/lasso-tool.svg';
+import lineSegmentTool from './icons/illustrator/line-segment-tool.svg';
+import magicWandTool from './icons/illustrator/magic-wand-tool.svg';
+import minusAnchor from './icons/illustrator/minus-anchor.svg';
+import penTool from './icons/illustrator/pen-tool.svg';
+import polarGridTool from './icons/illustrator/polar-grid-tool.svg';
+import rectangleTool from './icons/illustrator/rectangle-tool.svg';
+import roundedRectangleTool from './icons/illustrator/rounded-rectangle-tool.svg';
+import selectionTool from './icons/illustrator/selection-tool.svg';
+import spiralTool from './icons/illustrator/spiral-tool.svg';
+import touchTypeTool from './icons/illustrator/touch-type-tool.svg';
+import typeOnAPathTool from './icons/illustrator/type-on-a-path-tool.svg';
+import typeTool from './icons/illustrator/type-tool.svg';
+import verticalAreaTypeTool from './icons/illustrator/vertical-area-type-tool.svg';
+import verticalTypeOnAPathTool from './icons/illustrator/vertical-type-on-a-path-tool.svg';
+import verticalTypeTool from './icons/illustrator/vertical-type-tool.svg';
+import areaGraphTool from './icons/illustrator/area-graph-tool.svg';
+import columnGraphTool from './icons/illustrator/column-graph-tool.svg';
+import lineGraphTool from './icons/illustrator/line-graph-tool.svg';
+import pieGraphTool from './icons/illustrator/pie-graph-tool.svg';
+import scatterGraphTool from './icons/illustrator/scatter-graph-tool.svg';
+import barGraphTool from './icons/illustrator/bar-graph-tool.svg';
+import polygonTOol from './icons/illustrator/polygon-tool.svg';
+import starTool from './icons/illustrator/star-tool.svg';
+import flareTool from './icons/illustrator/flare-tool.svg';
 
-import zoom from './icons/illustrator/zoom.svg'
-import zoomIn from './icons/illustrator/zoom-in.svg'
-import zoomOut from './icons/illustrator/zoom-out.svg'
+import zoom from './icons/illustrator/zoom.svg';
+import zoomIn from './icons/illustrator/zoom-in.svg';
+import zoomOut from './icons/illustrator/zoom-out.svg';
 
-import { DefaultToolbarStackHeader } from './components/layout-preset/DefaultToolbarStackHeader'
-import { ToolbarStackGroup } from './components/application-layout/blocks/ToolbarStackGroup'
+import { DefaultToolbarStackHeader } from './components/layout-preset/DefaultToolbarStackHeader';
+import { ToolbarStackGroup } from './components/application-layout/blocks/ToolbarStackGroup';
 
-import { useApp } from './store/app-store'
-import { AppToolsStickySvgButton } from './components/layout-preset/AppStickyButton'
-import { AppStickyGroupButton } from './components/layout-preset/AppStickyGroupButton'
-import IconSplitSquareHorizontal from './components/application-layout/icons/IconSplitSquareHorizontal'
-import IconSplitSquareVertical from './components/application-layout/icons/IconSplitSquareVertical'
-import { NestedTabView } from './components/application-layout/blocks/NestedTabView'
-import { FlowPageProvided } from './components/FlowPage'
-import { Window } from './components/application-layout/blocks/Window'
-import IconWindowStack from './components/application-layout/icons/IconWindowStack'
-import IconLayout from './components/application-layout/icons/IconLayout'
+import { useApp } from './stores/app-store';
+import { AppToolsStickySvgButton } from './components/layout-preset/AppStickyButton';
+import { AppStickyGroupButton } from './components/layout-preset/AppStickyGroupButton';
+import IconSplitSquareHorizontal from './components/application-layout/icons/IconSplitSquareHorizontal';
+import IconSplitSquareVertical from './components/application-layout/icons/IconSplitSquareVertical';
+import { NestedTabView } from './components/application-layout/blocks/NestedTabView';
+import { FlowPageProvided } from './components/FlowPage';
+import { Window } from './components/application-layout/blocks/Window';
+import IconWindowStack from './components/application-layout/icons/IconWindowStack';
+import IconLayout from './components/application-layout/icons/IconLayout';
 
 function App(): JSX.Element {
-  const app = useApp()
+  const app = useApp();
   return (
     <>
       <ApplicationLayout>
@@ -226,10 +226,10 @@ function App(): JSX.Element {
                     onAddNewClick={
                       !win.minimized
                         ? (path) => {
-                            const id = Math.random().toString(36).substring(7)
-                            const title = `Flow ${id}`
-                            const content = <FlowPageProvided id={id} />
-                            app.addTab(path, { title, content })
+                            const id = Math.random().toString(36).substring(7);
+                            const title = `Flow ${id}`;
+                            const content = <FlowPageProvided id={id} />;
+                            app.addTab(path, { title, content });
                           }
                         : undefined
                     }
@@ -267,11 +267,11 @@ function App(): JSX.Element {
         <FloatingContainers />
       </ApplicationLayout>
     </>
-  )
+  );
 }
 
-export default App
+export default App;
 
 const FloatingContainers: any = () => {
-  return null
-}
+  return null;
+};

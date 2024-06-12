@@ -1,9 +1,9 @@
-import React from 'react'
-import { FC } from 'react'
+import React from 'react';
+import { FC } from 'react';
 
 export interface IconButtonProps {
-  children: React.ReactElement
-  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void
+  children: React.ReactElement;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => void;
 }
 
 export const IconButton: FC<IconButtonProps> = (props) => {
@@ -13,11 +13,11 @@ export const IconButton: FC<IconButtonProps> = (props) => {
           width: 16,
           height: 16
         })
-      : props.children
+      : props.children;
 
   return (
     <button className="pf-item-icon-button" onClick={props.onClick}>
       {children}
     </button>
-  )
-}
+  );
+};

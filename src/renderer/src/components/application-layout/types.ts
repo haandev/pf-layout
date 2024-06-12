@@ -1,4 +1,4 @@
-import { FC } from 'react'
+import { FC } from 'react';
 
 export enum Direction {
   Horizontal = 'horizontal',
@@ -30,213 +30,213 @@ export type Tile = {
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  type: NodeType.Tile
-  direction: Direction
-  children: Container[]
-  lockItems?: Lock
-}
+  isVisible?: boolean | (() => boolean);
+  type: NodeType.Tile;
+  direction: Direction;
+  children: Container[];
+  lockItems?: Lock;
+};
 
 export type ContainerDefaults = {
   /**
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  name: string
-  direction: Direction
-  disableHorizontalParent?: boolean
-  disableVerticalParent?: boolean
-  grow?: boolean
-  children: Stack[]
-  lockItems?: Lock
-}
+  isVisible?: boolean | (() => boolean);
+  name: string;
+  direction: Direction;
+  disableHorizontalParent?: boolean;
+  disableVerticalParent?: boolean;
+  grow?: boolean;
+  children: Stack[];
+  lockItems?: Lock;
+};
 export type ContainerHorizontal = ContainerDefaults & {
-  direction: Direction.Horizontal
-  children: StackOnlyHorizontalParentsAllowed[]
-}
+  direction: Direction.Horizontal;
+  children: StackOnlyHorizontalParentsAllowed[];
+};
 export type ContainerVertical = ContainerDefaults & {
-  direction: Direction.Vertical
-  children: StackOnlyVerticalParentsAllowed[]
-}
-export type Container = ContainerHorizontal | ContainerVertical
+  direction: Direction.Vertical;
+  children: StackOnlyVerticalParentsAllowed[];
+};
+export type Container = ContainerHorizontal | ContainerVertical;
 
 export type StackDefaults = {
   /**
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  name?: string
-  type: StackType
-  direction: Direction
-  disableHorizontalParent?: boolean
-  disableVerticalParent?: boolean
-  lockItems?: Lock
-  lockSelf?: Lock
-  disableFree?: boolean
-  disableTile?: boolean
-  grow?: boolean
-  additionalProps?: Record<string, any>
-}
+  isVisible?: boolean | (() => boolean);
+  name?: string;
+  type: StackType;
+  direction: Direction;
+  disableHorizontalParent?: boolean;
+  disableVerticalParent?: boolean;
+  lockItems?: Lock;
+  lockSelf?: Lock;
+  disableFree?: boolean;
+  disableTile?: boolean;
+  grow?: boolean;
+  additionalProps?: Record<string, any>;
+};
 export type ToolbarStackHeaderButton = {
-  isVisible?: boolean | ((stack: ToolbarStack) => boolean)
-  icon: FC<React.SVGProps<SVGSVGElement>>
-  onClick: (stack: ToolbarStack, sender: ToolbarStackHeaderButton) => void
-}
+  isVisible?: boolean | ((stack: ToolbarStack) => boolean);
+  icon: FC<React.SVGProps<SVGSVGElement>>;
+  onClick: (stack: ToolbarStack, sender: ToolbarStackHeaderButton) => void;
+};
 export type ToolbarStackDefaults = StackDefaults & {
-  type: StackType.Toolbar
-  children: Toolbar[]
+  type: StackType.Toolbar;
+  children: Toolbar[];
   header?: {
-    isVisible?: boolean | (() => boolean)
-    leftButtons?: ToolbarStackHeaderButton[]
-    rightButtons?: ToolbarStackHeaderButton[]
-  }
-}
+    isVisible?: boolean | (() => boolean);
+    leftButtons?: ToolbarStackHeaderButton[];
+    rightButtons?: ToolbarStackHeaderButton[];
+  };
+};
 export type ToolbarStackHorizontal = ToolbarStackDefaults & {
-  direction: Direction.Horizontal
-  children: ToolbarOnlyHorizontalParentsAllowed[]
-}
+  direction: Direction.Horizontal;
+  children: ToolbarOnlyHorizontalParentsAllowed[];
+};
 export type ToolbarStackVertical = ToolbarStackDefaults & {
-  direction: Direction.Vertical
-  children: ToolbarOnlyVerticalParentsAllowed[]
-}
-export type ToolbarStack = ToolbarStackHorizontal | ToolbarStackVertical
+  direction: Direction.Vertical;
+  children: ToolbarOnlyVerticalParentsAllowed[];
+};
+export type ToolbarStack = ToolbarStackHorizontal | ToolbarStackVertical;
 
 export type ToolbarDefaults = {
   /**
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  name: string
-  lockItems?: Lock
-  lockSelf?: Lock
-  disableHorizontalParent?: boolean
-  disableVerticalParent?: boolean
-  direction: Direction
-  items: ToolbarItem[]
-  rows?: number
-  columns?: number
-}
+  isVisible?: boolean | (() => boolean);
+  name: string;
+  lockItems?: Lock;
+  lockSelf?: Lock;
+  disableHorizontalParent?: boolean;
+  disableVerticalParent?: boolean;
+  direction: Direction;
+  items: ToolbarItem[];
+  rows?: number;
+  columns?: number;
+};
 export type ToolbarMultiRow = ToolbarDefaults & {
-  rows: number
-  columns?: never
-  direction: Direction.Horizontal
-}
+  rows: number;
+  columns?: never;
+  direction: Direction.Horizontal;
+};
 export type ToolbarMultiColumn = ToolbarDefaults & {
-  columns: number
-  rows?: never
-  direction: Direction.Vertical
-}
+  columns: number;
+  rows?: never;
+  direction: Direction.Vertical;
+};
 
-export type ToolbarEssential = ToolbarMultiRow | Toolbar
+export type ToolbarEssential = ToolbarMultiRow | Toolbar;
 export type ToolbarHorizontal = ToolbarDefaults & {
-  items: ToolbarItemOnlyHorizontalParentsAllowed[]
-  direction: Direction.Horizontal
-}
+  items: ToolbarItemOnlyHorizontalParentsAllowed[];
+  direction: Direction.Horizontal;
+};
 export type ToolbarVertical = ToolbarDefaults & {
-  items: ToolbarItemOnlyVerticalParentsAllowed[]
-  direction: Direction.Vertical
-}
+  items: ToolbarItemOnlyVerticalParentsAllowed[];
+  direction: Direction.Vertical;
+};
 
-export type Toolbar = ToolbarHorizontal | ToolbarVertical
+export type Toolbar = ToolbarHorizontal | ToolbarVertical;
 
 export type ToolbarOnlyHorizontalParentsAllowed = Toolbar & {
-  disableHorizontalParent?: false
-}
+  disableHorizontalParent?: false;
+};
 export type ToolbarOnlyVerticalParentsAllowed = Toolbar & {
-  disableVerticalParent?: false
-}
+  disableVerticalParent?: false;
+};
 
 export type ToolbarItemDefaults = {
   /**
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  alignToEnd?: boolean
-  disableHorizontalParent?: boolean
-  disableVerticalParent?: boolean
-  lockSelf?: Lock
-  onClick?: () => void
-}
+  isVisible?: boolean | (() => boolean);
+  alignToEnd?: boolean;
+  disableHorizontalParent?: boolean;
+  disableVerticalParent?: boolean;
+  lockSelf?: Lock;
+  onClick?: () => void;
+};
 
 export type ToolbarButtonItem = ToolbarItemDefaults & {
-  type: ToolbarItemType.Button
-  label: string
-}
+  type: ToolbarItemType.Button;
+  label: string;
+};
 export type ToolbarSeparatorItem = ToolbarItemDefaults & {
-  type: ToolbarItemType.Separator
-}
+  type: ToolbarItemType.Separator;
+};
 export type ToolbarTextItem = ToolbarItemDefaults & {
-  type: ToolbarItemType.Text
-  text: string
-}
+  type: ToolbarItemType.Text;
+  text: string;
+};
 export type ToolbarIconButtonItem = ToolbarItemDefaults & {
-  type: ToolbarItemType.IconButton
-  icon: FC<React.SVGProps<SVGSVGElement>>
-  label: string
-}
+  type: ToolbarItemType.IconButton;
+  icon: FC<React.SVGProps<SVGSVGElement>>;
+  label: string;
+};
 export type ToolbarStickyIconButtonItem = ToolbarItemDefaults & {
-  type: ToolbarItemType.StickyIconButton
-  groupTag: string
-  buttonTag: string
-  visibleOne?: number
+  type: ToolbarItemType.StickyIconButton;
+  groupTag: string;
+  buttonTag: string;
+  visibleOne?: number;
   items: {
-    icon: FC<React.SVGProps<SVGSVGElement>>
-    label: string
-    name: string
-  }[]
-}
+    icon: FC<React.SVGProps<SVGSVGElement>>;
+    label: string;
+    name: string;
+  }[];
+};
 
-export type ToolbarItem = ToolbarButtonItem | ToolbarSeparatorItem | ToolbarTextItem | ToolbarIconButtonItem | ToolbarStickyIconButtonItem
+export type ToolbarItem = ToolbarButtonItem | ToolbarSeparatorItem | ToolbarTextItem | ToolbarIconButtonItem | ToolbarStickyIconButtonItem;
 
 export type ToolbarItemOnlyHorizontalParentsAllowed = ToolbarItem & {
-  disableHorizontalParent?: false
-}
+  disableHorizontalParent?: false;
+};
 export type ToolbarItemOnlyVerticalParentsAllowed =
   | (ToolbarItem & {
-      disableVerticalParent?: false
+      disableVerticalParent?: false;
     })
   | ToolbarSeparatorItem
-  | ToolbarIconButtonItem
+  | ToolbarIconButtonItem;
 
 export type WindowStackDefaults = StackDefaults & {
-  type: StackType.Window
-}
+  type: StackType.Window;
+};
 export type WindowStackHorizontal = WindowStackDefaults & {
-  direction: Direction.Horizontal
-  children: ToolbarOnlyHorizontalParentsAllowed[]
-}
+  direction: Direction.Horizontal;
+  children: ToolbarOnlyHorizontalParentsAllowed[];
+};
 
 export type WindowStackVertical = WindowStackDefaults & {
-  direction: Direction.Vertical
-  children: Window[]
-}
-export type WindowStack = WindowStackHorizontal | WindowStackVertical
+  direction: Direction.Vertical;
+  children: Window[];
+};
+export type WindowStack = WindowStackHorizontal | WindowStackVertical;
 export type WindowItem = {
   /**
    * If not provided, item is always visible
    * @returns {boolean}
    */
-  isVisible?: boolean | (() => boolean)
-  name: string
-  title: string
-  element: React.ReactNode
-}
-export type MainContent = Tile | WindowStack
-export type Stack = ToolbarStack | MainContent
+  isVisible?: boolean | (() => boolean);
+  name: string;
+  title: string;
+  element: React.ReactNode;
+};
+export type MainContent = Tile | WindowStack;
+export type Stack = ToolbarStack | MainContent;
 
 export type StackOnlyHorizontalParentsAllowed = Stack & {
-  disableHorizontalParent?: false
-}
+  disableHorizontalParent?: false;
+};
 export type StackOnlyVerticalParentsAllowed = Stack & {
-  disableVerticalParent?: false
-}
+  disableVerticalParent?: false;
+};
 export interface LayoutDefinition {
-  tile: Tile
-  free: Stack[]
+  tile: Tile;
+  free: Stack[];
 }
 
-export type { UseBoxResizeHandler } from './hooks/use-box-resize'
+export type { UseBoxResizeHandler } from './hooks/use-box-resize';

@@ -1,6 +1,6 @@
-import IconDragVertical from '../icons/IconDragVertical'
-import clsx from 'clsx'
-import { FC } from 'react'
+import IconDragVertical from '../icons/IconDragVertical';
+import clsx from 'clsx';
+import { FC } from 'react';
 
 export const DragHandle: FC = () => {
   return (
@@ -11,5 +11,5 @@ export const DragHandle: FC = () => {
     >
       <IconDragVertical height={20} width={20} />
     </div>
-  )
-}
+  );
+};

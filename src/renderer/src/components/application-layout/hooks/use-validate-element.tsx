@@ -1,41 +1,41 @@
-import clsx from 'clsx'
-import { useEffect } from 'react'
+import clsx from 'clsx';
+import { useEffect } from 'react';
 
 export const getParent = (ref: React.RefObject<Element> | null) => {
-  let parent: null | Element = null
-  if (!ref) return null
+  let parent: null | Element = null;
+  if (!ref) return null;
   if (ref.current) {
-    parent = ref.current.parentElement
+    parent = ref.current.parentElement;
   }
 
-  return parent
-}
+  return parent;
+};
 
 type Quantity = {
-  maxItems?: number
-  minItems?: number
-  items?: number
-}
+  maxItems?: number;
+  minItems?: number;
+  items?: number;
+};
 type ElementValidationRule = {
-  className?: string | string[]
-  id?: string
-  name?: string
-  dataAttributes?: { [key: string]: string }
-  $match?: string
-  $closest?: string
-  $querySelector?: string
+  className?: string | string[];
+  id?: string;
+  name?: string;
+  dataAttributes?: { [key: string]: string };
+  $match?: string;
+  $closest?: string;
+  $querySelector?: string;
   $querySelectorAll?: {
-    query: string
-  } & Quantity
+    query: string;
+  } & Quantity;
 
-  $children?: ElementValidationRule & Quantity
-  $descendants?: ElementValidationRule & Quantity
+  $children?: ElementValidationRule & Quantity;
+  $descendants?: ElementValidationRule & Quantity;
 
-  $parent?: ElementValidationRule
-  $ancestors?: ElementValidationRule & Quantity
+  $parent?: ElementValidationRule;
+  $ancestors?: ElementValidationRule & Quantity;
 
-  [key: string]: any
-}
+  [key: string]: any;
+};
 
 /**
  * Validate an element based on the rules provided
@@ -46,145 +46,145 @@ type ElementValidationRule = {
  * Boolean if element is valid or invalid, null if no validation is performed (element is null or undefined)
  */
 export const validateElement = (element: Element | null | undefined, rules: ElementValidationRule, maxRecursion = 50) => {
-  if (maxRecursion <= 0) return null
-  maxRecursion--
-  if (!element) return -1
+  if (maxRecursion <= 0) return null;
+  maxRecursion--;
+  if (!element) return -1;
   const { className, id, name, dataAttributes, $match, $closest, $querySelector, $querySelectorAll, $children, $parent, $ancestors, $descendants, ...rest } =
-    rules
-  let result = true
+    rules;
+  let result = true;
 
   // match validation
   if ($match && !element.matches($match)) {
-    return false
+    return false;
   }
 
   //className validation
   if (className) {
-    const classNames = clsx(className).split(' ').filter(Boolean)
+    const classNames = clsx(className).split(' ').filter(Boolean);
     if (parent) {
-      result = result && classNames.every((c) => element.classList.contains(c))
-      if (!result) return false
+      result = result && classNames.every((c) => element.classList.contains(c));
+      if (!result) return false;
     }
   }
 
   // ID validation
   if (id && element.id !== id) {
-    return false
+    return false;
   }
 
   // Name attribute validation
   if (name && element.getAttribute('name') !== name) {
-    return false
+    return false;
   }
 
   // Data attribute validation using dataset
   if (dataAttributes) {
-    const _element = element as HTMLElement
-    if (!_element.dataset) return false
+    const _element = element as HTMLElement;
+    if (!_element.dataset) return false;
     for (const key in rules.dataAttributes)
       if (_element.dataset[key] !== rules.dataAttributes[key]) {
-        return false
+        return false;
       }
   }
 
   // Closest validation
   if ($closest && !element.closest($closest)) {
-    return false
+    return false;
   }
 
   // querySelector validation
   if ($querySelector && !element.querySelector($querySelector)) {
-    return false
+    return false;
   }
 
   // querySelectorAll validation
   if ($querySelectorAll) {
-    const { query, maxItems, minItems, items } = $querySelectorAll
-    const elements = element.querySelectorAll(query)
+    const { query, maxItems, minItems, items } = $querySelectorAll;
+    const elements = element.querySelectorAll(query);
     if (maxItems && elements.length > maxItems) {
-      return false
+      return false;
     }
     if (minItems && elements.length < minItems) {
-      return false
+      return false;
     }
     if (items && elements.length !== items) {
-      return false
+      return false;
     }
   }
   // children
   if ($children) {
-    const children = Array.from(element.children)
-    const _result = validateElements(children, $children, maxRecursion)
-    if (_result === false) return false
+    const children = Array.from(element.children);
+    const _result = validateElements(children, $children, maxRecursion);
+    if (_result === false) return false;
     if ($children.maxItems && (_result || 0) > $children.maxItems) {
-      return false
+      return false;
     }
     if ($children.minItems && (_result || 0) < $children.minItems) {
-      return false
+      return false;
     }
     if ($children.items && (_result || 0) !== $children.items) {
-      return false
+      return false;
     }
   }
   // parent validation
   if ($parent) {
-    let result: boolean | null = false
-    result = validateElement(element.parentElement, $parent, maxRecursion)
-    if (!result === true) return result
+    let result: boolean | null = false;
+    result = validateElement(element.parentElement, $parent, maxRecursion);
+    if (!result === true) return result;
   }
 
   // ancestors validation
   if ($ancestors) {
-    const { maxItems, minItems, items, ...ancestorRule } = $ancestors
-    let matchingAncestorCount = 0
-    let parent = element.parentElement
+    const { maxItems, minItems, items, ...ancestorRule } = $ancestors;
+    let matchingAncestorCount = 0;
+    let parent = element.parentElement;
     while (parent && matchingAncestorCount <= (minItems || 1)) {
-      result = validateElement(parent, ancestorRule, maxRecursion)
-      if (result) matchingAncestorCount++
-      parent = parent.parentElement
+      result = validateElement(parent, ancestorRule, maxRecursion);
+      if (result) matchingAncestorCount++;
+      parent = parent.parentElement;
       if (maxItems && matchingAncestorCount > maxItems) {
-        return false
+        return false;
       }
       if (matchingAncestorCount >= (minItems || 1)) {
-        break
+        break;
       }
     }
     if (matchingAncestorCount < (minItems || 1)) {
-      return false
+      return false;
     }
     if (items && matchingAncestorCount !== items) {
-      return false
+      return false;
     }
   }
 
   //descendants validation
   if ($descendants) {
-    const { maxItems, minItems, items, ...descendantRule } = $descendants
-    let matchingDescendantCount = 0
-    const descendants = element.querySelectorAll('*')
+    const { maxItems, minItems, items, ...descendantRule } = $descendants;
+    let matchingDescendantCount = 0;
+    const descendants = element.querySelectorAll('*');
     for (const descendant of descendants) {
-      result = validateElement(descendant, descendantRule, maxRecursion)
-      if (result) matchingDescendantCount++
+      result = validateElement(descendant, descendantRule, maxRecursion);
+      if (result) matchingDescendantCount++;
       if (maxItems && matchingDescendantCount > maxItems) {
-        return false
+        return false;
       }
     }
     if (matchingDescendantCount < (minItems || 1)) {
-      return false
+      return false;
     }
     if (items && matchingDescendantCount !== items) {
-      return false
+      return false;
     }
   }
 
   //others
   for (const key in rest) {
     if (element.getAttribute(key) !== rest[key]) {
-      return false
+      return false;
     }
   }
-  return result
-}
+  return result;
+};
 
 /**
  * Validate an array of elements based on the rules provided
@@ -197,27 +197,27 @@ export const validateElement = (element: Element | null | undefined, rules: Elem
  * Null if no validation is performed (elements is null or undefined)
  */
 export const validateElements = (elements: Element[] | Element | null | undefined, rules: ElementValidationRule & Quantity, maxRecursion = 50) => {
-  if (maxRecursion <= 0) return -1
-  maxRecursion--
+  if (maxRecursion <= 0) return -1;
+  maxRecursion--;
 
-  let result = 0
-  let nothingTested = true
-  elements = Array.isArray(elements) ? elements : ([elements] as Element[])
+  let result = 0;
+  let nothingTested = true;
+  elements = Array.isArray(elements) ? elements : ([elements] as Element[]);
 
-  if (rules.maxItems && elements.length > rules.maxItems) return false
-  if (rules.minItems && elements.length < rules.minItems) return false
-  if (rules.items && elements.length !== rules.items) return false
+  if (rules.maxItems && elements.length > rules.maxItems) return false;
+  if (rules.minItems && elements.length < rules.minItems) return false;
+  if (rules.items && elements.length !== rules.items) return false;
 
   for (const element of elements) {
-    if (element) nothingTested = false
-    const _result = validateElement(element, rules, maxRecursion)
+    if (element) nothingTested = false;
+    const _result = validateElement(element, rules, maxRecursion);
     if (_result === true) {
-      result++
+      result++;
     }
   }
-  if (nothingTested) return -1
-  return result
-}
+  if (nothingTested) return -1;
+  return result;
+};
 
 export const useValidateElement = (
   ref: React.RefObject<Element>,
@@ -227,11 +227,11 @@ export const useValidateElement = (
 ) => {
   useEffect(() => {
     if (ref.current) {
-      const validation = validateElement(ref.current, rules, maxRecursion)
-      callback(validation)
+      const validation = validateElement(ref.current, rules, maxRecursion);
+      callback(validation);
     }
-  }, [ref.current])
-}
+  }, [ref.current]);
+};
 
 export const useValidateElements = (
   refs: React.RefObject<Element>[],
@@ -239,11 +239,11 @@ export const useValidateElements = (
   callback: (validation: number | -1 | false) => void,
   maxRecursion = 50
 ) => {
-  const elements = refs.map((r) => r.current).filter(Boolean) as Element[]
+  const elements = refs.map((r) => r.current).filter(Boolean) as Element[];
 
   useEffect(() => {
-    elements.length === 0 && callback(-1)
-    const validation = validateElements(elements, rules, maxRecursion)
-    callback(validation)
-  }, [...elements])
-}
+    elements.length === 0 && callback(-1);
+    const validation = validateElements(elements, rules, maxRecursion);
+    callback(validation);
+  }, [...elements]);
+};

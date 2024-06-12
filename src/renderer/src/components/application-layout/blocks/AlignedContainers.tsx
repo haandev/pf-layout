@@ -1,23 +1,23 @@
-import React, { FC, PropsWithChildren, useRef } from 'react'
-import { useValidateElement } from '../hooks/use-validate-element'
-import clsx from 'clsx'
-import { Direction } from '../types'
+import React, { FC, PropsWithChildren, useRef } from 'react';
+import { useValidateElement } from '../hooks/use-validate-element';
+import clsx from 'clsx';
+import { Direction } from '../types';
 
 export interface AlignedContainersProps extends PropsWithChildren {
-  className?: string
-  style?: React.CSSProperties
-  direction?: Direction
+  className?: string;
+  style?: React.CSSProperties;
+  direction?: Direction;
 }
 
 export const AlignedContainers: FC<AlignedContainersProps> = (props) => {
-  const _direction = props.direction || Direction.Vertical
-  const rootRef = useRef<HTMLDivElement>(null)
+  const _direction = props.direction || Direction.Vertical;
+  const rootRef = useRef<HTMLDivElement>(null);
 
   useValidateElement(rootRef, { $parent: { $match: '.pf-app' } }, (validation) => {
     if (!validation) {
-      throw new Error('AlignedContainers must be used within a ApplicationLayout.')
+      throw new Error('AlignedContainers must be used within a ApplicationLayout.');
     }
-  })
+  });
 
   return (
     <div
@@ -32,5 +32,5 @@ export const AlignedContainers: FC<AlignedContainersProps> = (props) => {
     >
       {props.children}
     </div>
-  )
-}
+  );
+};

@@ -1,5 +1,5 @@
 // icon:chevrons-down | Tabler Icons https://tablericons.com/ | Csaba Kissi
-import * as React from 'react'
+import * as React from 'react';
 
 function IconChevronsDown(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -7,7 +7,7 @@ function IconChevronsDown(props: React.SVGProps<SVGSVGElement>) {
       <path stroke="none" d="M0 0h24v24H0z" />
       <path d="M7 7l5 5 5-5M7 13l5 5 5-5" />
     </svg>
-  )
+  );
 }
 
-export default IconChevronsDown
+export default IconChevronsDown;

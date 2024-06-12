@@ -19,7 +19,7 @@
 .pf-window.pf-floating.pf-minimized {
   min-width: 0;
   min-height: 0;
-  height:58;
+  height: 58;
   max-width: 400px;
 }
 
@@ -66,7 +66,7 @@
   pointer-events: none;
 }
 .pf-window__controls .pf-icon__disabled {
-  background: var(--primary-color)!important;
+  background: var(--primary-color) !important;
 }
 .pf-window__controls .pf-icon__close {
   background: var(--os-close);

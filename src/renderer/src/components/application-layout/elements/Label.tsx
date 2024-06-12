@@ -1,10 +1,10 @@
-import clsx from 'clsx'
-import { FC } from 'react'
+import clsx from 'clsx';
+import { FC } from 'react';
 
 export interface LabelProps {
-  children: string
-  style?: React.CSSProperties
-  className?: string
+  children: string;
+  style?: React.CSSProperties;
+  className?: string;
 }
 export const Label: FC<LabelProps> = (props) => {
   return (
@@ -17,5 +17,5 @@ export const Label: FC<LabelProps> = (props) => {
     >
       {props.children}
     </span>
-  )
-}
+  );
+};

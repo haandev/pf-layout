@@ -1,22 +1,22 @@
-import { FC, PropsWithChildren } from 'react'
-import clsx from 'clsx'
+import { FC, PropsWithChildren } from 'react';
+import clsx from 'clsx';
 
 export interface StickyButtonProps extends PropsWithChildren {
-  name: string
-  value?: string
-  onChange?: (value: string) => void
-  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined
+  name: string;
+  value?: string;
+  onChange?: (value: string) => void;
+  onClick?: React.MouseEventHandler<HTMLButtonElement> | undefined;
 }
 export const StickyButton: FC<StickyButtonProps> = (props) => {
-  const isActive = props.name === props.value
+  const isActive = props.name === props.value;
   const onClick = (e) => {
     if (props.onChange && !isActive) {
-      props.onChange(props.name)
+      props.onChange(props.name);
     }
     if (props.onClick) {
-      props.onClick(e)
+      props.onClick(e);
     }
-  }
+  };
   return (
     <button
       onClick={onClick}
@@ -27,5 +27,5 @@ export const StickyButton: FC<StickyButtonProps> = (props) => {
     >
       {props.children}
     </button>
-  )
-}
+  );
+};
