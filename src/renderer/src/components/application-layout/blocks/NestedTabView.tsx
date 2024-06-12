@@ -41,7 +41,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
   const _direction = direction || Direction.Horizontal
   const currentPath = [...(path || []), id]
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal
-  return Object.entries(view.views).map(([_id, viewItem]) => {
+  return view.views && Object.entries(view.views).map(([_id, viewItem]) => {
     const nextPath = [...(currentPath || []), _id]
     const pathKey = nextPath.join('/')
     if (!viewItem) return null
@@ -68,7 +68,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
           onTabClose={onTabClose}
           onTabMove={onTabMove}
           onAddNewClick={onAddNewClick}
-          headerControls={renderedHeaderControls}
+          headerControls={!!renderedHeaderControls?.length && renderedHeaderControls}
           width={viewItem.width}
           height={viewItem.height}
         />

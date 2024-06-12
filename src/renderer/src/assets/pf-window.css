@@ -1,6 +1,4 @@
-
-
-.pf-floating-window {
+.pf-window.pf-floating {
   box-shadow:
     rgba(0, 0, 0, 0.07) 0 1px 2px,
     rgba(0, 0, 0, 0.07) 0 2px 4px,
@@ -10,15 +8,23 @@
     rgba(0, 0, 0, 0.07) 0 32px 64px;
   position: absolute;
   z-index: 100;
-  min-width: 300px;
-  min-height: 300px;
-  top: 300px;
-  left: 300px;
+
   border: 2px solid var(--dark-border-color);
   border-radius: 5px;
 }
 
-.pf-floating-window_header {
+.pf-window.pf-floating:not(.pf-minimized) {
+  min-width: 300px;
+  min-height: 300px;
+}
+.pf-window.pf-floating.pf-minimized {
+  min-width: 0;
+  min-height: 0;
+  height:58;
+  max-width: 400px;
+}
+
+.pf-window.pf-floating .pf-window__header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -27,24 +33,24 @@
   padding: 5px;
 }
 
-.pf-window.pf-horizontal > pf-window_content,
-.pf-window.pf-vertical {
+.pf-window__inside.pf-horizontal > pf-window__content,
+.pf-window__inside.pf-vertical {
   flex-direction: row;
 }
 
-.pf-window.pf-horizontal,
-.pf-window.pf-vertical > pf-window_content {
+.pf-window__inside.pf-horizontal,
+.pf-window__inside.pf-vertical > pf-window__content {
   flex-direction: column;
 }
 
-.pf-window-controls {
+.pf-window__controls {
   display: inline-block;
   padding-left: 5px;
 }
-.pf-window-controls .pf-icon svg {
+.pf-window__controls .pf-icon svg {
   visibility: hidden;
 }
-.pf-window-controls:hover svg {
+.pf-window__controls:hover .pf-icon:not(.pf-icon__disabled) svg {
   visibility: visible;
   color: var(--secondary-color);
 }
@@ -57,12 +63,34 @@
   margin-right: 8px;
   border-radius: 50%;
 }
-.pf-window-controls .pf-icon__close {
+.pf-icon__disabled {
+  pointer-events: none;
+}
+.pf-window__controls .pf-icon__disabled {
+  background: var(--primary-color)!important;
+}
+.pf-window__controls .pf-icon__close {
   background: var(--os-close);
 }
-.pf-window-controls .pf-icon__minimize {
+.pf-window__controls .pf-icon__minimize {
   background: var(--os-minimize);
 }
-.pf-window-controls .pf-icon__maximize {
+.pf-window__controls .pf-icon__maximize {
   background: var(--os-fullscreen);
+}
+.pf-window__content {
+  position: relative;
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  min-height: 100px;
+  min-width: 100px;
+}
+
+.pf-window__inside {
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
 }

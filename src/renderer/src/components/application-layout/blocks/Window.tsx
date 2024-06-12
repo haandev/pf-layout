@@ -23,6 +23,12 @@ export interface WindowProps extends PropsWithChildren {
   left?: number
   id: string
   path?: string[]
+  minimized?: boolean
+  maximized?: boolean
+  onMaximize?: (viewPath: string[]) => void
+  onMinimize?: (viewPath: string[]) => void
+  onClose?: (viewPath: string[]) => void
+  onRestore?: (viewPath: string[]) => void
 }
 
 export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
@@ -79,17 +85,33 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   const floatingHeaderRender = () => {
     if (!props.floating) return null
     return (
-      <div ref={header} className="pf-floating-window_header">
-        <div className="pf-window-controls no-drag">
-          <div className="pf-icon pf-icon__close">
+      <div ref={header} className="pf-window__header">
+        <div className="pf-window__controls no-drag">
+          <button className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })} onClick={() => props.onClose?.(currentPath)}>
             <IconXmark width={8} height={8} />
-          </div>
-          <div className="pf-icon pf-icon__minimize">
+          </button>
+          <button
+            className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': !props.onMinimize || props.minimized })}
+            onClick={() => props.onMinimize?.(currentPath)}
+          >
             <IconMinus width={8} height={8} />
-          </div>
-          <div className="pf-icon pf-icon__maximize">
-            <IconPlus width={8} height={8} />
-          </div>
+          </button>
+
+          {props.minimized || props.maximized ? (
+            <button
+              className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onRestore })}
+              onClick={() => props.onRestore?.(currentPath)}
+            >
+              <IconPlus width={8} height={8} /> {/*TODO: add restore icon here */}
+            </button>
+          ) : (
+            <button
+              className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onMaximize })}
+              onClick={() => props.onMaximize?.(currentPath)}
+            >
+              <IconPlus width={8} height={8} />
+            </button>
+          )}
         </div>
         <span></span>
       </div>
@@ -112,20 +134,23 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     <div
       ref={rootRef}
       className={clsx({
-        'pf-window-host': true,
-        'pf-floating-window': props.floating,
-        'pf-attached': !props.floating
+        'pf-window': true,
+        'pf-floating': props.floating,
+        'pf-attached': !props.floating,
+        'pf-minimized': props.minimized
       })}
       style={props.floating ? styleFloating : styleAttached}
     >
-      <div className="pf-window">
+      <div className="pf-window__inside">
         {floatingHeaderRender()}
 
-        {props.floating && <ResizeBox ref={rootRef} handler={resizeBoxHandler} safetyMargins={{ top: 50, left: 50, right: 50, bottom: 50 }} />}
+        {props.floating && !props.minimized && (
+          <ResizeBox ref={rootRef} handler={resizeBoxHandler} safetyMargins={{ top: 50, left: 50, right: 50, bottom: 50 }} />
+        )}
 
         <div
           className={clsx({
-            'pf-window_content': true,
+            'pf-window__content': true,
             [directionClass]: true
           })}
         >

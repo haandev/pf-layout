@@ -28,10 +28,19 @@ export type Window = {
   height?: number
   top?: number
   left?: number
+  minimized?: boolean
+  maximized?: boolean
+  previousPosition?: { top: number; left: number; width?: number; height?: number }
 }
 export interface AppStore {
   windows: Record<string, Window>
   resizeWindow: (width: number, height: number, top: number, left: number, viewPath: string[]) => void
+  maximizeWindow: (viewPath: string[]) => void
+  minimizeWindow: (viewPath: string[]) => void
+  restoreWindowSize: (viewPath: string[]) => void
+  closeWindow: (viewPath: string[]) => void
+  attachView: (viewPath: string[]) => void
+  detachView: (viewPath: string[]) => void
   changeTab: (tabId: string, viewPath: string[]) => void
   closeTab: (tabId: string, viewPath: string[]) => void
   addTab: (viewPath: string[], tab: TabItem) => void
@@ -45,6 +54,9 @@ export interface AppStore {
   toolbarColSize: number
   setToolbarColSize: (size: number) => void
 }
+let detachOffset = 0
+let minimizeOffset = 0
+let minimizeOffsetRow = 0
 export const useApp = create<AppStore>((set) => ({
   windows: {
     mainAttachedWindow: {
@@ -61,20 +73,6 @@ export const useApp = create<AppStore>((set) => ({
       },
       floating: false
     },
-    mainFloatingWindow: {
-      views: {
-        'main-view': {
-          tabs: {
-            'flow-tab-1': {
-              id: 'flow-tab-1',
-              title: 'Flow 2',
-              content: <FlowPageProvided id="flow-tab-2" />
-            }
-          }
-        }
-      },
-      floating: true
-    }
   },
   resizeWindow: (width, height, top, left, viewPath) => {
     set((state) => {
@@ -92,7 +90,127 @@ export const useApp = create<AppStore>((set) => ({
       return { windows }
     })
   },
-  activeTabs: {},
+  maximizeWindow: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const window = evalPathArray(viewPath, windows) as Window
+      window.maximized = true
+      window.previousPosition = {
+        top: window.top || 0,
+        left: window.left || 0,
+        width: window.width || 0,
+        height: window.height || 0
+      }
+      const newWidth = document.documentElement.clientWidth
+      const newHeight = document.documentElement.clientHeight
+      const newTop = document.documentElement.clientHeight / 2 - newHeight / 2
+      const newLeft = document.documentElement.clientWidth / 2 - newWidth / 2
+      window.height = innerHeight
+      window.top = newTop
+      window.left = newLeft
+      window.width = newWidth
+
+      return { windows }
+    })
+  },
+  minimizeWindow: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const window = evalPathArray(viewPath, windows) as Window
+      window.minimized = true
+      window.previousPosition = {
+        top: window.top || 0,
+        left: window.left || 0,
+        width: window.width || 0,
+        height: window.height || 0
+      }
+      window.width = 200
+      window.height = 58
+      window.top = document.documentElement.clientHeight - 60 - 60 * minimizeOffsetRow
+      window.left = 10 + minimizeOffset * 210 + 105 * (minimizeOffsetRow % 2)
+      minimizeOffset++
+      if (window.left + 400 > document.documentElement.clientWidth) {
+        minimizeOffset = 0
+        minimizeOffsetRow++
+      }
+
+      return { windows }
+    })
+  },
+  restoreWindowSize: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const window = evalPathArray(viewPath, windows) as Window
+      window.minimized = false
+      window.maximized = false
+
+      window.top = window.previousPosition?.top
+      window.left = window.previousPosition?.left
+      window.width = window.previousPosition?.width
+      window.height = window.previousPosition?.height
+      window.previousPosition = undefined
+
+      return { windows }
+    })
+  },
+  closeWindow: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView
+      const windowId = viewPath[viewPath.length - 1]
+      delete parentView[windowId]
+
+      return { windows }
+    })
+  },
+
+  detachView: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const viewId = viewPath[viewPath.length - 1]
+      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView
+      const view = evalPathArray(viewPath, windows) as ViewsItem
+      const newWindowId = v4()
+      const newWindow: Window = {
+        views: { [viewId]: view },
+        floating: true,
+        width: 600,
+        height: 600,
+        top: detachOffset * 20 + document.documentElement.clientHeight / 2 - 300,
+        left: detachOffset * 20 + document.documentElement.clientWidth / 2 - 300
+      }
+      if (detachOffset < 10) detachOffset++
+      else detachOffset = 0
+      windows[newWindowId] = newWindow
+      delete parentView.views[viewId]
+      const clean = cleanUp(windows)
+      return { windows: clean }
+    })
+  },
+  attachView: (viewPath) => {
+    set((state) => {
+      const windows = { ...state.windows }
+      const viewId = viewPath[viewPath.length - 1]
+      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView
+      const view = evalPathArray(viewPath, windows) as ViewsItem
+      const findAttachedWindow = Object.entries(windows).find(([id, window]) => !window.floating)
+      if (!findAttachedWindow) {
+        const newWindowId = v4()
+        const newWindow: Window = {
+          views: { [viewId]: view },
+          floating: false
+        }
+        windows[newWindowId] = newWindow
+      } else {
+        const [attechedWindowId, attachedWindow] = findAttachedWindow
+        attachedWindow.views[viewId] = view
+      }
+      delete parentView.views[viewId]
+
+      const clean = cleanUp(windows)
+      return { windows: clean }
+    })
+  },
   changeTab: (tabId, viewPath) => {
     set((state) => {
       const windows = { ...state.windows }

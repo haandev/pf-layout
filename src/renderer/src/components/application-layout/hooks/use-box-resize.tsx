@@ -19,10 +19,8 @@ export function useBoxResize<T extends HTMLElement>(options: {
       xDelta: number,
       yDelta: number
     ) => {
-      console.log('resizeHandler', handle, xDelta, yDelta)
       if (!options.ref.current) return
       const initialRect = options.ref.current.getBoundingClientRect()
-      console.log(initialRect)
       switch (handle) {
         case 'left':
           options.handler(e, initialRect.width - xDelta, initialRect.height, initialRect.top, initialRect.left + xDelta)

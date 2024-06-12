@@ -32,7 +32,7 @@ export interface TabViewProps extends TabViewType {
 }
 const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, id, ...props }) => {
   const rootRef = useRef<HTMLDivElement>(null)
-  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-window__content' } }, (validation) => {
     if (!validation) {
       throw new Error('TabView must be used within a Container.')
     }
@@ -113,11 +113,11 @@ const TabView: FC<TabViewProps> = ({ tabs, activeTabId, path, id, ...props }) =>
               onDrop={onDrop}
             />
           ))}
-          <button id="add-new" className="pf-tab-view__add" key="add-new" onClick={onAddNew}>
+          {props.onAddNewClick && <button id="add-new" className="pf-tab-view__add" key="add-new" onClick={onAddNew}>
             <IconAdd width={16} height={16} />
-          </button>
+          </button>}
         </div>
-        <div className="pf-view-controls">{props.headerControls}</div>
+        {props.headerControls && <div className="pf-view-controls">{props.headerControls}</div>}
       </div>
       <div className="pf-tab-view__content">
         {props.noCache ? (

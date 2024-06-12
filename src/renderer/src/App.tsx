@@ -68,6 +68,8 @@ import IconSplitSquareVertical from './components/application-layout/icons/IconS
 import { NestedTabView } from './components/application-layout/blocks/NestedTabView'
 import { FlowPageProvided } from './components/FlowPage'
 import { Window } from './components/application-layout/blocks/Window'
+import IconWindowStack from './components/application-layout/icons/IconWindowStack'
+import IconLayout from './components/application-layout/icons/IconLayout'
 
 function App(): JSX.Element {
   const app = useApp()
@@ -206,6 +208,12 @@ function App(): JSX.Element {
                   top={win.top}
                   left={win.left}
                   onWindowResize={app.resizeWindow}
+                  minimized={win.minimized}
+                  maximized={win.maximized}
+                  onMaximize={app.maximizeWindow}
+                  onMinimize={app.minimizeWindow}
+                  onRestore={app.restoreWindowSize}
+                  onClose={app.closeWindow}
                 >
                   <NestedTabView
                     id={id}
@@ -214,24 +222,38 @@ function App(): JSX.Element {
                     onTabClose={app.closeTab}
                     onTabMove={app.moveTab}
                     onResize={app.resizeView}
-                    onAddNewClick={(path) => {
+                    onAddNewClick={ !win.minimized ? ((path) => {
                       const id = Math.random().toString(36).substring(7)
                       const title = `Flow ${id}`
                       const content = <FlowPageProvided id={id} />
                       app.addTab(path, { title, content })
-                    }}
-                    headerControls={[
-                      {
-                        isVisible: (tabs) => Object.keys(tabs).length > 1,
-                        render: <IconSplitSquareHorizontal width={16} height={16} />,
-                        onClick: (path) => app.splitView(path, Direction.Horizontal)
-                      },
-                      {
-                        isVisible: (tabs) => Object.keys(tabs).length > 1,
-                        render: <IconSplitSquareVertical width={16} height={16} />,
-                        onClick: (path) => app.splitView(path, Direction.Vertical)
-                      }
-                    ]}
+                    }) : undefined}
+                    headerControls={
+                      !win.minimized
+                        ? [
+                            {
+                              isVisible: (tabs) => Object.keys(tabs).length > 1,
+                              render: <IconSplitSquareHorizontal width={16} height={16} />,
+                              onClick: (path) => app.splitView(path, Direction.Horizontal)
+                            },
+                            {
+                              isVisible: (tabs) => Object.keys(tabs).length > 1,
+                              render: <IconSplitSquareVertical width={16} height={16} />,
+                              onClick: (path) => app.splitView(path, Direction.Vertical)
+                            },
+                            {
+                              isVisible: () => !win.floating,
+                              render: <IconWindowStack width={16} height={16} />,
+                              onClick: (path) => app.detachView(path)
+                            },
+                            {
+                              isVisible: () => !!win.floating,
+                              render: <IconLayout width={16} height={16} />,
+                              onClick: (path) => app.attachView(path)
+                            }
+                          ]
+                        : []
+                    }
                   />
                 </Window>
               ))}

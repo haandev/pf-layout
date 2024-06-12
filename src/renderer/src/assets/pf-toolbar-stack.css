@@ -63,15 +63,3 @@
   justify-content: flex-start;
 }
 
-.pf-toolbar-stack-group {
-  display: flex;
-}
-
-.pf-container.pf-vertical .pf-toolbar-stack-group {
-  flex-direction: column;
-}
-
-.pf-container.pf-horizontal .pf-toolbar-stack-group {
-  flex-direction: row;
-}
-

@@ -11,4 +11,6 @@
   --os-close: #ff5f57;
   --os-minimize: #ffbd2e;
   --os-fullscreen: #27c93f;
+  --default-font: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', 'DejaVu Sans', Verdana, 'sans-serif';
+  --default-font-size: 11pt;
 }

@@ -20,7 +20,7 @@ export const ViewGroup: FC<ViewGroupProps> = React.memo(({ path, id, ...props })
   const currentPath = [...(path || []), id]
   const rootRef = useRef<HTMLDivElement>(null)
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-window_content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-window__content' } }, (validation) => {
     if (!validation) {
       throw new Error('ViewGroup must be used within a Container or another ViewGroup.')
     }

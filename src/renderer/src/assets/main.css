@@ -59,12 +59,12 @@ button {
 
 body {
   user-select: none;
+  overflow: hidden;
+}
+#root{
   height: 100vh;
-  font-family: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', 'DejaVu Sans', Verdana, 'sans-serif';
-  font-size: 11px;
-  color: var(--default-color);
-  background: var(--background);
-  overflow-x: hidden;
+  display: block;
+
 }
 
 .pf-item-icon-button,
