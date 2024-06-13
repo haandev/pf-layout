@@ -3,7 +3,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--dark-border-color);
+  border: 1px solid var(--pf-dark-border-color);
   min-height: 100px;
   min-width: 100px;
 }
@@ -18,9 +18,9 @@
 .pf-tab-view__tabs {
   justify-content: space-between;
   height: 32px;
-  color: var(--default-color);
-  background: var(--secondary-color);
-  border-bottom: 1px solid var(--dark-border-color);
+  color: var(--pf-default-color);
+  background: var(--pf-secondary-color);
+  border-bottom: 1px solid var(--pf-dark-border-color);
 }
 
 .pf-tab-view__tabs > div {
@@ -29,7 +29,7 @@
 }
 
 .pf-tab-view__tabs > .pf-view-controls {
-  border-left: 15px solid var(--secondary-color);
+  border-left: 15px solid var(--pf-secondary-color);
 }
 
 .pf-tab-header-button,
@@ -39,27 +39,27 @@
   align-items: center;
   justify-content: center;
   outline: 0;
-  color: var(--default-color);
+  color: var(--pf-default-color);
 }
 
 .pf-tab-view__tabs .pf-tab.pf-tab-view__tab-title {
-  background: var(--secondary-color);
+  background: var(--pf-secondary-color);
   padding: 0 15px 0 10px;
   height: 100%;
-  border-right: 1px solid var(--dark-border-color);
+  border-right: 1px solid var(--pf-dark-border-color);
   text-wrap: nowrap;
 }
 
 .pf-tab-view__tabs .pf-tab:hover {
-  background: var(--primary-color);
+  background: var(--pf-primary-color);
 }
 
 .pf-tab-view__tabs .pf-tab:active {
-  background: var(--dark-border-color);
+  background: var(--pf-dark-border-color);
 }
 
 .pf-tab-view__tabs .pf-tab.pf-tab-active {
-  background: var(--primary-color);
+  background: var(--pf-primary-color);
 }
 
 .pf-tab-header-button,
@@ -73,7 +73,7 @@
 
 .pf-tab-header-button:hover,
 .pf-tab__close:hover {
-  border: 1px solid var(--default-border-color);
+  border: 1px solid var(--pf-default-border-color);
 }
 
 .pf-tab-header-button {
@@ -107,7 +107,7 @@
   overflow-y: hidden;
 }
 .pf-tab-view__add {
-  border-right: 1px solid var(--dark-border-color);
+  border-right: 1px solid var(--pf-dark-border-color);
   align-self: flex-end;
   padding: 0 5px;
   height: 100%;

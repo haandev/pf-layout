@@ -1,0 +1,113 @@
+@import 'pf-variables.css';
+@import 'pf-layout.css';
+@import 'pf-window.css';
+@import 'pf-tab-view.css';
+@import 'pf-toolbar.css';
+@import 'pf-toolbar-stack.css';
+@import 'pf-drop-zone.css';
+@import 'pf-split.css';
+@import 'pf-resize.css';
+@import 'pf-item-sticky-group-button.css';
+
+body {
+  --sb-track-color: #232e33;
+  --sb-thumb-color: #6baf8d;
+  --sb-size: 7px;
+}
+
+body::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 3px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 3px;
+  border: 1px solid #232e33;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
+* {
+  font-size: 12px;
+  box-sizing: border-box;
+}
+
+body,
+button {
+  margin: 0;
+  padding: 0;
+}
+
+button {
+  background: 0 0;
+  color: inherit;
+  border: 0;
+  font: inherit;
+  outline: inherit;
+  line-height: normal;
+  text-align: left;
+}
+
+body {
+  user-select: none;
+  overflow: hidden;
+}
+#root {
+  height: 100vh;
+  display: block;
+}
+
+.pf-item-icon-button,
+.pf-item-sticky-button {
+  box-sizing: border-box;
+  padding: 4px;
+  height: 26px;
+  width: 26px;
+  color: var(--pf-default-color);
+  outline: 0;
+  background: 0 0;
+  border-radius: 3px;
+  border: 1px solid transparent;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pf-item-icon-button:hover {
+  background: var(--pf-secondary-color);
+  border: 1px solid var(--pf-default-border-color);
+}
+
+.pf-item-icon-button.pf-active,
+.pf-item-icon-button:active {
+  background: var(--pf-dark-border-color);
+  border: 1px solid var(--pf-default-border-color);
+}
+
+.pf-item-sticky-button {
+  position: relative;
+}
+
+.pf-item-sticky-button:hover {
+  background: var(--pf-secondary-color);
+  border: 1px solid var(--pf-dark-border-color);
+}
+
+.pf-item-sticky-button.pf-active,
+.pf-item-sticky-button:active {
+  background: var(--pf-dark-border-color);
+  border: 1px solid var(--pf-dark-border-color);
+}
+
+.pf-hidden {
+  display: none;
+}

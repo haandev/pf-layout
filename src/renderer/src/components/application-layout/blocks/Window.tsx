@@ -13,7 +13,7 @@ import { UseBoxResizeHandler } from '../hooks/use-box-resize';
 import ResizeBox from '../elements/ResizeBox';
 import { useDropDelta } from '../hooks/use-drop-delta';
 
-export type OnResizeHandler = (width: number, height: number, top: number, left: number, viewPath: string[]) => void;
+export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export interface WindowProps extends PropsWithChildren {
   onWindowResize?: OnResizeHandler;
   direction?: Direction;
@@ -27,23 +27,20 @@ export interface WindowProps extends PropsWithChildren {
   zIndex?: number;
   minimized?: boolean;
   maximized?: boolean;
-  onMaximize?: (viewPath: string[]) => void;
-  onMinimize?: (viewPath: string[]) => void;
-  onClose?: (viewPath: string[]) => void;
-  onRestore?: (viewPath: string[]) => void;
+  onMaximize?: (id: string) => void;
+  onMinimize?: (id: string) => void;
+  onClose?: (id: string) => void;
+  onRestore?: (id: string) => void;
 }
 
 export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-scene' } }, (validation) => {
     if (!validation) {
-      throw new Error('Window must be used within a Container or another Window.');
+      throw new Error('Window must be used within a Scene.');
     }
   });
-
-  //concat path
-  const currentPath = [...(path || []), id];
 
   //handle attached window size props while browser window resize
   const { width = 0, height = 0 } = useWindowSize();
@@ -52,12 +49,12 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     const visible = visibleDimension(element);
-    props.onWindowResize?.(visible.width, visible.height, props.top || 0, props.left || 0, currentPath);
+    props.onWindowResize?.(visible.width, visible.height, props.top || 0, props.left || 0, id);
   }, [width, height, props.floating]);
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
-    props.onWindowResize?.(...args, currentPath);
+    props.onWindowResize?.(...args, id);
   };
 
   //handle floating window move
@@ -65,12 +62,12 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     const initialRect = element.getBoundingClientRect();
-    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, currentPath);
+    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, id);
   });
 
   //handle set zIndex to the top
   const onClickAnywhere = useEvent(() => {
-    props.onWindowResize?.(props.width || 0, props.height || 0, props.top || 0, props.left || 0, currentPath);
+    props.onWindowResize?.(props.width || 0, props.height || 0, props.top || 0, props.left || 0, id);
   });
 
   const header = useDragDelta<HTMLDivElement>({
@@ -100,7 +97,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
             className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })}
             onClick={(e) => {
               e.stopPropagation();
-              return props.onClose?.(currentPath);
+              return props.onClose?.(id);
             }}
           >
             <IconXmark width={8} height={8} />
@@ -109,7 +106,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
             className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': !props.onMinimize || props.minimized })}
             onClick={(e) => {
               e.stopPropagation();
-              return props.onMinimize?.(currentPath);
+              return props.onMinimize?.(id);
             }}
           >
             <IconMinus width={8} height={8} />
@@ -120,7 +117,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
               className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onRestore })}
               onClick={(e) => {
                 e.stopPropagation();
-                return props.onRestore?.(currentPath);
+                return props.onRestore?.(id);
               }}
             >
               <IconPlus width={8} height={8} /> {/*TODO: add restore icon here */}
@@ -130,7 +127,7 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
               className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onMaximize })}
               onClick={(e) => {
                 e.stopPropagation();
-                return props.onMaximize?.(currentPath);
+                return props.onMaximize?.(id);
               }}
             >
               <IconPlus width={8} height={8} />

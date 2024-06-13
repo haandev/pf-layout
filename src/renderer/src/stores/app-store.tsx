@@ -1,28 +1,42 @@
 import { create } from 'zustand';
-import { FlowPageProvided } from '../components/FlowPage';
 import { ReactFlowInstance } from 'reactflow';
 import { Direction } from '@renderer/components/application-layout/types';
 import { v4 } from 'uuid';
-export interface TabItem {
-  order?: number;
+import { findById, findIndexById, isEmpty, toRemovedById } from '@renderer/components/application-layout/util';
+
+export enum NodeType {
+  App = 'App',
+  Tab = 'Tab',
+  TabView = 'TabView',
+  GroupView = 'GroupView',
+  Window = 'Window'
+}
+export interface ITab {
+  type: NodeType.Tab;
+  id: string;
   title: string;
   content: React.ReactNode;
+  recentlyCreated: boolean;
 }
-export interface TabView {
-  order?: number;
-  tabs: Record<string, TabItem>;
+export interface ITabView {
+  type: NodeType.TabView;
+  id: string;
+  members: ITab[];
   activeTabId?: string;
   width?: number;
   height?: number;
 }
-export type ViewsItem = TabView | ContainerView;
-export type ContainerView = {
-  views: Record<string, ViewsItem>;
+export interface IGroupView {
+  type: NodeType.GroupView;
+  id: string;
+  members: (IGroupView | ITabView)[];
   width?: number;
   height?: number;
-};
-export type Window = {
-  views: Record<string, ViewsItem>;
+}
+export type IWindow = {
+  type: NodeType.Window;
+  id: string;
+  members: IGroupView[];
   floating?: boolean;
   width?: number;
   height?: number;
@@ -33,324 +47,459 @@ export type Window = {
   previousPosition?: { top: number; left: number; width?: number; height?: number };
   zIndex?: number;
 };
+export type StateItem = ITab | ITabView | IGroupView | IWindow;
+export type NestedState = StateItem | { members: IWindow[] };
+
+type ParentType<T> = T extends ITab
+  ? ITabView
+  : T extends ITabView
+    ? IGroupView
+    : T extends IGroupView
+      ? IWindow | IGroupView
+      : T extends IWindow
+        ? AppStore
+        : null;
+
 export interface AppStore {
-  windows: Record<string, Window>;
-  resizeWindow: (width: number, height: number, top: number, left: number, viewPath: string[]) => void;
-  maximizeWindow: (viewPath: string[]) => void;
-  minimizeWindow: (viewPath: string[]) => void;
-  restoreWindowSize: (viewPath: string[]) => void;
-  closeWindow: (viewPath: string[]) => void;
-  attachView: (viewPath: string[]) => void;
-  detachView: (viewPath: string[]) => void;
-  changeTab: (tabId: string, viewPath: string[]) => void;
-  closeTab: (tabId: string, viewPath: string[]) => void;
-  addTab: (viewPath: string[], tab: TabItem) => void;
-  moveTab: (options: { tabId: string; fromPath: string[]; toPath: string[]; beforeTabId?: string }) => void;
-  splitView: (viewPath: string[], direction: Direction) => void;
-  resizeView: (direction: Direction, size: number, viewPath: string[], nextItemSize?: number) => void;
-  flow?: ReactFlowInstance;
-  setFlow: (flow: ReactFlowInstance) => void;
+  //home state and actions
+  home?: boolean;
+  showHome: () => void;
+  hideHome: () => void;
+
+  //layout state
+  members: IWindow[];
+
+  //window actions
+  resizeWindow: (width: number, height: number, top: number, left: number, id: string) => void;
+  maximizeWindow: (id: string) => void;
+  minimizeWindow: (id: string) => void;
+  addWindow: (window: Omit<IWindow, 'id'>) => void;
+  closeWindow: (id: string) => void;
+  restoreWindowSize: (id: string) => void;
+
+  //view actions
+  attachView: (id: string) => void;
+  detachView: (id: string) => void;
+  splitView: (id: string, direction: Direction) => void;
+  resizeView: (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
+
+  //tab actions
+  addTabInitial: (tab: Omit<ITab, 'type' | 'id' | 'title'> & { id?: string; title?: string }) => void;
+  addTab: (id: string, tab: Omit<ITab, 'type' | 'id' | 'title'> & { id?: string; title?: string }) => void;
+  changeTab: (id: string) => void;
+  closeTab: (id: string) => void;
+  moveTab: (options: { tabId: string; toViewId: string; beforeTabId?: string }) => void;
+
+  //toolbar state
   tool: string;
-  setTool: (tool: string) => void;
   toolbarColSize: number;
+
+  //toolbar actions
+  setTool: (tool: string) => void;
   setToolbarColSize: (size: number) => void;
+
+  //app state TODO: move to separate store
+  flow?: ReactFlowInstance;
+
+  //app actions
+  setFlow: (flow: ReactFlowInstance) => void;
 }
 let detachOffset = 0;
-let minimizeOffset = 0;
-let minimizeOffsetRow = 0;
+let zIndexOffset = 0;
 
 export const useApp = create<AppStore>((set) => ({
-  windows: {
-    mainAttachedWindow: {
-      views: {
-        initialView: {
-          tabs: {
-            'flow-tab-1': {
-              id: 'flow-tab-1',
-              title: 'Flow 1',
-              content: <FlowPageProvided id="flow-tab-1" />
+  home: true,
+  showHome: () => set({ home: true }),
+  hideHome: () => set({ home: false }),
+
+  members: [],
+  resizeWindow: (width, height, top, left, id) => {
+    set((state) => {
+      const members = [...state.members];
+      const { item, parent } = getItemById<IWindow>(state, id);
+      if (!isWindow(item) || !hasMembers(parent)) return { members };
+
+      const zIndex = Math.max(...parent.members.map((window) => window.zIndex || 0)) + 1;
+      const widthChange = item.width ? width / item.width : 1;
+      const heightChange = item.height ? height / item.height : 1;
+      updateSizes(item, widthChange, heightChange);
+
+      Object.assign(item, {
+        width: width,
+        height: height,
+        top: top,
+        left: left,
+        zIndex
+      });
+
+      return { members };
+    });
+  },
+  maximizeWindow: (id) => {
+    set((state) => {
+      const members = [...state.members];
+      const zIndex = ++zIndexOffset;
+      const { item, parent } = getItemById<IWindow>(state, id);
+      if (!isWindow(item) || !hasMembers(parent)) return { members };
+
+      item.previousPosition = {
+        top: item.top || 0,
+        left: item.left || 0,
+        width: item.width || 0,
+        height: item.height || 0
+      };
+
+      const clientWidth = document.documentElement.clientWidth;
+      const clientHeight = document.documentElement.clientHeight;
+
+      Object.assign(item, {
+        maximized: true,
+        width: clientWidth,
+        height: clientHeight,
+        top: 0,
+        left: 0,
+        zIndex
+      });
+
+      return { members };
+    });
+  },
+  minimizeWindow: (id) => {
+    set((state) => {
+      const members = [...state.members];
+      const { item, parent } = getItemById<IWindow>(state, id);
+      if (!isWindow(item) || !hasMembers(parent)) return { members };
+
+      item.minimized = true;
+      item.previousPosition = item.previousPosition || {
+        top: item.top || 0,
+        left: item.left || 0,
+        width: item.width || 0,
+        height: item.height || 0
+      };
+
+      const minimizedWindows = parent.members.filter((w) => w.minimized);
+      const clientHeight = document.documentElement.clientHeight;
+      const clientWidth = document.documentElement.clientWidth;
+
+      const findPosition = () => {
+        for (let row = 0; row < 4; row++) {
+          for (let column = 0; column * 210 + 200 < clientWidth; column++) {
+            const left = 10 + column * 210;
+            const top = clientHeight - 60 - 60 * row;
+            const overlapping = minimizedWindows.some((w) => w.left === left && w.top === top);
+            if (!overlapping) {
+              return { left, top };
             }
           }
-        },
-      },
-      floating: false
-    }
-  },
-  resizeWindow: (width, height, top, left, viewPath) => {
-    set((state) => {
-      const windows = { ...state.windows };
-      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1;
-      const window = evalPathArray(viewPath, windows) as Window;
-      const widthChange = window.width ? width / window.width : 1;
-      const heightChange = window.height ? height / window.height : 1;
-      updateSizes(window, widthChange, heightChange);
+        }
+        return { left: 10, top: clientHeight - 60 };
+      };
 
-      window.width = width;
-      window.height = height;
-      window.top = top;
-      window.left = left;
-      window.zIndex = lastZIndex;
+      const newPosition = findPosition();
+      Object.assign(item, {
+        width: 200,
+        height: 58,
+        top: newPosition.top,
+        left: newPosition.left,
+        zIndex: 0
+      });
 
-      return { windows };
+      return { members };
     });
   },
-  maximizeWindow: (viewPath) => {
+  restoreWindowSize: (id) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1;
+      const members = [...state.members];
+      const { item, parent } = getItemById<IWindow>(state, id);
+      if (!isWindow(item) || !hasMembers(parent)) return { members };
 
-      const window = evalPathArray(viewPath, windows) as Window;
-      window.maximized = true;
-      window.previousPosition = {
-        top: window.top || 0,
-        left: window.left || 0,
-        width: window.width || 0,
-        height: window.height || 0
-      };
-      const newWidth = document.documentElement.clientWidth;
-      const newHeight = document.documentElement.clientHeight;
-      const newTop = document.documentElement.clientHeight / 2 - newHeight / 2;
-      const newLeft = document.documentElement.clientWidth / 2 - newWidth / 2;
-      window.height = innerHeight;
-      window.top = newTop;
-      window.left = newLeft;
-      window.width = newWidth;
-      window.zIndex = lastZIndex;
-
-      return { windows };
-    });
-  },
-  minimizeWindow: (viewPath) => {
-    set((state) => {
-      const windows = { ...state.windows };
-      const window = evalPathArray(viewPath, windows) as Window;
-      window.minimized = true;
-      window.previousPosition = window.previousPosition || {
-        top: window.top || 0,
-        left: window.left || 0,
-        width: window.width || 0,
-        height: window.height || 0
-      };
-      window.width = 200;
-      window.height = 58;
-      window.zIndex = 0;
-      window.top = document.documentElement.clientHeight - 60 - 60 * (minimizeOffsetRow % 4);
-      window.left = 10 + minimizeOffset * 210 + 105 * (minimizeOffsetRow % 2);
-      minimizeOffset++;
-      if (window.left + 400 > document.documentElement.clientWidth) {
-        minimizeOffset = 0;
-        minimizeOffsetRow++;
+      const zIndex = ++zIndexOffset;
+      if (item.previousPosition) {
+        Object.assign(window, {
+          top: item.previousPosition.top,
+          left: item.previousPosition.left,
+          width: item.previousPosition.width,
+          height: item.previousPosition.height,
+          previousPosition: undefined,
+          minimized: false,
+          maximized: false,
+          zIndex
+        });
       }
 
-      return { windows };
+      return { members };
     });
   },
-  restoreWindowSize: (viewPath) => {
+  closeWindow: (id) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const lastZIndex = Object.values(windows).reduce((acc, window) => ((window.zIndex || 0) > acc ? window.zIndex || 0 : acc), 0) + 1;
-      const window = evalPathArray(viewPath, windows) as Window;
-      window.minimized = false;
-      window.maximized = false;
-      window.zIndex = lastZIndex;
-      window.top = window.previousPosition?.top;
-      window.left = window.previousPosition?.left;
-      window.width = window.previousPosition?.width;
-      window.height = window.previousPosition?.height;
-      window.previousPosition = undefined;
-
-      return { windows };
+      const members = [...state.members];
+      const { item, parent, index } = getItemById<IWindow>(state, id);
+      if (!isWindow(item) || !hasMembers(parent)) return { members };
+      parent.members.splice(index, 1);
+      return cleanUp(state);
     });
   },
-  closeWindow: (viewPath) => {
+  addWindow: (window) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView;
-      const windowId = viewPath[viewPath.length - 1];
-      delete parentView[windowId];
-
-      return { windows };
-    });
-  },
-  detachView: (viewPath) => {
-    set((state) => {
-      const windows = { ...state.windows };
-      const viewId = viewPath[viewPath.length - 1];
-      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView;
-      const view = evalPathArray(viewPath, windows) as ViewsItem;
+      const members = [...state.members];
       const newWindowId = v4();
-      const newWindow: Window = {
-        views: { [viewId]: view },
-        floating: true,
-        width: 600,
-        height: 600,
-        top: detachOffset * 20 + document.documentElement.clientHeight / 2 - 300,
-        left: detachOffset * 20 + document.documentElement.clientWidth / 2 - 300
-      };
-      if (detachOffset < 10) detachOffset++;
-      else detachOffset = 0;
-      windows[newWindowId] = newWindow;
-      delete parentView.views[viewId];
-      const clean = cleanUp(windows);
-      return { windows: clean };
+      const zIndex = ++zIndexOffset;
+      members.push({ ...window, id: newWindowId, zIndex });
+      return { members };
     });
   },
-  attachView: (viewPath) => {
+  detachView: (id) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const viewId = viewPath[viewPath.length - 1];
-      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView;
-      const view = evalPathArray(viewPath, windows) as ViewsItem;
-      const findAttachedWindow = Object.entries(windows).find(([id, window]) => !window.floating);
-      if (!findAttachedWindow) {
+      const members = [...state.members];
+      const windows = state.members;
+      const { item, parent, index } = getItemById<ITabView>(state, id);
+      if (!isTabView(item) || !parent) return { members };
+
+      const newWindowId = v4();
+      const centerX = document.documentElement.clientWidth / 2 - 400;
+      const centerY = document.documentElement.clientHeight / 2 - 300;
+
+      const newGroupView: IGroupView = {
+        type: NodeType.GroupView,
+        id: v4(),
+        members: [item]
+      };
+      const newWindow: IWindow = {
+        type: NodeType.Window,
+        id: newWindowId,
+        members: [newGroupView],
+        floating: true,
+        width: 800,
+        height: 600,
+        top: centerY + (detachOffset % 10) * 20,
+        left: centerX + (detachOffset % 10) * 20
+      };
+      detachOffset++;
+      windows.push(newWindow);
+
+      parent.members.splice(index, 1);
+
+      return cleanUp(state);
+    });
+  },
+  attachView: (id) => {
+    set((state) => {
+      const members = state.members;
+      const { item, parent, index } = getItemById<ITabView>(state, id);
+      if (!isTabView(item) || !isGroupView(parent)) return { members };
+
+      Object.assign(item, { width: undefined, height: undefined });
+      const attachedWindow = members.find((w) => !w.floating);
+      const newGroupView: IGroupView = {
+        type: NodeType.GroupView,
+        id: v4(),
+        members: [item]
+      };
+
+      if (!attachedWindow) {
         const newWindowId = v4();
-        const newWindow: Window = {
-          views: { [viewId]: view },
+        const newWindow: IWindow = {
+          type: NodeType.Window,
+          id: newWindowId,
+          members: [newGroupView],
           floating: false
         };
-        windows[newWindowId] = newWindow;
+        members.push(newWindow);
       } else {
-        const [attechedWindowId, attachedWindow] = findAttachedWindow;
-        attachedWindow.views[viewId] = view;
+        attachedWindow.members.push(newGroupView);
       }
-      delete parentView.views[viewId];
+      parent.members.splice(index, 1);
 
-      const clean = cleanUp(windows);
-      return { windows: clean };
+      return cleanUp(state);
     });
   },
-  changeTab: (tabId, viewPath) => {
+  addTabInitial: (tab) => {
     set((state) => {
-      const windows = { ...state.windows };
+      const members = [...state.members];
 
-      const view = evalPathArray(viewPath, windows) as TabView;
-      view.activeTabId = tabId;
+      const newTab: ITab = { type: NodeType.Tab, ...tab, id: tab.id || v4(), title: tab.title || `Untitled ${nextUntitledCount({ members: state.members })}` };
+      const newTabView: ITabView = { type: NodeType.TabView, id: v4(), members: [newTab], activeTabId: newTab.id };
+      const newGroupView: IGroupView = { type: NodeType.GroupView, id: v4(), members: [newTabView] };
+      const newWindow: IWindow = { type: NodeType.Window, floating: false, id: v4(), members: [newGroupView] };
 
-      return { windows };
+      let firstAttachedWindow: IWindow | undefined = undefined;
+      traverse(state, (item) => {
+        if (isWindow(item) && !item.floating && !firstAttachedWindow) {
+          firstAttachedWindow = item;
+          return true;
+        }
+        return false;
+      });
+      if (!firstAttachedWindow) {
+        members.push(newWindow);
+        return { members, home: false };
+      }
+      let firstGroupView: IGroupView | undefined = undefined;
+      traverse(state, (item) => {
+        if (isGroupView(item) && !firstGroupView) {
+          firstGroupView = item;
+          return true;
+        }
+        return false;
+      });
+      if (!firstGroupView) {
+        (firstAttachedWindow as IWindow).members.push(newGroupView);
+        return { members, home: false };
+      }
+      let firstTabView: ITabView | undefined = undefined;
+      traverse(state, (item) => {
+        if (isTabView(item) && !firstTabView) {
+          firstTabView = item;
+          return true;
+        }
+        return false;
+      });
+      if (!firstTabView) {
+        (firstGroupView as IGroupView).members.push(newTabView);
+        return { members, home: false };
+      }
+      (firstTabView as ITabView).members.push(newTab);
+      return { members, home: false };
     });
   },
-  closeTab: (tabId, viewPath) => {
+  changeTab: (id) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const view = evalPathArray(viewPath, windows);
-      const tabs = 'tabs' in view ? view.tabs : {};
-      delete tabs[tabId];
-      const clean = cleanUp(windows);
+      const members = [...state.members];
 
-      return { windows: clean };
+      const { parent } = getItemById<ITab>(state, id);
+      if (!isTabView(parent)) return { members };
+      parent.activeTabId = id;
+
+      return { members };
     });
   },
-  addTab: (viewPath, tab) => {
-    set(({ windows }) => {
-      const id = v4();
-      const view = evalPathArray(viewPath, windows) as TabView;
-      view.tabs[id] = tab;
-      view.activeTabId = id;
-      return { windows };
-    });
-  },
-  moveTab: ({ tabId, fromPath, toPath, beforeTabId }) => {
+  closeTab: (tabId) => {
     set((state) => {
-      const windows = { ...state.windows };
-      const fromView = evalPathArray(fromPath, windows) as TabView;
-      const toView = evalPathArray(toPath, windows) as TabView;
-      const tab = fromView.tabs[tabId];
-      toView.tabs = { ...toView.tabs };
-      if (!tab) return state;
+      const members = [...state.members];
+      const { item, parent, index } = getItemById<ITab>(state, tabId);
+      if (!isTabView(parent)) return { members };
+      if (!item) return { members };
+      parent.members.splice(index, 1);
+
+      return cleanUp(state);
+    });
+  },
+  addTab: (id, tab) => {
+    set((state) => {
+      const members = [...state.members];
+      const { item, parent } = getItemById<ITabView>(state, id);
+      if (!isTabView(item) || !parent) return { members };
+      const newTab: ITab = { type: NodeType.Tab, ...tab, id: tab.id || v4(), title: tab.title || `Untitled ${nextUntitledCount({ members: state.members })}` };
+      item.members.push(newTab);
+      item.activeTabId = newTab.id;
+      return { members };
+    });
+  },
+  moveTab: ({ tabId, toViewId, beforeTabId }) => {
+    set((state) => {
+      const members = [...state.members];
+      const { item, parent, index } = getItemById(state, tabId);
+      if (!isTab(item) || !isTabView(parent)) return { members };
+
+      const { item: toView } = getItemById(state, toViewId);
+      if (!isTabView(toView)) return { members };
+
       //just reorder
-      if (fromView === toView) {
-        if (tabId === beforeTabId) return state;
-
+      if (parent === toView) {
+        if (tabId === beforeTabId) return { members };
         if (beforeTabId) {
-          const beforeTabIndex = indexOf(toView.tabs, beforeTabId);
-          const tabIndex = indexOf(toView.tabs, tabId);
-          splice(toView.tabs, tabIndex, 1);
-          splice(toView.tabs, beforeTabIndex, 0, { [tabId]: tab }, true);
+          parent.members.splice(index, 1);
+          toView.members.splice(findIndexById(toView.members, beforeTabId), 0, item);
         }
       } else {
-        const movingTabIndex = indexOf(fromView.tabs, tabId);
-        const newActiveTabId =
-          Object.keys(fromView.tabs)[movingTabIndex - 1] || (movingTabIndex !== 0 && Object.keys(fromView.tabs)[0]) || Object.keys(fromView.tabs)[1];
-        if (fromView.activeTabId === tabId) fromView.activeTabId = newActiveTabId;
-        delete fromView.tabs[tabId];
+        //move to another view
+        const newActiveTabId = parent.members[index - 1]?.id || (index !== 0 && parent.members[0]?.id) || parent.members[1]?.id;
+        if (parent.activeTabId === tabId) parent.activeTabId = newActiveTabId;
+
+        parent.members.splice(index, 1);
         if (beforeTabId) {
-          const beforeTabIndex = indexOf(toView.tabs, beforeTabId);
-          splice(toView.tabs, beforeTabIndex, -1, { [tabId]: tab }, true);
+          toView.members.splice(findIndexById(toView.members, beforeTabId), 0, item);
         } else {
-          splice(toView.tabs, 0, -1, { [tabId]: tab }, true);
+          toView.members.push(item);
         }
       }
-      const clean = cleanUp(windows);
-      return { windows: clean };
+      return cleanUp(state);
     });
   },
-  splitView: (viewPath, direction) => {
+  splitView: (id, direction) => {
     set((state) => {
-      const viewId = viewPath[viewPath.length - 1];
-      const currentDirection = viewPath.length % 2 === 1 ? Direction.Vertical : Direction.Horizontal;
-      const windows = { ...state.windows };
-      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView;
-      const view = evalPathArray(viewPath, windows) as TabView;
-      const activeTabIndex = indexOf(view.tabs, view.activeTabId);
-      if (!view.activeTabId) return state;
-      const activeTabId = view.activeTabId;
-      const activeTab = view.tabs[view.activeTabId];
-      const tabs = 'tabs' in view ? view.tabs : {};
-      const previousTabId = Object.keys(tabs)[activeTabIndex - 1];
-      const nextTabId = Object.keys(tabs)[activeTabIndex + 1];
-      const newActiveTabId = previousTabId || nextTabId;
-      if (currentDirection === direction) {
-        const newView = {
-          tabs: { [activeTabId]: activeTab },
-          activeTabId
-        };
-        view.activeTabId = newActiveTabId;
-        splice(tabs, activeTabIndex, 1);
-        splice(parentView.views, 0, -1, { [v4()]: newView }, true);
-      } else {
-        if (!activeTabId) return state;
-        const { [activeTabId]: removed, ...remainingTabs } = tabs;
+      const members = [...state.members];
+      const { item, parent, index, depth } = getItemById<ITabView>(state, id);
+      if (!isTabView(item) || !parent || !item.activeTabId) return { members };
+      const currentDirection = depth % 2 === 1 ? Direction.Vertical : Direction.Horizontal;
 
-        const remainingTabView: TabView = {
-          tabs: remainingTabs,
-          activeTabId: newActiveTabId
-        };
-        const newTabView: TabView = {
-          tabs: { [activeTabId]: activeTab },
+      const activeTabId = item.activeTabId;
+      const activeTabIndex = findIndexById(item.members, activeTabId);
+
+      const activeTab = findById(item.members, activeTabId);
+      if (!activeTab) return { members };
+
+      const tabs = item.members;
+      const previousTabId = tabs[activeTabIndex - 1]?.id;
+      const nextTabId = tabs[activeTabIndex + 1]?.id;
+      const newActiveTabId = previousTabId || nextTabId;
+
+      if (currentDirection === direction) {
+        console.log('call1');
+        const newView: ITabView = {
+          type: NodeType.TabView,
+          id: v4(),
+          members: [activeTab],
           activeTabId
         };
-        const replacementView: ContainerView = {
-          views: {
-            [viewId]: remainingTabView,
-            [v4()]: newTabView
-          }
+        item.activeTabId = newActiveTabId;
+        item.members.splice(activeTabIndex, 1);
+        parent.members.push(newView);
+      } else {
+        console.log('call2');
+        if (!activeTabId) return { members };
+
+        const replacementView: IGroupView = {
+          type: NodeType.GroupView,
+          id: v4(),
+          members: [
+            {
+              type: NodeType.TabView,
+              id: v4(),
+              members: toRemovedById(tabs, activeTabId),
+              activeTabId: newActiveTabId
+            },
+            {
+              type: NodeType.TabView,
+              id: v4(),
+              members: [activeTab],
+              activeTabId
+            }
+          ]
         };
-        parentView.views[viewId] = replacementView;
+        parent.members.splice(index, 1, replacementView);
       }
-      return { windows };
+      return { members };
     });
   },
-  resizeView: (direction: Direction, size, viewPath, nextItemSize) => {
+  resizeView: (direction: Direction, size, id, nextItemSize) => {
     set((state) => {
-      if (size < 10) return state;
-      if (nextItemSize && nextItemSize < 200) return state;
-      console.log({ size, nextItemSize });
-      const viewId = viewPath[viewPath.length - 1];
-      const windows = { ...state.windows };
-      const view = evalPathArray(viewPath, windows) as ContainerView;
-      const parentView = evalPathArray(viewPath.slice(0, -1), windows) as ContainerView;
-      const viewIndex = parentView.views ? Object.keys(parentView.views).indexOf(viewId) : -2;
-      const nextView = parentView.views[Object.keys(parentView.views)[viewIndex + 1]];
+      const members = [...state.members];
+      if (size < 10) return { members };
+      if (nextItemSize && nextItemSize < 200) return { members };
+      const { item, parent, index } = getItemById<ITabView | IGroupView>(state, id);
+      if (!item || !(isTabView(item) || isGroupView(item)) || !isGroupView(parent)) return { members };
+      const nextView = parent.members[index + 1];
 
       const sizeProp = direction === Direction.Horizontal ? 'width' : 'height';
-      view[sizeProp] = size;
-      if (nextView) {
-        nextView[sizeProp] = nextItemSize;
-      }
+      item[sizeProp] = size;
+      if (nextView) nextView[sizeProp] = nextItemSize;
 
-      return { windows };
+      return { members };
     });
   },
+
   flow: undefined,
   setFlow: (flow) => set({ flow }),
   tool: 'selection',
@@ -359,110 +508,114 @@ export const useApp = create<AppStore>((set) => ({
   setToolbarColSize: (size) => set({ toolbarColSize: size })
 }));
 
-const evalPathArray = (pathArray: string[], windows: Record<string, Window>) => {
-  let view: TabItem | TabView | ContainerView | Window | Record<string, Window> = windows;
-  for (const path of pathArray) {
-    if ('views' in view) {
-      view = view.views[path] as ContainerView;
-    } else if ('tabs' in view) {
-      view = view.tabs[path] as TabItem;
-    } else {
-      view = view[path] as TabView;
-    }
-  }
-  return view;
-};
-const cleanUp = (windows: Record<string, Window>) => {
-  const isEmpty = (value: unknown) => {
-    return value === null || value === undefined || (Array.isArray(value) && value.length === 0) || Object.keys(value).length === 0;
-  };
-  const cleanObject = (obj: Record<string, any>, level = 0): boolean => {
-    level++;
-    let keys = Object.keys(obj);
-    let somethingRemoved = false;
+const isAppStore = (state: any): state is AppStore => state && 'type' in state && state.type === NodeType.App;
+const isWindow = (state: any): state is IWindow => state && 'type' in state && state.type === NodeType.Window;
+const isGroupView = (state: any): state is IGroupView => state && 'type' in state && state.type === NodeType.GroupView;
+const isTabView = (state: any): state is ITabView => state && 'type' in state && state.type === NodeType.TabView;
+const isTab = (state: any): state is ITab => state && 'type' in state && state.type === NodeType.Tab;
+const hasMembers = (view: any): view is { members: StateItem[] } => view && 'members' in view;
 
-    keys.forEach((key) => {
-      const value = obj[key];
-      if (typeof value === 'object' && value !== null) {
-        if ('tabs' in value && isEmpty(value.tabs)) {
-          delete obj[key];
+const cleanObject = (obj: NestedState, level = 0): boolean => {
+  level++;
+  let somethingRemoved = false;
+  if (!('members' in obj)) return false;
+  const arr = obj.members;
+  arr.forEach((value: NestedState | null, index: number) => {
+    if (value === null) {
+      arr.splice(index, 1);
+      somethingRemoved = true;
+    } else if (typeof value === 'object' && value !== null) {
+      if ('members' in value && isEmpty(value.members)) {
+        arr.splice(index, 1);
+        somethingRemoved = true;
+      } else if (
+        'type' in value &&
+        value.type === NodeType.GroupView &&
+        value.members &&
+        value.members.length === 1 &&
+        value.members[0].type === NodeType.GroupView
+      ) {
+        Object.assign(value, value.members[0]);
+        somethingRemoved = true;
+      } else {
+        if (cleanObject(value, level)) {
           somethingRemoved = true;
-        } else if ('views' in value && isEmpty(value.views)) {
-          delete obj[key];
-          somethingRemoved = true;
-        } else if ('views' in value && Object.keys(value.views).length === 1 && level > 1) {
-          const viewId = Object.keys(value.views)[0];
-          Object.assign(value, value.views[viewId]);
-          delete value.views;
-        } else {
-          if (cleanObject(value, level)) {
-            somethingRemoved = true;
-          }
         }
       }
-    });
-
-    return somethingRemoved;
-  };
-  do {} while (cleanObject(windows));
-  return windows;
-};
-
-const updateSizes = (win: Window, widthChange: number, heightChange: number) => {
-  Object.entries(win.views).forEach(([_id, window]) => {
-    window.width = window.width ? window.width * widthChange : undefined;
-    window.height = window.height ? window.height * heightChange : undefined;
-    if ('views' in window) {
-      Object.entries(window.views).forEach(([_id, view]) => {
-        if ('views' in view) {
-          updateSizes(view, widthChange, heightChange);
-        }
-      });
     }
+  });
+
+  return somethingRemoved;
+};
+const cleanUp = (state: { members: IWindow[] }) => {
+  do {} while (cleanObject(state));
+  let newWindows = state.members.filter(Boolean);
+
+  return { members: newWindows, home: newWindows.length === 0 };
+};
+const updateSizes = (win: NestedState, widthChange: number, heightChange: number) => {
+  traverse(win, (item) => {
+    if ('height' in item && 'width' in item) {
+      item.width = item.width ? item.width * widthChange : undefined;
+      item.height = item.height ? item.height * heightChange : undefined;
+    }
+    return false;
   });
 };
 
-const indexOf = (object: Record<string, any>, key?: string) => {
-  if (!key) return Object.keys(object).length;
-  return Object.keys(object).indexOf(key);
-};
-const splice = (
-  object: Record<string, any>,
-  index: number,
+const nextUntitledCount = (state: NestedState) => {
+  const titles: string[] = [];
+  traverse(state, (item) => {
+    if (isTab(item) && item.title.startsWith('Untitled')) {
+      titles.push(item.title);
+    }
+  });
 
-  /**
-   * Negative number means to start from the end, probably just insertion at the end
-   */
-  deleteCount: number,
-  insertionObject?: Record<string, any>,
-  generateRandomKeysIfMatching?: boolean
-) => {
-  const insertionEntries = Object.entries(insertionObject || []);
-  const entries = Object.entries(object);
+  const untitledNumbers = titles.map((title) => {
+    const match = title.match(/\d+/);
+    return match ? parseInt(match[0]) : 0;
+  });
 
-  if (generateRandomKeysIfMatching) {
-    insertionEntries.forEach((insertionEntry) => {
-      if (entries.find(([k, _v]) => k === insertionEntry[0])) {
-        const newKey = v4();
-        insertionEntry[0] = newKey;
+  let nextNumber = 1;
+  untitledNumbers
+    .sort((a, b) => a - b)
+    .forEach((number) => {
+      if (number === nextNumber) {
+        nextNumber++;
       }
     });
-  }
-  let spliced: any;
-  if (index === 0 && deleteCount < -1) {
-    spliced = entries.splice(entries.length, deleteCount, ...insertionEntries);
-  }
-  if (index < 0) {
-    spliced = entries.splice(entries.length + index, deleteCount, ...insertionEntries);
-  } else {
-    spliced = entries.splice(index, deleteCount, ...insertionEntries);
-  }
-  const result = Object.fromEntries(entries);
 
-  Object.keys(object).forEach((key) => {
-    delete object[key];
-  });
-  Object.assign(object, result);
+  return nextNumber;
+};
 
-  return Object.fromEntries(spliced);
+type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
+
+//TODO: implement with traverse function
+const getItemById = <T extends StateItem>(state: NestedState, id: string, depth: number = 0): LookupResult<T> => {
+  if ('id' in state && state.id === id) {
+    return { item: state, parent: null, index: -1, depth } as LookupResult<T>;
+  }
+  if ('members' in state && state.members) {
+    for (let i = 0; i < state.members.length; i++) {
+      if (state.members[i].id === id) {
+        return { item: state.members[i], parent: state, index: i, depth: depth + 1 } as LookupResult<T>;
+      }
+      let result = getItemById(state.members[i], id, depth + 1);
+      if (result.item) {
+        return result as LookupResult<T>;
+      }
+    }
+  }
+
+  return { item: null, parent: null, index: -1 } as LookupResult<T>;
+};
+
+const traverse = <T extends (...params: any[]) => any>(state: NestedState, func: T): any => {
+  if (func(state)) {
+    return true;
+  }
+  if ('members' in state) {
+    state.members.some((child: NestedState) => traverse(child, func));
+  }
+  return false;
 };

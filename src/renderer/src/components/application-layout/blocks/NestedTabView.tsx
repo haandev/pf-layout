@@ -1,86 +1,75 @@
-import { TabItem, ContainerView } from '@renderer/stores/app-store';
 import { Direction } from '../types';
-import { FC } from 'react';
-import TabView, { IsActiveHandler, OnAddNewClickHandler, OnSplitResizeHandler, OnTabChangeHandler, OnTabCloseHandler, OnTabMoveHandler } from './TabView';
 import { ViewGroup } from './ViewGroup';
 
-export interface NestedTabViewProps {
-  view: ContainerView;
-  direction?: Direction;
+import { IGroupView, ITabView, IWindow, NodeType } from '@renderer/stores/app-store';
+import { FC } from 'react';
+import TabView, { TabViewCommonProps } from './TabView';
 
-  onTabChange?: OnTabChangeHandler;
-  onTabClose?: OnTabCloseHandler;
-  onResize?: OnSplitResizeHandler;
-  isActive?: IsActiveHandler;
-
+export interface NestedTabViewProps extends TabViewCommonProps {
+  view: IWindow | IGroupView;
   headerControls?: {
-    isVisible: (tabs: Record<string, TabItem>, viewPath: string[]) => boolean;
-    onClick: (viewPath: string[]) => void;
+    isVisible: (view: ITabView, viewId: string) => boolean;
+    onClick: (viewId: string) => void;
     render: JSX.Element;
   }[];
-
-  onAddNewClick?: OnAddNewClickHandler;
-  onTabMove?: OnTabMoveHandler;
-
-  id: string; //path member
-  //don't call directly, used for recursion
-  path?: string[];
 }
 export const NestedTabView: FC<NestedTabViewProps> = ({
-  view,
   direction,
-  path,
+  headerControls,
+  id,
+  onAddNewClick,
+  onResize,
   onTabChange,
   onTabClose,
-  headerControls,
-  onAddNewClick,
   onTabMove,
-  onResize,
-  id
+  path,
+  titleEditable,
+  titleFormatter,
+  view
 }) => {
   const _direction = direction || Direction.Horizontal;
   const currentPath = [...(path || []), id];
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   return (
-    view.views &&
-    Object.entries(view.views).map(([_id, viewItem]) => {
-      const nextPath = [...(currentPath || []), _id];
-      const pathKey = nextPath.join('/');
+    'members' in view &&
+    view.members.map((viewItem: IWindow | IGroupView | ITabView) => {
       if (!viewItem) return null;
-      if ('tabs' in viewItem) {
+      if (viewItem.type === NodeType.TabView) {
         const activeTabId = viewItem.activeTabId;
         const renderedHeaderControls = headerControls?.map(
           (control, idx) =>
-            control.isVisible(viewItem.tabs, nextPath) && (
-              <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(nextPath)}>
+            control.isVisible(viewItem, viewItem.id) && (
+              <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(viewItem.id)}>
                 {control.render}
               </button>
             )
         );
         return (
           <TabView
-            id={_id}
-            direction={_direction}
-            onResize={onResize}
-            key={pathKey}
-            path={currentPath}
-            tabs={viewItem.tabs}
             activeTabId={activeTabId}
+            direction={_direction}
+            headerControls={!!renderedHeaderControls?.length && renderedHeaderControls}
+            height={viewItem.height}
+            id={viewItem.id}
+            key={viewItem.id}
+            onAddNewClick={onAddNewClick}
+            onResize={onResize}
             onTabChange={onTabChange}
             onTabClose={onTabClose}
             onTabMove={onTabMove}
-            onAddNewClick={onAddNewClick}
-            headerControls={!!renderedHeaderControls?.length && renderedHeaderControls}
+            path={currentPath}
+            members={viewItem.members}
+            titleEditable={titleEditable}
+            titleFormatter={titleFormatter}
             width={viewItem.width}
-            height={viewItem.height}
           />
         );
       } else {
         return (
           //TODO: move viewgroup to tabview map
           <ViewGroup
-            id={_id}
-            key={pathKey}
+            id={viewItem.id}
+            key={viewItem.id}
             direction={oppositeDirection}
             width={viewItem.width}
             height={viewItem.height}
@@ -88,16 +77,18 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
             onResize={onResize}
           >
             <NestedTabView
-              id={_id}
-              onResize={onResize}
-              onTabMove={onTabMove}
-              view={viewItem}
               direction={oppositeDirection}
-              path={currentPath}
+              headerControls={headerControls}
+              id={viewItem.id}
+              onAddNewClick={onAddNewClick}
+              onResize={onResize}
               onTabChange={onTabChange}
               onTabClose={onTabClose}
-              headerControls={headerControls}
-              onAddNewClick={onAddNewClick}
+              onTabMove={onTabMove}
+              path={currentPath}
+              titleEditable={titleEditable}
+              titleFormatter={titleFormatter}
+              view={viewItem}
             />
           </ViewGroup>
         );

@@ -8,14 +8,14 @@ export interface FlowPageProps {
   id: string;
 }
 
-export const FlowPageProvided: FC<FlowPageProps> = React.memo(({ id }) => {
+export const FlowPage: FC<FlowPageProps> = React.memo(({ id }) => {
   return (
     <ReactFlowProvider>
-      <FlowPage id={id} />
+      <FlowPageProvided id={id} />
     </ReactFlowProvider>
   );
 });
-const FlowPage: FC<FlowPageProps> = React.memo(({ id }) => {
+const FlowPageProvided: FC<FlowPageProps> = React.memo(({ id }) => {
   const setFlow = useApp((store) => store.setFlow);
   const flow = useReactFlow();
   const { ref } = useInView({

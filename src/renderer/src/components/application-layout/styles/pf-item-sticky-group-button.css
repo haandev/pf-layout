@@ -5,7 +5,7 @@
 }
 
 .pf-item-sticky-button-dropdown {
-  background: var(--primary-color);
+  background: var(--pf-primary-color);
   position: absolute;
   z-index: 100;
   width: fit-content;
@@ -25,7 +25,7 @@
 }
 
 .pf-item-sticky-button-dropdown-item:hover {
-  background: var(--lighter-color);
+  background: var(--pf-lighter-color);
 }
 
 .pf-item-sticky-button-dropdown-item.pf-active .pf-item-sticky-button-dropdown-item-label {

@@ -1,8 +1,8 @@
 import { RefObject } from 'react';
 import { create } from 'zustand';
 
-export interface DragSource {
-  ref: React.RefObject<HTMLElement>;
+export interface DragSource<T extends HTMLElement> {
+  ref: React.RefObject<T>;
   type: string;
   item: Record<string, any>;
 }
@@ -14,10 +14,10 @@ export interface DroppableObject {
 
 export interface DndStore {
   isDragging: boolean;
-  dragging: (object: DragSource) => void;
+  dragging: (object: DragSource<HTMLElement>) => void;
   endDrag: () => void;
-  dragSource: DragSource | null;
-  draggableList: DragSource[];
+  dragSource: DragSource<HTMLElement> | null;
+  draggableList: DragSource<HTMLElement>[];
 }
 
 export const dndStore = create<DndStore>((set) => ({

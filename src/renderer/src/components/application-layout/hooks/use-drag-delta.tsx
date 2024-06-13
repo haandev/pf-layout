@@ -4,8 +4,8 @@ import { useClickAnyWhere } from 'usehooks-ts';
 import { validateElement } from './use-validate-element';
 import { DragSource, dndStore } from '../stores/dnd-store';
 
-export type DragOptions = {
-  ref?: React.RefObject<HTMLElement>;
+export type DragOptions<T extends HTMLElement> = {
+  ref?: React.RefObject<T>;
   safetyMargins?: {
     top?: number;
     right?: number;
@@ -16,10 +16,10 @@ export type DragOptions = {
   onDrag?: (e: MouseEvent, xDelta: number, yDelta: number) => void;
   onDragEnd?: (e: MouseEvent) => void;
 };
-export type UseDragDeltaOptions = (DragSource & DragOptions) | DragOptions;
-export const isDragSource = (options: UseDragDeltaOptions): options is DragSource => (options as DragSource).type !== undefined;
+export type UseDragDeltaOptions<T extends HTMLElement> = (DragSource<T> & DragOptions<T>) | DragOptions<T>;
+export const isDragSource = <T extends HTMLElement>(options: UseDragDeltaOptions<T>): options is DragSource<T> => (options as DragSource<T>).type !== undefined;
 
-export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions) {
+export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions<T>) {
   const { safetyMargins, onDrag, onDragEnd, onDragStart, ...dragSourceOptions } = options;
   const internalRef = useRef<T>(null);
   const ref = options.ref || internalRef;

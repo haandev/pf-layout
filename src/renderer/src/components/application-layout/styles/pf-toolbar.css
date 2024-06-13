@@ -8,12 +8,12 @@
 }
 
 .pf-toolbar.pf-horizontal .pf-toolbar-item {
-  min-height: var(--toolbar-row-size);
-  line-height: var(--toolbar-row-size);
+  min-height: var(--pf-toolbar-row-size);
+  line-height: var(--pf-toolbar-row-size);
 }
 
 .pf-toolbar.pf-vertical .pf-toolbar-item {
-  min-width: var(--toolbar-row-size);
+  min-width: var(--pf-toolbar-row-size);
 }
 .pf-toolbar-items {
   display: flex;
@@ -24,11 +24,11 @@
 }
 
 .pf-horizontal > .pf-drag-handle {
-  min-height: var(--toolbar-row-size);
+  min-height: var(--pf-toolbar-row-size);
 }
 
 .pf-vertical > .pf-drag-handle {
-  min-width: var(--toolbar-row-size);
+  min-width: var(--pf-toolbar-row-size);
 }
 
 .pf-vertical > .pf-drag-handle svg {
@@ -38,7 +38,7 @@
 .pf-drag-handle,
 .pf-item-separator,
 .pf-toolbar-stack-header button {
-  color: var(--dark-border-color);
+  color: var(--pf-dark-border-color);
   justify-content: center;
   display: flex;
   align-items: center;

@@ -29,8 +29,8 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   const _columns = props.direction === Direction.Vertical && !props.columns ? 1 : props.columns;
 
   const itemsStyle = {
-    ...(_rows && { maxHeight: `calc(${_rows} * var(--toolbar-row-size))` }),
-    ...(_columns && { maxWidth: `calc(${_columns} * var(--toolbar-row-size))` })
+    ...(_rows && { maxHeight: `calc(${_rows} * var(--pf-toolbar-row-size))` }),
+    ...(_columns && { maxWidth: `calc(${_columns} * var(--pf-toolbar-row-size))` })
   };
   return (
     <div

@@ -1,0 +1,16 @@
+:root {
+  --pf-background: #282828;
+  --pf-toolbar-row-size: 32px;
+  --pf-toolbar-stack-header-size: 10px;
+  --pf-primary-color: #535353;
+  --pf-secondary-color: #424242;
+  --pf-lighter-color: #565d65;
+  --pf-default-color: #e6e6e6;
+  --pf-default-border-color: #888888;
+  --pf-dark-border-color: #383838;
+  --pf-os-close: #ff5f57;
+  --pf-os-minimize: #ffbd2e;
+  --pf-os-fullscreen: #27c93f;
+  --pf-default-font: 'Lucida Grande', 'Lucida Sans Unicode', 'Lucida Sans', 'DejaVu Sans', Verdana, 'sans-serif';
+  --pf-default-font-size: 11pt;
+}

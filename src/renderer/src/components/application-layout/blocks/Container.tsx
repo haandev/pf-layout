@@ -14,9 +14,9 @@ export interface ContainerProps extends PropsWithChildren {
 export const Container: FC<ContainerProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-aligned-containers' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-app' } }, (validation) => {
     if (!validation) {
-      throw new Error('Container must be used within a AlignedContainers.');
+      throw new Error('Container must be used within a ApplicationLayout.');
     }
   });
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="katman_1" data-name="katman 1" xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 240 234">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #009b7d;
+        font-family: AdobeClean-ExtraBold, 'Adobe Clean';
+        font-size: 160.9px;
+        font-weight: 700;
+      }
+
+      .cls-2 {
+        fill: #002116;
+        stroke-width: 0px;
+      }
+    </style>
+  </defs>
+  <path class="cls-2" d="M42.5,0h155C221,0,240,19,240,42.5v149c0,23.5-19,42.5-42.5,42.5H42.5c-23.5,0-42.5-19-42.5-42.5V42.5C0,19,19,0,42.5,0Z"/>
+  <text class="cls-1" transform="translate(43.1 165.2)"><tspan x="0" y="0">Oi</tspan></text>
+</svg>
