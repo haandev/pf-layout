@@ -11,6 +11,7 @@ export enum NodeType {
   GroupView = 'GroupView',
   Window = 'Window'
 }
+
 export interface ITab {
   type: NodeType.Tab;
   id: string;
@@ -409,8 +410,12 @@ export const useApp = create<AppStore>((set) => ({
       if (parent === toView) {
         if (tabId === beforeTabId) return { members };
         if (beforeTabId) {
+          const beforeTab = getItemById<ITab>(toView, beforeTabId) || {};
           parent.members.splice(index, 1);
-          toView.members.splice(findIndexById(toView.members, beforeTabId), 0, item);
+          toView.members.splice(beforeTab.item ? beforeTab.index : toView.members.length, 0, item);
+        } else {
+          parent.members.splice(index, 1);
+          toView.members.push(item);
         }
       } else {
         //move to another view
@@ -508,12 +513,12 @@ export const useApp = create<AppStore>((set) => ({
   setToolbarColSize: (size) => set({ toolbarColSize: size })
 }));
 
-const isAppStore = (state: any): state is AppStore => state && 'type' in state && state.type === NodeType.App;
-const isWindow = (state: any): state is IWindow => state && 'type' in state && state.type === NodeType.Window;
-const isGroupView = (state: any): state is IGroupView => state && 'type' in state && state.type === NodeType.GroupView;
-const isTabView = (state: any): state is ITabView => state && 'type' in state && state.type === NodeType.TabView;
-const isTab = (state: any): state is ITab => state && 'type' in state && state.type === NodeType.Tab;
-const hasMembers = (view: any): view is { members: StateItem[] } => view && 'members' in view;
+export const isAppStore = (state: any): state is AppStore => state && 'type' in state && state.type === NodeType.App;
+export const isWindow = (state: any): state is IWindow => state && 'type' in state && state.type === NodeType.Window;
+export const isGroupView = (state: any): state is IGroupView => state && 'type' in state && state.type === NodeType.GroupView;
+export const isTabView = (state: any): state is ITabView => state && 'type' in state && state.type === NodeType.TabView;
+export const isTab = (state: any): state is ITab => state && 'type' in state && state.type === NodeType.Tab;
+export const hasMembers = (view: any): view is { members: StateItem[] } => view && 'members' in view;
 
 const cleanObject = (obj: NestedState, level = 0): boolean => {
   level++;

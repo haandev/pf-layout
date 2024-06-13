@@ -19,9 +19,9 @@ export const ViewGroup: FC<ViewGroupProps> = React.memo(({ path, id, ...props })
   const oppositeDirection = props.direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,.pf-view-group,.pf-window__content' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-window__content' } }, (validation) => {
     if (!validation) {
-      throw new Error('ViewGroup must be used within a Container or another ViewGroup.');
+      throw new Error('ViewGroup must be used within a Window or another ViewGroup.');
     }
   });
 

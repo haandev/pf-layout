@@ -37,6 +37,23 @@ export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'>
   headerControls?: React.ReactNode;
   noCache?: boolean;
 }
+
+export type TabViewDragSource = {
+  type: NodeType.TabView;
+  id: string;
+};
+export type TabViewDropTarget = {
+  item: TabViewDragSource | TabDragSource | false;
+  isTabSource: boolean;
+  isTabSourceFromExternalView: boolean;
+  isInsertingTabTabSourceFromExternalView: boolean;
+  isInsertingTabSourceFromSameView: boolean;
+  isInsertingTabSourceIsNotMyLastTab: boolean;
+};
+export type TabViwDroppableItems = TabViewDragSource | TabDragSource;
+export type TabDropTarget = {
+  isInserting: boolean;
+};
 const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path, id, ...props }) => {
   const view: ITabView = {
     type: NodeType.TabView,
@@ -53,7 +70,6 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
       throw new Error('TabView must be used within a Container.');
     }
   });
-  const currentPath = [...(path || []), id];
 
   useEffect(() => {
     if (activeTabId === undefined && members.length > 0) {
@@ -93,17 +109,40 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
     props.onResize?.(direction, size, id, nextItemSize);
   };
 
-  const [collected, drop] = useDrop<TabDraggingProps, any, any>(() => ({
-    accept: 'tab',
+  const headerRef = useRef<HTMLDivElement>(null);
+  const [collected, drop] = useDrop<TabViwDroppableItems, any, TabViewDropTarget>(() => ({
+    accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
+      const item = monitor.isOver({ shallow: true }) && monitor.getItem();
+      const isTabSource = item && item.type === NodeType.Tab;
+      const isTabSourceFromExternalView = isTabSource && item.tabViewId !== id;
+      const isInsertingTabTabSourceFromExternalView = isTabSourceFromExternalView && monitor.isOver();
+      const isInsertingTabSourceFromSameView = isTabSource && monitor.isOver() && item.tabViewId === id;
+      const isInsertingTabSourceIsNotMyLastTab = isInsertingTabSourceFromSameView && isTabSource && item.id !== members[members.length - 1]?.id;
       return {
-        fromExternalView: monitor.isOver() && monitor.getItem()?.fromPath?.join('/') !== currentPath?.join('/')
+        item,
+        isTabSource,
+        isTabSourceFromExternalView,
+        isInsertingTabTabSourceFromExternalView,
+        isInsertingTabSourceFromSameView,
+        isInsertingTabSourceIsNotMyLastTab
       };
     },
-    drop: (item) => {
-      props.onTabMove?.({ tabId: item.id, toViewId: id });
+    drop: (item, monitor) => {
+      if (!monitor.didDrop() && item.type === NodeType.Tab) {
+        props.onTabMove?.({ tabId: item.id, toViewId: id });
+      }
     }
   }));
+
+  const [, drag] = useDrag({
+    type: NodeType.TabView,
+    item: {
+      type: NodeType.TabView,
+      id: id
+    }
+  });
+  drag(drop(rootRef));
 
   const onDrop = (tabId: string, beforeTabId: string) => {
     props.onTabMove?.({ tabId, toViewId: id, beforeTabId });
@@ -113,13 +152,14 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
-      <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.fromExternalView })} />
-      <div ref={drop} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(members).length === 0 })}>
+      <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.isInsertingTabTabSourceFromExternalView })} />
+      <div ref={headerRef} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(members).length === 0 })}>
         <div className="pf-tab-title-list">
-          {members.map((tab) => (
+          {members.map((tab, index) => (
             <Tab
               id={tab.id}
-              path={currentPath}
+              prevTabId={members[index - 1]?.id}
+              tabViewId={id}
               className="pf-tab-view__tab-title"
               key={tab.id}
               children={titleFormatter ? titleFormatter(view, tab) : tab.title}
@@ -131,6 +171,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
               title={tab.title}
             />
           ))}
+          {collected.isInsertingTabSourceIsNotMyLastTab && <div className="pf-insert-zone"></div>}
           {props.onAddNewClick && (
             <button id="add-new" className="pf-tab-view__add" key="add-new" onClick={onAddNew}>
               <IconAdd width={16} height={16} />
@@ -162,49 +203,63 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
 interface TabProps extends PropsWithChildren {
   className?: string;
   id: string;
+  prevTabId?: string;
   isActive?: boolean;
   isEditable?: boolean;
   onClick?: (tabId: string) => void;
   onClose?: (tabId: string) => void;
-  onDrop?: (tabId: string, beforeTabId: string, path: string[]) => void;
-  path: string[];
+  onDrop?: (tabId: string, beforeTabId: string) => void;
+  tabViewId: string;
   title: string;
 }
-export interface TabDraggingProps {
+export interface TabDragSource {
+  type: NodeType.Tab;
   id: string;
-  fromPath: string[];
+  prevTabId?: string;
+  tabViewId: string;
 }
-const Tab: FC<TabProps> = (props) => {
+const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
   const ref = useRef(null);
 
   const [editing, setEditing] = useState(false);
-  const [newTitle, setNewTitle] = useState(props.title);
-  const [collect, drag] = useDrag<TabDraggingProps>(() => ({
-    type: 'tab',
-    item: { id: props.id, fromPath: props.path },
+  const [newTitle, setNewTitle] = useState(title);
+  const [collect, drag] = useDrag<TabDragSource>(() => ({
+    type: NodeType.Tab,
+    item: {
+      type: NodeType.Tab,
+      id,
+      tabViewId
+    },
     collect: (monitor) => ({
       isDragging: monitor.isDragging()
     })
   }));
-  const [, drop] = useDrop<TabDraggingProps>(() => ({
-    accept: 'tab',
-    hover: (item) => {
-      props.onDrop?.(item.id, props.id, props.path);
+  const [collected, drop] = useDrop<TabDragSource, unknown, TabDropTarget>(() => ({
+    accept: [NodeType.Tab, NodeType.TabView],
+    collect: (monitor) => {
+      const item = monitor.getItem();
+      return {
+        isInserting: monitor.isOver() && item.type === NodeType.Tab
+      };
+    },
+    drop: (item) => {
+      console.log(item, props.prevTabId, id);
+      onDrop?.(item.id, id);
     }
   }));
-  const className = clsx({ 'pf-tab': true, 'pf-tab-active': props.isActive, 'pf-tab-is-dragging': collect.isDragging, [props.className || '']: true });
+  const className = clsx({ 'pf-tab': true, 'pf-tab-active': props.isActive, [props.className || '']: true });
   const onClose = (e) => {
     e.stopPropagation();
-    props.onClose?.(props.id);
+    props.onClose?.(id);
   };
   const onClick = () => {
-    props.onClick?.(props.id);
+    props.onClick?.(id);
   };
 
   const onDoubleClick = useEvent(() => {
     if (props.isEditable) {
       setEditing(true);
-      setNewTitle(props.title);
+      setNewTitle(title);
     }
   });
 
@@ -214,14 +269,17 @@ const Tab: FC<TabProps> = (props) => {
 
   drag(drop(ref));
   return (
-    <div ref={ref} onClick={onClick} className={className} onDoubleClick={onDoubleClick}>
-      {props.onClose && !editing && (
-        <button className="pf-tab__close" onClick={onClose}>
-          <IconXmark width={10} height={10} />
-        </button>
-      )}
-      {!editing ? props.children : <input autoFocus defaultValue={props.title} onBlur={onBlur} onChange={(e) => setNewTitle(e.currentTarget.value)} />}
-    </div>
+    <>
+      {collected.isInserting && <div className="pf-insert-zone"></div>}
+      <div ref={ref} onClick={onClick} className={className} onDoubleClick={onDoubleClick}>
+        {props.onClose && !editing && (
+          <button className="pf-tab__close" onClick={onClose}>
+            <IconXmark width={10} height={10} />
+          </button>
+        )}
+        {!editing ? props.children : <input autoFocus defaultValue={title} onBlur={onBlur} onChange={(e) => setNewTitle(e.currentTarget.value)} />}
+      </div>
+    </>
   );
 };
 

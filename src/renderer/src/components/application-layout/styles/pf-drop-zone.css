@@ -13,3 +13,13 @@
   opacity: 1;
   border: 3px solid #6495ed;
 }
+
+.pf-insert-zone {
+  align-self: stretch;
+  box-sizing: border-box;
+  background: #6495ed;
+  pointer-events: none;
+  min-height: 3px;
+  min-width: 3px;
+}
+
