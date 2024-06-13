@@ -4,31 +4,18 @@ import { ViewGroup } from './ViewGroup';
 import { IGroupView, ITabView, IWindow, NodeType } from '@renderer/stores/app-store';
 import { FC } from 'react';
 import TabView, { TabViewCommonProps } from './TabView';
+import { evalBoolean } from '../util';
 
 export interface NestedTabViewProps extends TabViewCommonProps {
   view: IWindow | IGroupView;
   headerControls?: {
-    isVisible: (view: ITabView, viewId: string) => boolean;
+    isVisible: (view: ITabView) => boolean;
     onClick: (viewId: string) => void;
     render: JSX.Element;
   }[];
 }
-export const NestedTabView: FC<NestedTabViewProps> = ({
-  direction,
-  headerControls,
-  id,
-  onAddNewClick,
-  onResize,
-  onTabChange,
-  onTabClose,
-  onTabMove,
-  path,
-  titleEditable,
-  titleFormatter,
-  view
-}) => {
+export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id, direction, ...props }) => {
   const _direction = direction || Direction.Horizontal;
-  const currentPath = [...(path || []), id];
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   return (
     'members' in view &&
@@ -38,7 +25,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
         const activeTabId = viewItem.activeTabId;
         const renderedHeaderControls = headerControls?.map(
           (control, idx) =>
-            control.isVisible(viewItem, viewItem.id) && (
+            evalBoolean(control.isVisible, viewItem) && (
               <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(viewItem.id)}>
                 {control.render}
               </button>
@@ -50,46 +37,17 @@ export const NestedTabView: FC<NestedTabViewProps> = ({
             direction={_direction}
             headerControls={!!renderedHeaderControls?.length && renderedHeaderControls}
             height={viewItem.height}
+            members={viewItem.members}
             id={viewItem.id}
             key={viewItem.id}
-            onAddNewClick={onAddNewClick}
-            onResize={onResize}
-            onTabChange={onTabChange}
-            onTabClose={onTabClose}
-            onTabMove={onTabMove}
-            path={currentPath}
-            members={viewItem.members}
-            titleEditable={titleEditable}
-            titleFormatter={titleFormatter}
-            width={viewItem.width}
+            {...props}
           />
         );
       } else {
         return (
           //TODO: move viewgroup to tabview map
-          <ViewGroup
-            id={viewItem.id}
-            key={viewItem.id}
-            direction={oppositeDirection}
-            width={viewItem.width}
-            height={viewItem.height}
-            path={currentPath}
-            onResize={onResize}
-          >
-            <NestedTabView
-              direction={oppositeDirection}
-              headerControls={headerControls}
-              id={viewItem.id}
-              onAddNewClick={onAddNewClick}
-              onResize={onResize}
-              onTabChange={onTabChange}
-              onTabClose={onTabClose}
-              onTabMove={onTabMove}
-              path={currentPath}
-              titleEditable={titleEditable}
-              titleFormatter={titleFormatter}
-              view={viewItem}
-            />
+          <ViewGroup id={viewItem.id} key={viewItem.id} direction={oppositeDirection} width={viewItem.width} height={viewItem.height} onResize={props.onResize}>
+            <NestedTabView direction={oppositeDirection} headerControls={headerControls} id={viewItem.id} view={viewItem} {...props} />
           </ViewGroup>
         );
       }

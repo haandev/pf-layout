@@ -81,7 +81,8 @@ export interface AppStore {
   //view actions
   attachView: (id: string) => void;
   detachView: (id: string) => void;
-  splitView: (id: string, direction: Direction) => void;
+  splitTabView: (id: string, direction: Direction) => void;
+  mergeTabViews: (options: { id: string; targetId: string; beforeTabId: string }) => void;
   resizeView: (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
 
   //tab actions
@@ -106,7 +107,6 @@ export interface AppStore {
   setFlow: (flow: ReactFlowInstance) => void;
 }
 let detachOffset = 0;
-let zIndexOffset = 0;
 
 export const useApp = create<AppStore>((set) => ({
   home: true,
@@ -139,7 +139,6 @@ export const useApp = create<AppStore>((set) => ({
   maximizeWindow: (id) => {
     set((state) => {
       const members = [...state.members];
-      const zIndex = ++zIndexOffset;
       const { item, parent } = getItemById<IWindow>(state, id);
       if (!isWindow(item) || !hasMembers(parent)) return { members };
 
@@ -159,7 +158,7 @@ export const useApp = create<AppStore>((set) => ({
         height: clientHeight,
         top: 0,
         left: 0,
-        zIndex
+        zIndex: nextZIndex(state)
       });
 
       return { members };
@@ -215,7 +214,6 @@ export const useApp = create<AppStore>((set) => ({
       const { item, parent } = getItemById<IWindow>(state, id);
       if (!isWindow(item) || !hasMembers(parent)) return { members };
 
-      const zIndex = ++zIndexOffset;
       if (item.previousPosition) {
         Object.assign(window, {
           top: item.previousPosition.top,
@@ -225,7 +223,7 @@ export const useApp = create<AppStore>((set) => ({
           previousPosition: undefined,
           minimized: false,
           maximized: false,
-          zIndex
+          zIndex: nextZIndex(state)
         });
       }
 
@@ -245,8 +243,7 @@ export const useApp = create<AppStore>((set) => ({
     set((state) => {
       const members = [...state.members];
       const newWindowId = v4();
-      const zIndex = ++zIndexOffset;
-      members.push({ ...window, id: newWindowId, zIndex });
+      members.push({ ...window, id: newWindowId, zIndex: nextZIndex(state) });
       return { members };
     });
   },
@@ -274,7 +271,8 @@ export const useApp = create<AppStore>((set) => ({
         width: 800,
         height: 600,
         top: centerY + (detachOffset % 10) * 20,
-        left: centerX + (detachOffset % 10) * 20
+        left: centerX + (detachOffset % 10) * 20,
+        zIndex: nextZIndex(state)
       };
       detachOffset++;
       windows.push(newWindow);
@@ -412,7 +410,8 @@ export const useApp = create<AppStore>((set) => ({
         if (beforeTabId) {
           const beforeTab = getItemById<ITab>(toView, beforeTabId) || {};
           parent.members.splice(index, 1);
-          toView.members.splice(beforeTab.item ? beforeTab.index : toView.members.length, 0, item);
+          const newIndex = beforeTab.item ? (beforeTab.index > index ? beforeTab.index - 1 : beforeTab.index) : toView.members.length;
+          toView.members.splice(newIndex, 0, item);
         } else {
           parent.members.splice(index, 1);
           toView.members.push(item);
@@ -432,7 +431,7 @@ export const useApp = create<AppStore>((set) => ({
       return cleanUp(state);
     });
   },
-  splitView: (id, direction) => {
+  splitTabView: (id, direction) => {
     set((state) => {
       const members = [...state.members];
       const { item, parent, index, depth } = getItemById<ITabView>(state, id);
@@ -502,6 +501,22 @@ export const useApp = create<AppStore>((set) => ({
       if (nextView) nextView[sizeProp] = nextItemSize;
 
       return { members };
+    });
+  },
+  mergeTabViews: (options) => {
+    set((state) => {
+      const members = [...state.members];
+      const { item: source, parent: sourceParent, index } = getItemById<ITabView>(state, options.id);
+      const { item: target, parent: targetParent } = getItemById<ITabView>(state, options.targetId);
+      if (!isTabView(source) || !isTabView(target) || !isGroupView(sourceParent) || target.id === source.id || !parent || !targetParent) return { members };
+
+      const targetTabs = target.members;
+
+      const spliceIndex = options.beforeTabId ? getItemById<ITabView>(target, options.beforeTabId).index || targetTabs.length : targetTabs.length;
+      target.members.splice(spliceIndex, 0, ...source.members);
+      target.activeTabId = source.activeTabId || target.activeTabId;
+      sourceParent.members.splice(index, 1);
+      return cleanUp(state);
     });
   },
 
@@ -596,7 +611,10 @@ const nextUntitledCount = (state: NestedState) => {
 type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
 
 //TODO: implement with traverse function
-const getItemById = <T extends StateItem>(state: NestedState, id: string, depth: number = 0): LookupResult<T> => {
+const getItemById = <T extends StateItem>(state: NestedState, id?: string, depth: number = 0): LookupResult<T> => {
+  if (!id) {
+    return { item: null, parent: null, index: -1, depth };
+  }
   if ('id' in state && state.id === id) {
     return { item: state, parent: null, index: -1, depth } as LookupResult<T>;
   }
@@ -623,4 +641,8 @@ const traverse = <T extends (...params: any[]) => any>(state: NestedState, func:
     state.members.some((child: NestedState) => traverse(child, func));
   }
   return false;
+};
+
+const nextZIndex = (state: AppStore) => {
+  return Math.max(...state.members.map((window) => window.zIndex || 0)) + 1;
 };

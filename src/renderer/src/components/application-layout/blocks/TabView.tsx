@@ -1,7 +1,7 @@
 import clsx from 'clsx';
-import { useDrag, useDrop } from 'react-dnd';
+import { DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
 
-import React, { FC, PropsWithChildren, act, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, FC, PropsWithChildren, RefObject, act, useEffect, useRef, useState } from 'react';
 import { useParentDirection, useValidateElement, SplitResizeHandle } from '..';
 import { Direction } from '../types';
 
@@ -10,6 +10,7 @@ import IconAdd from '../icons/IconAdd';
 import { ITab, ITabView, NodeType } from '@renderer/stores/app-store';
 import { evalBoolean, findById } from '../util';
 import useEvent from 'react-use-event-hook';
+import { getEmptyImage } from 'react-dnd-html5-backend';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -22,7 +23,6 @@ export type TabTitleEditable = boolean | ((tabView: ITabView, tab: ITab) => bool
 export interface TabViewCommonProps {
   direction?: Direction;
   id: string; //path member
-  path?: string[];
   onAddNewClick?: OnAddNewClickHandler;
   onResize?: OnSplitResizeHandler;
   onTabChange?: OnTabChangeHandler;
@@ -30,6 +30,10 @@ export interface TabViewCommonProps {
   onTabMove?: OnTabMoveHandler;
   titleFormatter?: (tabView: ITabView, tab: ITab) => React.ReactNode;
   titleEditable?: boolean | ((tabView: ITabView, tab: ITab) => boolean);
+  detachable: boolean | ((tabView: ITabView) => boolean);
+  attachable: boolean | ((tabView: ITabView) => boolean);
+  onDetach?: (tabView: ITabView) => void;
+  onAttach?: (tabView: ITabView) => void;
 }
 export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'> {
   //don't call directly, used for recursion
@@ -43,31 +47,21 @@ export type TabViewDragSource = {
   id: string;
 };
 export type TabViewDropTarget = {
-  item: TabViewDragSource | TabDragSource | false;
-  isTabSource: boolean;
-  isTabSourceFromExternalView: boolean;
-  isInsertingTabTabSourceFromExternalView: boolean;
-  isInsertingTabSourceFromSameView: boolean;
-  isInsertingTabSourceIsNotMyLastTab: boolean;
+  isInsertable?: boolean;
+  isDroppable?: boolean;
 };
 export type TabViwDroppableItems = TabViewDragSource | TabDragSource;
 export type TabDropTarget = {
   isInserting: boolean;
 };
-const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path, id, ...props }) => {
-  const view: ITabView = {
-    type: NodeType.TabView,
-    members,
-    id: id,
-    activeTabId: activeTabId,
-    width: props.width,
-    height: props.height
-  };
+const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
+  const view: ITabView = { type: NodeType.TabView, members, id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);
-  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group,.pf-window__content' } }, (validation) => {
+  const headerRef = useRef<HTMLDivElement>(null);
+  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group' } }, (validation) => {
     if (!validation) {
-      throw new Error('TabView must be used within a Container.');
+      throw new Error('TabView must be used within a ViewGroup.');
     }
   });
 
@@ -84,12 +78,6 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
   };
 
   const direction = useParentDirection(rootRef, '.pf-view-group');
-  const style = {
-    width: props.width,
-    height: props.height,
-    minWidth: props.width,
-    minHeight: props.height
-  };
 
   const onTabClose = (tabId: string) => {
     const previousTabIndex = members.findIndex(({ id }) => id === tabId) - 1;
@@ -106,53 +94,78 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
   };
 
   const onResize = (size: number, nextItemSize?: number) => {
+    console.log('resize fired', direction, size, id, nextItemSize);
     props.onResize?.(direction, size, id, nextItemSize);
   };
 
-  const headerRef = useRef<HTMLDivElement>(null);
   const [collected, drop] = useDrop<TabViwDroppableItems, any, TabViewDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
-      const item = monitor.isOver({ shallow: true }) && monitor.getItem();
-      const isTabSource = item && item.type === NodeType.Tab;
-      const isTabSourceFromExternalView = isTabSource && item.tabViewId !== id;
-      const isInsertingTabTabSourceFromExternalView = isTabSourceFromExternalView && monitor.isOver();
-      const isInsertingTabSourceFromSameView = isTabSource && monitor.isOver() && item.tabViewId === id;
-      const isInsertingTabSourceIsNotMyLastTab = isInsertingTabSourceFromSameView && isTabSource && item.id !== members[members.length - 1]?.id;
+      const isOverOnlyMe = monitor.isOver({ shallow: true });
+      const isOverMe = monitor.isOver();
+      const item = monitor.getItem();
+
+      const isInsertingTabTabSourceFromExternalView = isOverMe && item.type === NodeType.Tab && item.tabViewId !== id;
+
       return {
-        item,
-        isTabSource,
-        isTabSourceFromExternalView,
-        isInsertingTabTabSourceFromExternalView,
-        isInsertingTabSourceFromSameView,
-        isInsertingTabSourceIsNotMyLastTab
+        isInsertable: isOverOnlyMe && item.id !== id,
+        isDroppable: isInsertingTabTabSourceFromExternalView
       };
     },
     drop: (item, monitor) => {
+      //tab from somewhere else, not dropped on a tab
       if (!monitor.didDrop() && item.type === NodeType.Tab) {
         props.onTabMove?.({ tabId: item.id, toViewId: id });
       }
     }
   }));
 
-  const [, drag] = useDrag({
+  const [collectedOnContentSection, dropContent] = useDrop<TabViwDroppableItems, any, TabViewDropTarget>(() => ({
+    accept: [NodeType.Tab, NodeType.TabView],
+    collect: (monitor) => {
+      const isOverOnlyMe = monitor.isOver({ shallow: true });
+      const item = monitor.getItem();
+      return {
+        isDroppable: isOverOnlyMe && item.type === NodeType.Tab && item.tabViewId !== id
+      };
+    },
+    drop: (item, monitor) => {
+      //tab from somewhere else, not dropped on a tab
+      if (!monitor.didDrop() && item.type === NodeType.Tab) {
+        props.onTabMove?.({ tabId: item.id, toViewId: id });
+      }
+
+      //self window detach
+      if (item.type === NodeType.TabView && item.id === id && detachable) {
+        props.onDetach?.(view);
+      }
+    }
+  }));
+
+  const [isDragging, drag, preview] = useDrag({
     type: NodeType.TabView,
+    canDrag: () => detachable && evalBoolean(detachable, view),
+    collect: (monitor) => monitor.isDragging(),
     item: {
       type: NodeType.TabView,
       id: id
     }
   });
-  drag(drop(rootRef));
+  drop(rootRef);
+
+  drag(headerRef);
+  preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
     props.onTabMove?.({ tabId, toViewId: id, beforeTabId });
   };
   const content = activeTabId ? findById(members, activeTabId)?.content : null;
+  const style: CSSProperties = { width, height, minWidth: width, minHeight: height, opacity: isDragging ? '0' : '1' };
 
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
-      <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.isInsertingTabTabSourceFromExternalView })} />
+      <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collectedOnContentSection.isDroppable })} />
       <div ref={headerRef} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(members).length === 0 })}>
         <div className="pf-tab-title-list">
           {members.map((tab, index) => (
@@ -171,7 +184,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
               title={tab.title}
             />
           ))}
-          {collected.isInsertingTabSourceIsNotMyLastTab && <div className="pf-insert-zone"></div>}
+          {collected.isInsertable && <div className="pf-insert-zone"></div>}
           {props.onAddNewClick && (
             <button id="add-new" className="pf-tab-view__add" key="add-new" onClick={onAddNew}>
               <IconAdd width={16} height={16} />
@@ -180,7 +193,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, path,
         </div>
         {props.headerControls && <div className="pf-view-controls">{props.headerControls}</div>}
       </div>
-      <div className="pf-tab-view__content">
+      <div ref={dropContent} className="pf-tab-view__content">
         {props.noCache ? (
           <div className="pf-tab-view__content-inner">{content}</div>
         ) : (
@@ -223,7 +236,8 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
 
   const [editing, setEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
-  const [collect, drag] = useDrag<TabDragSource>(() => ({
+
+  const [current, drag] = useDrag<TabDragSource>(() => ({
     type: NodeType.Tab,
     item: {
       type: NodeType.Tab,
@@ -231,7 +245,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
       tabViewId
     },
     collect: (monitor) => ({
-      isDragging: monitor.isDragging()
+      isDragging: monitor.isDragging() && monitor.getItem().id === id
     })
   }));
   const [collected, drop] = useDrop<TabDragSource, unknown, TabDropTarget>(() => ({

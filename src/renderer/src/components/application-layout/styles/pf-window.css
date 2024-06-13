@@ -31,7 +31,9 @@
   border-bottom: 1px solid var(--pf-dark-border-color);
   padding: 5px;
 }
-
+.pf-window__inside {
+  background: var(--pf-primary-color);
+}
 .pf-window__inside.pf-horizontal > pf-window__content,
 .pf-window__inside.pf-vertical {
   flex-direction: row;

@@ -1,3 +1,5 @@
+import { CSSProperties } from 'react';
+
 export const findById = <T extends { id: number | string }>(arr: T[], id?: number | string): T | undefined => {
   if (!id) return undefined;
   return arr.find((item) => item?.id === id);
@@ -42,4 +44,11 @@ export const evalBoolean = <T extends (...params: any[]) => boolean>(
   } else {
     return true;
   }
+};
+
+const invisible = (style: CSSProperties = {}) => {
+  return {
+    ...style,
+    visibility: 'hidden'
+  };
 };

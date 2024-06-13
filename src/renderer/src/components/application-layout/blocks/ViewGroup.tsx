@@ -10,12 +10,11 @@ export interface ViewGroupProps extends PropsWithChildren {
   direction: Direction;
   width?: number;
   height?: number;
-  path?: string[];
   onResize?: OnSplitResizeHandler;
   id: string;
 }
 
-export const ViewGroup: FC<ViewGroupProps> = React.memo(({ path, id, ...props }) => {
+export const ViewGroup: FC<ViewGroupProps> = React.memo(({  id, ...props }) => {
   const oppositeDirection = props.direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   const rootRef = useRef<HTMLDivElement>(null);
 

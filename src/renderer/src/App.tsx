@@ -56,12 +56,15 @@ import { AppToolsStickySvgButton } from './components/layout-preset/AppStickyBut
 import { NestedTabView } from './components/application-layout/blocks/NestedTabView';
 import { Scene } from './components/application-layout/blocks/Scene';
 import { Window } from './components/application-layout/blocks/Window';
-import { useApp } from './stores/app-store';
+import { IWindow, NodeType, useApp } from './stores/app-store';
 import Welcome from './pages/Welcome';
 import { FlowPage } from './pages/FlowPage';
 
 function App(): JSX.Element {
   const app = useApp();
+
+  const canWindowDetachable = (win: IWindow) =>
+    !win.floating || (win.floating && win.members[0]?.members?.[0]?.type === NodeType.GroupView) || win.members[0]?.members?.length > 1;
   return (
     <ApplicationLayout home={app.home && <Welcome />}>
       <Container name="top-toolbar-container" direction={Direction.Vertical} maxItems={1}>
@@ -222,18 +225,22 @@ function App(): JSX.Element {
                         }
                       : undefined
                   }
+                  detachable={canWindowDetachable(win)}
+                  attachable={!!win.floating}
+                  onDetach={(tabView) => app.detachView(tabView.id)}
+                  onAttach={(tabView) => app.attachView(tabView.id)}
                   headerControls={
                     !win.minimized
                       ? [
                           {
                             isVisible: (view) => view && view.members.length > 1,
                             render: <IconSplitSquareHorizontal width={16} height={16} />,
-                            onClick: (viewId) => app.splitView(viewId, Direction.Horizontal)
+                            onClick: (viewId) => app.splitTabView(viewId, Direction.Horizontal)
                           },
                           {
                             isVisible: (view) => view && view.members.length > 1,
                             render: <IconSplitSquareVertical width={16} height={16} />,
-                            onClick: (viewId) => app.splitView(viewId, Direction.Vertical)
+                            onClick: (viewId) => app.splitTabView(viewId, Direction.Vertical)
                           },
                           {
                             isVisible: () => !win.floating,
