@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { Direction, IGroupView, ITab, ITabView, IWindow, NodeType } from '../types';
 import { cleanUp, hasMembers, isGroupView, isTab, isTabView, isWindow, lookUp, nextUntitledCount, nextZIndex, traverse, updateSizes } from '../util';
 import { v4 } from 'uuid';
-import { SceneEvents } from '../event.types';
+import { SceneEvents } from '../types.event';
 
 let detachOffset = 0;
 
@@ -437,6 +437,6 @@ export const useScene = create<SceneStore>((set) => {
         return cleanUp(state);
       }),
 
-    events //events is not reactive, constantly created behind return of store,
+    events //just export, events is not reactive, constantly created behind return of store,
   };
 });

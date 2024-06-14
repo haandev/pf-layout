@@ -9,7 +9,7 @@ import IconXmark from '../icons/IconXmark';
 import IconAdd from '../icons/IconAdd';
 import { evalBoolean, lookUp } from '../util';
 import useEvent from 'react-use-event-hook';
-import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDropTarget, TabViewDroppableItems } from '../dnd.types';
+import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDropTarget, TabViewDroppableItems } from '../types.dnd';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;

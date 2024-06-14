@@ -3,7 +3,7 @@ import { FC, useRef } from 'react';
 import { useValidateElement } from '../hooks/use-validate-element';
 import { useDrop } from 'react-dnd';
 import { Direction, IWindow, NodeType } from '../types';
-import { SceneDropTarget, SceneDroppableItems } from '../dnd.types';
+import { SceneDropTarget, SceneDroppableItems } from '../types.dnd';
 import { SceneStore } from '../stores/scene-store';
 import IconSplitSquareHorizontal from '../icons/IconSplitSquareHorizontal';
 import { Window } from './Window';
@@ -11,7 +11,7 @@ import { NestedTabView } from './NestedTabView';
 import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
 import IconWindowStack from '../icons/IconWindowStack';
 import IconLayout from '../icons/IconLayout';
-import { SceneEvents } from '../event.types';
+import { SceneEvents } from '../types.event';
 import { useInitialize } from '../hooks/use-initialize';
 
 /*

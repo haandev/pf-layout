@@ -1,5 +1,4 @@
-import { OnResize } from 'reactflow';
-import { Direction, ITab } from './types';
+import { ITab } from './types';
 
 //TODO: this page is still draft
 
