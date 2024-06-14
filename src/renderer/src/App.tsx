@@ -69,14 +69,17 @@ function App(): JSX.Element {
     return content;
   };
 
+  const onAddTab = () => app.hideHome();
+  const onCloseTab = () => requestAnimationFrame(() => scene.members.length < 1 && app.showHome());
+
   return (
-    <ApplicationLayout home={scene.home && <Welcome />}>
+    <ApplicationLayout home={app.home && <Welcome />}>
       <Container name="top-toolbar-container" direction={Direction.Vertical} maxItems={1}>
         <ToolbarStackGroup>
           <ToolbarStack name="top-toolbar-stack" direction={Direction.Horizontal} maxItems={1}>
             <Toolbar name="main-toolbar" direction={Direction.Horizontal}>
               <DragHandle />
-              <ToolbarItem children={<IconButton children={<IconHome />} onClick={scene.showHome} />} />
+              <ToolbarItem children={<IconButton children={<IconHome />} onClick={app.showHome} />} />
               <Separator />
               <ToolbarItem children={<Label>Nothing selected</Label>} />
               <Separator />
@@ -191,7 +194,7 @@ function App(): JSX.Element {
             </Toolbar>
           </ToolbarStack>
         </ToolbarStackGroup>
-        <Scene store={scene} newTabContent={newTabContentCtor} />
+        <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
         <ToolbarStackGroup onClose={() => {}}>
           <ToolbarStack
             name="main-tools-stack"

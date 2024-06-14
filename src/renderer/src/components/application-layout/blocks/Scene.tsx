@@ -11,6 +11,8 @@ import { NestedTabView } from './NestedTabView';
 import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
 import IconWindowStack from '../icons/IconWindowStack';
 import IconLayout from '../icons/IconLayout';
+import { SceneEvents } from '../event.types';
+import { useInitialize } from '../hooks/use-initialize';
 
 /*
  * Determines if a window can be detached based on its floating status and the structure of its members.
@@ -23,13 +25,19 @@ import IconLayout from '../icons/IconLayout';
 const canWindowDetachable = (win: IWindow) =>
   !win.floating || (win.floating && win.members[0]?.members?.[0]?.type === NodeType.GroupView) || win.members[0]?.members?.length > 1;
 
-export interface SceneProps {
+export interface SceneProps extends SceneEvents {
   store: SceneStore;
   newTabContent: () => JSX.Element;
 }
-export const Scene: FC<SceneProps> = ({ store, newTabContent }) => {
+
+export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
+
+  //update contents of scene events with props events
+  Object.assign(store.events, events);
+
   const rootRef = useRef<HTMLDivElement>(null);
 
+  //validate nesting order
   useValidateElement(rootRef, { $parent: { $match: '.pf-container' } }, (validation) => {
     if (!validation) {
       throw new Error('Scene must be used within a Container.');

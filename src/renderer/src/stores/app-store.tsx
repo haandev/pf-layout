@@ -2,6 +2,11 @@ import { create } from 'zustand';
 import { ReactFlowInstance } from 'reactflow';
 
 export interface AppStore {
+  //home state and actions
+  home?: boolean;
+  showHome: () => void;
+  hideHome: () => void;
+
   //toolbar state
   tool: string;
   toolbarColSize: number;
@@ -17,6 +22,9 @@ export interface AppStore {
   setFlow: (flow: ReactFlowInstance) => void;
 }
 export const useApp = create<AppStore>((set) => ({
+  home: true,
+  showHome: () => set({ home: true }),
+  hideHome: () => set({ home: false }),
   flow: undefined,
   setFlow: (flow) => set({ flow }),
   tool: 'selection',
