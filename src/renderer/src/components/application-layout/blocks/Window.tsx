@@ -70,7 +70,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
 
   const header = useDragDelta<HTMLDivElement>({
     onDrag: moveFloatingWindowHandler,
-    safetyMargins: { top: 50, left: 50, right: 50, bottom: 50 },
+    safetyMargins: { top: 1, left: 1, right: 1, bottom: 1 },
     type: 'window'
   });
 
