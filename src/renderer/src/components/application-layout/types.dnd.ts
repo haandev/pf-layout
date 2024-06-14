@@ -16,8 +16,6 @@ export interface TabDragSource {
 export type TabViewDragSource = {
   type: NodeType.TabView;
   id: string;
-  x: number;
-  y: number;
 };
 
 export type TabViewDropTarget = {

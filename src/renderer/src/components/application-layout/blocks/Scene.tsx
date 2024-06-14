@@ -35,7 +35,7 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
   Object.assign(store.events, events);
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const floatingWindowDropAreaRef = useRef<HTMLDivElement>(null);
+
   //validate nesting order
   useValidateElement(rootRef, { $parent: { $match: '.pf-container,body' } }, (validation) => {
     if (!validation) {
@@ -44,7 +44,7 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
   });
 
   const [collected, drop] = useDrop<SceneDroppableItems, unknown, SceneDropTarget>(() => ({
-    accept: [NodeType.Tab, NodeType.TabView, NodeType.Window],
+    accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
       const isOverOnlyMe = monitor.isOver({ shallow: true });
       const item = monitor.getItem();
@@ -64,31 +64,10 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
         store.attachView?.(item.id);
       }
 
-      if (item.type === NodeType.Window) {
-        const delta = monitor.getDifferenceFromInitialOffset();
-        if (!delta) return;
-        store.moveWindow?.(item.id, delta.x, delta.y);
-      }
+      //
     }
   }));
-
-  const [, dropFloatingWindowArea] = useDrop<SceneDroppableItems, unknown, SceneDropTarget>({
-    accept: [NodeType.Window],
-    collect: (monitor) => {
-      const isOverOnlyMe = monitor.isOver({ shallow: true });
-      return {
-        isDroppable: isOverOnlyMe
-      };
-    },
-    drop: (item, monitor) => {
-      const delta = monitor.getDifferenceFromInitialOffset();
-      if (!delta) return;
-      store.moveWindow?.(item.id, delta.x, delta.y);
-    }
-  });
-
   drop(rootRef);
-  dropFloatingWindowArea(floatingWindowDropAreaRef);
 
   return (
     <>
@@ -169,7 +148,7 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
             return child;
           })}
       </div>
-      <div ref={floatingWindowDropAreaRef} className="pf-floating-windows" />
+      <div className="pf-floating-windows" />
     </>
   );
 };
