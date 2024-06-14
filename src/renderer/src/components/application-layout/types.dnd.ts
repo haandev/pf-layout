@@ -1,6 +1,11 @@
 import { NodeType } from './types';
 
 //drag sources
+
+export interface WindowDragSource {
+  type: NodeType.Window;
+  id: string;
+}
 export interface TabDragSource {
   type: NodeType.Tab;
   id: string;
@@ -11,6 +16,8 @@ export interface TabDragSource {
 export type TabViewDragSource = {
   type: NodeType.TabView;
   id: string;
+  x: number;
+  y: number;
 };
 
 export type TabViewDropTarget = {
@@ -28,5 +35,5 @@ export interface SceneDropTarget {
 
 //droppable items
 export type TabViewDroppableItems = TabViewDragSource | TabDragSource;
-export type SceneDroppableItems = TabViewDragSource | TabDragSource;
+export type SceneDroppableItems = TabViewDragSource | TabDragSource | WindowDragSource;
 export type TabDroppableItems = TabDragSource;

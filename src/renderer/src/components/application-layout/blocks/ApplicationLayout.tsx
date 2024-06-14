@@ -27,7 +27,6 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ home, style, cla
         style={style}
       >
         {children}
-        <div className="pf-floating-windows" />
       </div>
     </>
   );

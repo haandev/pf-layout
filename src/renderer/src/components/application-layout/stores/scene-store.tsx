@@ -17,10 +17,11 @@ export interface SceneStore {
   minimizeWindow: (id: string) => void;
   closeWindow: (id: string) => void;
   restoreWindowSize: (id: string) => void;
+  moveWindow: (id: string, xDelta: number, yDelta: number) => void;
 
   ////view actions
   attachView: (id: string) => void;
-  detachView: (id: string) => void;
+  detachView: (id: string, x?: number, y?: number) => void;
   splitTabView: (id: string, direction: Direction) => void;
   mergeTabViews: (options: { id: string; targetId: string; beforeTabId: string }) => void;
   resizeView: (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
@@ -161,7 +162,20 @@ export const useScene = create<SceneStore>((set) => {
         parent.members.splice(index, 1);
         return cleanUp(state);
       }),
-    detachView: (id) =>
+    moveWindow: (id, xDelta, yDelta) =>
+      set((state) => {
+        const members = [...state.members];
+        const { item, parent } = lookUp<IWindow>(state, id);
+        if (!isWindow(item) || !hasMembers(parent)) return { members };
+
+        Object.assign(item, {
+          top: item.top ? item.top + yDelta : 0,
+          left: item.left ? item.left + xDelta : 0
+        });
+
+        return { members };
+      }),
+    detachView: (id, x, y) =>
       set((state) => {
         const members = [...state.members];
         const windows = state.members;
@@ -184,8 +198,8 @@ export const useScene = create<SceneStore>((set) => {
           floating: true,
           width: 800,
           height: 600,
-          top: centerY + (detachOffset % 10) * 20,
-          left: centerX + (detachOffset % 10) * 20,
+          top: y || centerY + (detachOffset % 10) * 20,
+          left: x || centerX + (detachOffset % 10) * 20,
           zIndex: nextZIndex(state)
         };
         detachOffset++;
@@ -413,7 +427,6 @@ export const useScene = create<SceneStore>((set) => {
         const { item, parent, index } = lookUp<ITabView | IGroupView>(state, id);
         if (!item || !(isTabView(item) || isGroupView(item)) || !isGroupView(parent)) return { members };
         const nextView = parent.members[index + 1];
-        console.log({ item, parent, index, nextView });
 
         const sizeProp = direction === Direction.Horizontal ? 'width' : 'height';
         item[sizeProp] = size;

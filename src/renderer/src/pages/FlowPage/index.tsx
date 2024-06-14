@@ -18,14 +18,9 @@ export const FlowPage: FC<FlowPageProps> = React.memo(({ id }) => {
 const FlowPageProvided: FC<FlowPageProps> = React.memo(({ id }) => {
   const setFlow = useApp((store) => store.setFlow);
   const flow = useReactFlow();
-  const { ref } = useInView({
-    onChange: (inView) => {
-      if (!inView) return;
-      setFlow(flow);
-    }
-  });
+
   return (
-    <div ref={ref} style={{ height: '100%', width: '100%', background: 'white' }}>
+    <div  style={{ height: '100%', width: '100%', background: 'white' }}>
       <ReactFlow proOptions={{ hideAttribution: true }}>
         <Background id={id} />
       </ReactFlow>

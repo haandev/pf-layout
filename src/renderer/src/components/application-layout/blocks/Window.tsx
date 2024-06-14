@@ -3,14 +3,15 @@ import clsx from 'clsx';
 import useEvent from 'react-use-event-hook';
 import { useWindowSize } from 'usehooks-ts';
 
-import { Direction } from '../types';
-import { useValidateElement, useDragDelta } from '..';
+import { Direction, NodeType } from '../types';
+import { useValidateElement } from '..';
 import IconXmark from '../icons/IconXmark';
 import IconMinus from '../icons/IconMinus';
 import IconPlus from '../icons/IconPlus';
 import { UseBoxResizeHandler } from '../hooks/use-box-resize';
 import ResizeBox from '../elements/ResizeBox';
-import { useDropDelta } from '../hooks/use-drop-delta';
+import { useDrag } from 'react-dnd';
+import { WindowDragSource } from '../types.dnd';
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export interface WindowProps extends PropsWithChildren {
@@ -22,7 +23,6 @@ export interface WindowProps extends PropsWithChildren {
   top?: number;
   left?: number;
   id: string;
-  path?: string[];
   zIndex?: number;
   minimized?: boolean;
   maximized?: boolean;
@@ -32,7 +32,7 @@ export interface WindowProps extends PropsWithChildren {
   onRestore?: (id: string) => void;
 }
 
-export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
+export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
   useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {
@@ -56,37 +56,24 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     props.onWindowResize?.(...args, id);
   };
 
-  //handle floating window move
-  const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
-    const element = rootRef.current;
-    if (!element) return;
-    const initialRect = element.getBoundingClientRect();
-    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, id);
-  });
-
   //handle set zIndex to the top
   const onClickAnywhere = useEvent(() => {
     props.onWindowResize?.(props.width || 0, props.height || 0, props.top || 0, props.left || 0, id);
   });
 
-  const header = useDragDelta<HTMLDivElement>({
-    onDrag: moveFloatingWindowHandler,
-    safetyMargins: { top: 50, left: 50, right: 50, bottom: 50 },
-    type: 'window'
-  });
-
-  useDropDelta({
-    ref: header,
-    accepts: ['window'],
-    onDrop: (e) => {}
-  });
-
-  //drag(header)
   const _direction = props.direction || Direction.Horizontal;
   const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical';
 
   //floating window header
-
+  const [isDragging, header, preview] = useDrag<WindowDragSource>({
+    collect: (monitor) => monitor.isDragging(),
+    type: NodeType.Window,
+    item: {
+      type: NodeType.Window,
+      id
+    }
+  });
+  preview(rootRef);
   const onHeaderDoubleClick = useEvent(() => {
     if (props.maximized) {
       props.onRestore?.(id);
@@ -148,7 +135,8 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
     left: props.floating && props.left !== undefined ? `${props.left}px` : undefined,
     width: props.width ? `${props.width}px` : undefined,
     height: props.height ? `${props.height}px` : undefined,
-    zIndex: (props.zIndex || 0) + 300
+    zIndex: (props.zIndex || 0) + 300,
+    opacity: isDragging ? 0 : 1
   };
 
   const styleAttached: React.CSSProperties = {

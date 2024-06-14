@@ -9,7 +9,7 @@ import IconXmark from '../icons/IconXmark';
 import IconAdd from '../icons/IconAdd';
 import { evalBoolean, lookUp } from '../util';
 import useEvent from 'react-use-event-hook';
-import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDropTarget, TabViewDroppableItems } from '../types.dnd';
+import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDragSource, TabViewDropTarget, TabViewDroppableItems } from '../types.dnd';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -31,7 +31,7 @@ export interface TabViewCommonProps {
   titleEditable?: boolean | ((tabView: ITabView, tab: ITab) => boolean);
   detachable: boolean | ((tabView: ITabView) => boolean);
   attachable: boolean | ((tabView: ITabView) => boolean);
-  onDetach?: (tabViewId: string) => void;
+  onDetach?: (tabViewId: string, x?: number, y?: number) => void;
   onAttach?: (tabViewId: string) => void;
 }
 export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'> {
@@ -81,7 +81,6 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
   };
 
   const onResize = (size: number, nextItemSize?: number) => {
-    console.log('resize fired', direction, size, id, nextItemSize);
     props.onResize?.(direction, size, id, nextItemSize);
   };
 
@@ -124,18 +123,33 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
 
       //self window detach
       if (item.type === NodeType.TabView && item.id === id && detachable) {
-        props.onDetach?.(view.id);
+        const client = monitor.getClientOffset() || { x: 0, y: 0 };
+        const initialClient = monitor.getInitialClientOffset() || { x: 0, y: 0 };
+        const offset = {
+          x: initialClient.x - item.x,
+          y: initialClient.y - item.y
+        };
+        const newPosition = {
+          x: client.x - offset.x,
+          y: client.y - offset.y - 25
+        };
+
+        props.onDetach?.(view.id, newPosition.x, newPosition.y);
       }
     }
   }));
 
-  const [isDragging, drag, preview] = useDrag({
+  const [isDragging, drag, preview] = useDrag<TabViewDragSource>({
     type: NodeType.TabView,
     canDrag: () => detachable && evalBoolean(detachable, view),
     collect: (monitor) => monitor.isDragging(),
-    item: {
-      type: NodeType.TabView,
-      id: id
+    item: () => {
+      return {
+        type: NodeType.TabView,
+        id: id,
+        x: rootRef.current?.getBoundingClientRect().x || 0,
+        y: rootRef.current?.getBoundingClientRect().y || 0
+      };
     }
   });
 
@@ -240,7 +254,6 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
       };
     },
     drop: (item) => {
-      console.log(item, props.prevTabId, id);
       onDrop?.(item.id, id);
     }
   }));
