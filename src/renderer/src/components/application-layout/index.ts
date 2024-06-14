@@ -1,5 +1,4 @@
 //blocks
-export { AlignedContainers } from './blocks/AlignedContainers';
 export { ApplicationLayout } from './blocks/ApplicationLayout';
 export { Container } from './blocks/Container';
 export { Toolbar } from './blocks/Toolbar';
