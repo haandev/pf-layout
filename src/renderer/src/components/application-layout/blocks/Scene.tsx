@@ -12,7 +12,7 @@ import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
 import IconWindowStack from '../icons/IconWindowStack';
 import IconLayout from '../icons/IconLayout';
 import { SceneEvents } from '../types.event';
-import { useInitialize } from '../hooks/use-initialize';
+import { createPortal } from 'react-dom';
 
 /*
  * Determines if a window can be detached based on its floating status and the structure of its members.
@@ -31,16 +31,15 @@ export interface SceneProps extends SceneEvents {
 }
 
 export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
-
   //update contents of scene events with props events
   Object.assign(store.events, events);
 
   const rootRef = useRef<HTMLDivElement>(null);
 
   //validate nesting order
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-container,body' } }, (validation) => {
     if (!validation) {
-      throw new Error('Scene must be used within a Container.');
+      throw new Error('Scene must be used within a Container or directly.');
     }
   });
 
@@ -73,74 +72,79 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
     <div ref={rootRef} className={clsx(['pf-scene'])}>
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collected.isDroppable })} />
       {store.members.length > 0 &&
-        store.members.map((win) => (
-          <Window
-            id={win.id}
-            floating={win.floating}
-            key={win.id}
-            width={win.width}
-            height={win.height}
-            top={win.top}
-            left={win.left}
-            onWindowResize={store.resizeWindow}
-            zIndex={win.zIndex}
-            minimized={win.minimized}
-            maximized={win.maximized}
-            onMaximize={store.maximizeWindow}
-            onMinimize={store.minimizeWindow}
-            onRestore={store.restoreWindowSize}
-            onClose={store.closeWindow}
-          >
-            <NestedTabView
+        store.members.map((win) => {
+          const child = (
+            <Window
               id={win.id}
-              view={win}
-              titleFormatter={(_tabView, tab) => tab.title}
-              titleEditable={true}
-              onTabChange={store.changeTab}
-              onTabClose={store.closeTab}
-              onTabMove={store.moveTab}
-              onResize={store.resizeView}
-              onAddNewClick={
-                !win.minimized
-                  ? (viewId) => {
-                      const content = newTabContent();
-                      store.addTab(viewId, { content, recentlyCreated: true });
-                    }
-                  : undefined
-              }
-              detachable={canWindowDetachable(win)}
-              attachable={!!win.floating}
-              onDetach={store.detachView}
-              onAttach={store.attachView}
-              headerControls={
-                !win.minimized
-                  ? [
-                      {
-                        isVisible: (view) => view && view.members.length > 1,
-                        render: <IconSplitSquareHorizontal width={16} height={16} />,
-                        onClick: (viewId) => store.splitTabView(viewId, Direction.Horizontal)
-                      },
-                      {
-                        isVisible: (view) => view && view.members.length > 1,
-                        render: <IconSplitSquareVertical width={16} height={16} />,
-                        onClick: (viewId) => store.splitTabView(viewId, Direction.Vertical)
-                      },
-                      {
-                        isVisible: () => !win.floating,
-                        render: <IconWindowStack width={16} height={16} />,
-                        onClick: (viewId) => store.detachView(viewId)
-                      },
-                      {
-                        isVisible: () => !!win.floating,
-                        render: <IconLayout width={16} height={16} />,
-                        onClick: (viewId) => store.attachView(viewId)
+              floating={win.floating}
+              key={win.id}
+              width={win.width}
+              height={win.height}
+              top={win.top}
+              left={win.left}
+              onWindowResize={store.resizeWindow}
+              zIndex={win.zIndex}
+              minimized={win.minimized}
+              maximized={win.maximized}
+              onMaximize={store.maximizeWindow}
+              onMinimize={store.minimizeWindow}
+              onRestore={store.restoreWindowSize}
+              onClose={store.closeWindow}
+            >
+              <NestedTabView
+                id={win.id}
+                view={win}
+                titleFormatter={(_tabView, tab) => tab.title}
+                titleEditable={true}
+                onTabChange={store.changeTab}
+                onTabClose={store.closeTab}
+                onTabMove={store.moveTab}
+                onResize={store.resizeView}
+                onAddNewClick={
+                  !win.minimized
+                    ? (viewId) => {
+                        const content = newTabContent();
+                        store.addTab(viewId, { content, recentlyCreated: true });
                       }
-                    ]
-                  : []
-              }
-            />
-          </Window>
-        ))}
+                    : undefined
+                }
+                detachable={canWindowDetachable(win)}
+                attachable={!!win.floating}
+                onDetach={store.detachView}
+                onAttach={store.attachView}
+                headerControls={
+                  !win.minimized
+                    ? [
+                        {
+                          isVisible: (view) => view && view.members.length > 1,
+                          render: <IconSplitSquareHorizontal width={16} height={16} />,
+                          onClick: (viewId) => store.splitTabView(viewId, Direction.Horizontal)
+                        },
+                        {
+                          isVisible: (view) => view && view.members.length > 1,
+                          render: <IconSplitSquareVertical width={16} height={16} />,
+                          onClick: (viewId) => store.splitTabView(viewId, Direction.Vertical)
+                        },
+                        {
+                          isVisible: () => !win.floating,
+                          render: <IconWindowStack width={16} height={16} />,
+                          onClick: (viewId) => store.detachView(viewId)
+                        },
+                        {
+                          isVisible: () => !!win.floating,
+                          render: <IconLayout width={16} height={16} />,
+                          onClick: (viewId) => store.attachView(viewId)
+                        }
+                      ]
+                    : []
+                }
+              />
+            </Window>
+          );
+
+          if (win.floating) return createPortal(child, document.querySelector('.pf-floating-windows') as HTMLElement);
+          return child;
+        })}
     </div>
   );
 };

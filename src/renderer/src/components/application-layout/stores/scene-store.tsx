@@ -57,7 +57,7 @@ export const useScene = create<SceneStore>((set) => {
           top: top,
           left: left,
           zIndex,
-          maximized: false
+          maximized: widthChange === 1 && heightChange === 1 ? item.maximized : false
         });
 
         return { members };

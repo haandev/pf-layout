@@ -2,7 +2,6 @@ import React, { FC, PropsWithChildren, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import useEvent from 'react-use-event-hook';
 import { useWindowSize } from 'usehooks-ts';
-import { useDrag } from 'react-dnd';
 
 import { Direction } from '../types';
 import { useValidateElement, useDragDelta } from '..';
@@ -36,9 +35,9 @@ export interface WindowProps extends PropsWithChildren {
 export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
-  useValidateElement(rootRef, { $parent: { $match: '.pf-scene' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {
     if (!validation) {
-      throw new Error('Window must be used within a Scene.');
+      throw new Error('Window must be used within a Scene or floating in body.');
     }
   });
 
@@ -79,19 +78,24 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   useDropDelta({
     ref: header,
     accepts: ['window'],
-    onDrop: (e, dragSource) => {
-      console.log(dragSource);
-    }
+    onDrop: (e) => {}
   });
 
   //drag(header)
   const _direction = props.direction || Direction.Horizontal;
   const directionClass = _direction === Direction.Horizontal ? 'pf-horizontal' : 'pf-vertical';
 
+  //floating window header
+
+  const onHeaderDoubleClick = useEvent(() => {
+    if (props.maximized) {
+      props.onRestore?.(id);
+    } else props.onMaximize?.(id);
+  });
   const floatingHeaderRender = () => {
     if (!props.floating) return null;
     return (
-      <div ref={header} className="pf-window__header">
+      <div ref={header} className="pf-window__header" onDoubleClick={onHeaderDoubleClick}>
         <div className="pf-window__controls no-drag">
           <button
             className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })}
@@ -140,8 +144,8 @@ export const Window: FC<WindowProps> = React.memo(({ path, id, ...props }) => {
   };
 
   const styleFloating: React.CSSProperties = {
-    top: props.floating && props.top ? `${props.top}px` : undefined,
-    left: props.floating && props.left ? `${props.left}px` : undefined,
+    top: props.floating && props.top !== undefined ? `${props.top}px` : undefined,
+    left: props.floating && props.left !== undefined ? `${props.left}px` : undefined,
     width: props.width ? `${props.width}px` : undefined,
     height: props.height ? `${props.height}px` : undefined,
     zIndex: (props.zIndex || 0) + 300
