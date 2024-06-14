@@ -5,22 +5,23 @@ import clsx from 'clsx';
 import { useCallback } from 'react';
 import { FlowPage } from '../FlowPage';
 import { v4 } from 'uuid';
+import { useScene } from '@renderer/components/application-layout/stores/scene-store';
 const Welcome = () => {
-  const app = useApp();
+  const scene = useScene();
 
   const addTabInitial = useCallback(() => {
     const id = v4();
-    app.addTabInitial({
+    scene.addTabInitial({
       id,
       content: <FlowPage id={id} />,
       recentlyCreated: true
     });
-  }, [app]);
+  }, [scene]);
 
   return (
     <div className={styles.root}>
       <header>
-        <button className={styles.logo} onClick={app.hideHome}>
+        <button className={styles.logo} onClick={scene.hideHome}>
           <img src={logo} alt="logo" />
         </button>
       </header>

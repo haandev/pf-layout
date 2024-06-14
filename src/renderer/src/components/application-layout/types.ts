@@ -1,10 +1,62 @@
-import { FC } from 'react';
-
 export enum Direction {
   Horizontal = 'horizontal',
   Vertical = 'vertical'
 }
-export enum StackType {
-  Toolbar = 'toolbar-stack',
-  Window = 'window-stack'
+export enum NodeType {
+  App = 'App',
+  Tab = 'Tab',
+  TabView = 'TabView',
+  GroupView = 'GroupView',
+  Window = 'Window'
 }
+export interface ITab {
+  type: NodeType.Tab;
+  id: string;
+  title: string;
+  content: React.ReactNode;
+  recentlyCreated: boolean;
+}
+export interface ITabView {
+  type: NodeType.TabView;
+  id: string;
+  members: ITab[];
+  activeTabId?: string;
+  width?: number;
+  height?: number;
+}
+export interface IGroupView {
+  type: NodeType.GroupView;
+  id: string;
+  members: (IGroupView | ITabView)[];
+  width?: number;
+  height?: number;
+}
+export type IWindow = {
+  type: NodeType.Window;
+  id: string;
+  members: IGroupView[];
+  floating?: boolean;
+  width?: number;
+  height?: number;
+  top?: number;
+  left?: number;
+  minimized?: boolean;
+  maximized?: boolean;
+  previousPosition?: { top: number; left: number; width?: number; height?: number };
+  zIndex?: number;
+};
+export type IScene = {
+  members: IWindow[];
+} & { [key: string]: any };
+export type StateItem = ITab | ITabView | IGroupView | IWindow;
+export type NestedState = StateItem | IScene;
+
+export type ParentType<T> = T extends ITab
+  ? ITabView
+  : T extends ITabView
+    ? IGroupView
+    : T extends IGroupView
+      ? IWindow | IGroupView
+      : T extends IWindow
+        ? IScene
+        : null;

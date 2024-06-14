@@ -1,6 +1,6 @@
 import { ApplicationLayout, DragHandle, IconButton, Container, Toolbar, ToolbarItem, ToolbarStack, Separator, Label } from './components/application-layout';
 
-import { Direction } from './components/application-layout/types';
+import { Direction, IWindow, NodeType } from './components/application-layout/types';
 
 import IconFolderOpen from './icons/IconFolderOpen';
 import IconHome from './icons/IconHome';
@@ -53,26 +53,30 @@ import { DefaultToolbarStackHeader } from './components/layout-preset/DefaultToo
 import { ToolbarStackGroup } from './components/application-layout/blocks/ToolbarStackGroup';
 import { AppStickyGroupButton } from './components/layout-preset/AppStickyGroupButton';
 import { AppToolsStickySvgButton } from './components/layout-preset/AppStickyButton';
-import { NestedTabView } from './components/application-layout/blocks/NestedTabView';
 import { Scene } from './components/application-layout/blocks/Scene';
-import { Window } from './components/application-layout/blocks/Window';
-import { IWindow, NodeType, useApp } from './stores/app-store';
+import { useApp } from './stores/app-store';
 import Welcome from './pages/Welcome';
+import { useScene } from './components/application-layout/stores/scene-store';
 import { FlowPage } from './pages/FlowPage';
 
 function App(): JSX.Element {
   const app = useApp();
+  const scene = useScene();
 
-  const canWindowDetachable = (win: IWindow) =>
-    !win.floating || (win.floating && win.members[0]?.members?.[0]?.type === NodeType.GroupView) || win.members[0]?.members?.length > 1;
+  const newTabContentCtor = () => {
+    const id = Math.random().toString(36).substring(7);
+    const content = <FlowPage id={id} />;
+    return content;
+  };
+
   return (
-    <ApplicationLayout home={app.home && <Welcome />}>
+    <ApplicationLayout home={scene.home && <Welcome />}>
       <Container name="top-toolbar-container" direction={Direction.Vertical} maxItems={1}>
         <ToolbarStackGroup>
           <ToolbarStack name="top-toolbar-stack" direction={Direction.Horizontal} maxItems={1}>
             <Toolbar name="main-toolbar" direction={Direction.Horizontal}>
               <DragHandle />
-              <ToolbarItem children={<IconButton children={<IconHome />} onClick={app.showHome} />} />
+              <ToolbarItem children={<IconButton children={<IconHome />} onClick={scene.showHome} />} />
               <Separator />
               <ToolbarItem children={<Label>Nothing selected</Label>} />
               <Separator />
@@ -187,78 +191,7 @@ function App(): JSX.Element {
             </Toolbar>
           </ToolbarStack>
         </ToolbarStackGroup>
-        <Scene>
-          {app.members.length > 0 &&
-            app.members.map((win) => (
-              <Window
-                id={win.id}
-                floating={win.floating}
-                key={win.id}
-                width={win.width}
-                height={win.height}
-                top={win.top}
-                left={win.left}
-                onWindowResize={app.resizeWindow}
-                zIndex={win.zIndex}
-                minimized={win.minimized}
-                maximized={win.maximized}
-                onMaximize={app.maximizeWindow}
-                onMinimize={app.minimizeWindow}
-                onRestore={app.restoreWindowSize}
-                onClose={app.closeWindow}
-              >
-                <NestedTabView
-                  id={win.id}
-                  view={win}
-                  titleFormatter={(_tabView, tab) => tab.title}
-                  titleEditable={true}
-                  onTabChange={app.changeTab}
-                  onTabClose={app.closeTab}
-                  onTabMove={app.moveTab}
-                  onResize={app.resizeView}
-                  onAddNewClick={
-                    !win.minimized
-                      ? (viewId) => {
-                          const id = Math.random().toString(36).substring(7);
-                          const content = <FlowPage id={id} />;
-                          app.addTab(viewId, { content, recentlyCreated: true });
-                        }
-                      : undefined
-                  }
-                  detachable={canWindowDetachable(win)}
-                  attachable={!!win.floating}
-                  onDetach={(tabView) => app.detachView(tabView.id)}
-                  onAttach={(tabView) => app.attachView(tabView.id)}
-                  headerControls={
-                    !win.minimized
-                      ? [
-                          {
-                            isVisible: (view) => view && view.members.length > 1,
-                            render: <IconSplitSquareHorizontal width={16} height={16} />,
-                            onClick: (viewId) => app.splitTabView(viewId, Direction.Horizontal)
-                          },
-                          {
-                            isVisible: (view) => view && view.members.length > 1,
-                            render: <IconSplitSquareVertical width={16} height={16} />,
-                            onClick: (viewId) => app.splitTabView(viewId, Direction.Vertical)
-                          },
-                          {
-                            isVisible: () => !win.floating,
-                            render: <IconWindowStack width={16} height={16} />,
-                            onClick: (viewId) => app.detachView(viewId)
-                          },
-                          {
-                            isVisible: () => !!win.floating,
-                            render: <IconLayout width={16} height={16} />,
-                            onClick: (viewId) => app.attachView(viewId)
-                          }
-                        ]
-                      : []
-                  }
-                />
-              </Window>
-            ))}
-        </Scene>
+        <Scene store={scene} newTabContent={newTabContentCtor} />
         <ToolbarStackGroup onClose={() => {}}>
           <ToolbarStack
             name="main-tools-stack"

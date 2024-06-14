@@ -25,8 +25,6 @@ export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions
   const ref = options.ref || internalRef;
   isDragSource(options) && (dragSourceOptions.ref = ref);
 
-  const dragging = dndStore((state) => state.dragging);
-  const endDrag = dndStore((state) => state.endDrag);
 
   const initials = useRef({
     x: 0,
@@ -58,7 +56,6 @@ export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions
     initials.current.x = e.clientX;
     initials.current.y = e.clientY;
     onDrag?.(e, initials.current.xDelta, initials.current.yDelta);
-    isDragSource(dragSourceOptions) && dragging(dragSourceOptions);
   });
 
   const onMouseUp = useEvent((e) => {
@@ -68,7 +65,6 @@ export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions
     document.removeEventListener('mousemove', onMouseMove);
     document.removeEventListener('mouseup', onMouseUp);
     onDragEnd?.(e);
-    endDrag();
   });
 
   const handler = useCallback((e) => {

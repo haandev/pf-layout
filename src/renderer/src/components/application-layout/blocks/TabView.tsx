@@ -1,16 +1,15 @@
 import clsx from 'clsx';
-import { DragSourceMonitor, useDrag, useDrop } from 'react-dnd';
+import { useDrag, useDrop } from 'react-dnd';
 
-import React, { CSSProperties, FC, PropsWithChildren, RefObject, act, useEffect, useRef, useState } from 'react';
+import React, { CSSProperties, FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { useParentDirection, useValidateElement, SplitResizeHandle } from '..';
-import { Direction } from '../types';
+import { Direction, ITab, ITabView, NodeType } from '../types';
 
 import IconXmark from '../icons/IconXmark';
 import IconAdd from '../icons/IconAdd';
-import { ITab, ITabView, NodeType } from '@renderer/stores/app-store';
-import { evalBoolean, findById } from '../util';
+import { evalBoolean, lookUp } from '../util';
 import useEvent from 'react-use-event-hook';
-import { getEmptyImage } from 'react-dnd-html5-backend';
+import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDropTarget, TabViewDroppableItems } from '../dnd.types';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -32,8 +31,8 @@ export interface TabViewCommonProps {
   titleEditable?: boolean | ((tabView: ITabView, tab: ITab) => boolean);
   detachable: boolean | ((tabView: ITabView) => boolean);
   attachable: boolean | ((tabView: ITabView) => boolean);
-  onDetach?: (tabView: ITabView) => void;
-  onAttach?: (tabView: ITabView) => void;
+  onDetach?: (tabViewId: string) => void;
+  onAttach?: (tabViewId: string) => void;
 }
 export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'> {
   //don't call directly, used for recursion
@@ -42,18 +41,6 @@ export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'>
   noCache?: boolean;
 }
 
-export type TabViewDragSource = {
-  type: NodeType.TabView;
-  id: string;
-};
-export type TabViewDropTarget = {
-  isInsertable?: boolean;
-  isDroppable?: boolean;
-};
-export type TabViwDroppableItems = TabViewDragSource | TabDragSource;
-export type TabDropTarget = {
-  isInserting: boolean;
-};
 const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
   const view: ITabView = { type: NodeType.TabView, members, id, activeTabId, width, height };
 
@@ -98,7 +85,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
     props.onResize?.(direction, size, id, nextItemSize);
   };
 
-  const [collected, drop] = useDrop<TabViwDroppableItems, any, TabViewDropTarget>(() => ({
+  const [collected, drop] = useDrop<TabViewDroppableItems, any, TabViewDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
       const isOverOnlyMe = monitor.isOver({ shallow: true });
@@ -120,7 +107,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
     }
   }));
 
-  const [collectedOnContentSection, dropContent] = useDrop<TabViwDroppableItems, any, TabViewDropTarget>(() => ({
+  const [collectedOnContentSection, dropContent] = useDrop<TabViewDroppableItems, any, TabViewDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
       const isOverOnlyMe = monitor.isOver({ shallow: true });
@@ -137,7 +124,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
 
       //self window detach
       if (item.type === NodeType.TabView && item.id === id && detachable) {
-        props.onDetach?.(view);
+        props.onDetach?.(view.id);
       }
     }
   }));
@@ -151,15 +138,15 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
       id: id
     }
   });
-  drop(rootRef);
 
+  drop(rootRef);
   drag(headerRef);
   preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
     props.onTabMove?.({ tabId, toViewId: id, beforeTabId });
   };
-  const content = activeTabId ? findById(members, activeTabId)?.content : null;
+  const content = lookUp<ITab>(members, activeTabId)?.item?.content;
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height, opacity: isDragging ? '0' : '1' };
 
   return (
@@ -225,19 +212,14 @@ interface TabProps extends PropsWithChildren {
   tabViewId: string;
   title: string;
 }
-export interface TabDragSource {
-  type: NodeType.Tab;
-  id: string;
-  prevTabId?: string;
-  tabViewId: string;
-}
+
 const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
   const ref = useRef(null);
 
   const [editing, setEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
 
-  const [current, drag] = useDrag<TabDragSource>(() => ({
+  const [, drag] = useDrag<TabDragSource>(() => ({
     type: NodeType.Tab,
     item: {
       type: NodeType.Tab,
@@ -248,7 +230,8 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
       isDragging: monitor.isDragging() && monitor.getItem().id === id
     })
   }));
-  const [collected, drop] = useDrop<TabDragSource, unknown, TabDropTarget>(() => ({
+
+  const [collected, drop] = useDrop<TabDroppableItems, unknown, TabDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
       const item = monitor.getItem();
@@ -261,6 +244,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
       onDrop?.(item.id, id);
     }
   }));
+
   const className = clsx({ 'pf-tab': true, 'pf-tab-active': props.isActive, [props.className || '']: true });
   const onClose = (e) => {
     e.stopPropagation();

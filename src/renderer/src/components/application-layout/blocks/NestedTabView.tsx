@@ -1,7 +1,6 @@
-import { Direction } from '../types';
+import { Direction, IGroupView, ITabView, IWindow, NodeType } from '../types';
 import { ViewGroup } from './ViewGroup';
 
-import { IGroupView, ITabView, IWindow, NodeType } from '@renderer/stores/app-store';
 import { FC } from 'react';
 import TabView, { TabViewCommonProps } from './TabView';
 import { evalBoolean } from '../util';
