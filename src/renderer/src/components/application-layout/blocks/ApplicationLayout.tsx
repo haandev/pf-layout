@@ -6,6 +6,7 @@ import { Direction, NodeType } from '../types';
 import { LayoutDropTarget, LayoutDroppableItems } from '../types.dnd';
 import { useDrop } from 'react-dnd';
 import { LayoutStore } from '../stores/layout-store';
+import { FloatingToolbarWindow } from './FloatingToolbarWindow';
 
 export interface ApplicationLayoutProps extends PropsWithChildren {
   home?: false | null | React.ReactNode;
@@ -17,18 +18,32 @@ export interface ApplicationLayoutProps extends PropsWithChildren {
 export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, style, className, direction, children }) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  console.log(store.members);
   const _direction = direction || Direction.Vertical;
 
   const [collected, drop] = useDrop<LayoutDroppableItems, unknown, LayoutDropTarget>(() => ({
-    accept: [NodeType.ToolbarStackGroup],
+    accept: [NodeType.FloatingToolbarWindow, NodeType.ToolbarStack],
 
     drop: (item, monitor) => {
-      const isOverOnlyMe = monitor.isOver({ shallow: true });
+      const type = item.type;
+      const didDrop = monitor.didDrop();
 
-      if (isOverOnlyMe) {
+      if (!didDrop && type === NodeType.FloatingToolbarWindow) {
         const delta = monitor.getDifferenceFromInitialOffset() || { x: 0, y: 0 };
-        store.moveToolbarStackGroup(item.id, delta.x, delta.y);
+        store.moveFloatingToolbarWindow(item.id, delta.x, delta.y);
+      }
+
+      if (!didDrop && type === NodeType.ToolbarStack) {
+        const client = monitor.getClientOffset() || { x: 0, y: 0 };
+        const initialClient = monitor.getInitialClientOffset() || { x: 0, y: 0 };
+        const offset = {
+          x: initialClient.x - item.x,
+          y: initialClient.y - item.y
+        };
+        const newPosition = {
+          x: client.x - offset.x,
+          y: client.y - offset.y - 5
+        };
+        store.detachToolbarStack(item.id, newPosition.x, newPosition.y);
       }
     }
   }));
@@ -48,6 +63,13 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
         style={style}
       >
         {children}
+        <div className="pf-floating-toolbar-host">
+          {store.floating.length > 0
+            ? store.floating.map((item) => {
+                return <FloatingToolbarWindow {...store.floatingToolbarWindowProps(item.id)} />;
+              })
+            : null}
+        </div>
       </div>
     </>
   );

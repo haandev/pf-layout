@@ -1,30 +1,43 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
-import { Direction } from '../types';
+import { AsComponentProps, Direction, IToolbarStack, NodeType } from '../types';
 import { useValidateElement } from '../hooks/use-validate-element';
 import clsx from 'clsx';
+import { noDrag } from '../util';
+import { useDrag } from 'react-dnd';
+import { ToolbarStackDragSource } from '../types.dnd';
 
-export interface ToolbarStackProps extends PropsWithChildren {
+export interface ToolbarStackProps extends PropsWithChildren, AsComponentProps<IToolbarStack> {
   className?: string;
-  direction?: Direction;
-  maxItems?: number;
-  name: string;
   style?: React.CSSProperties;
-  header?: React.ReactElement;
   onClose?: () => void;
 }
 export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack-group' } }, (validation) => {
-    if (!validation) {
-      throw new Error('ToolbarStack must be used within a ToolbarStackGroup.');
-    }
+  const [isDragging, drag] = useDrag<ToolbarStackDragSource>({
+    type: NodeType.ToolbarStack,
+    item: () => ({
+      type: NodeType.ToolbarStack,
+      id: props.id,
+      x: rootRef.current?.getBoundingClientRect().x || 0,
+      y: rootRef.current?.getBoundingClientRect().y || 0
+    }),
+    collect: (monitor) => monitor.isDragging()
   });
 
+  drag(rootRef);
+
+  /*  useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack-group' } }, (validation) => {
+    if (!validation) {
+      throw new Error('ToolbarStack must be used within a FloatingToolbarWindow.');
+    }
+  });
+ */
   let _header = props.header && !props.header.props.onClose ? React.cloneElement(props.header, { onClose: props.onClose }) : props.header;
 
   return (
     <div
+      {...(!props.draggable ? noDrag : {})}
       ref={rootRef}
       className={clsx({
         'pf-toolbar-stack': true,

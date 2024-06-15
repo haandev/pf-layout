@@ -90,8 +90,9 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
       const isOverOnlyMe = monitor.isOver({ shallow: true });
       const isOverMe = monitor.isOver();
       const item = monitor.getItem();
+      const type = item?.type;
 
-      const isInsertingTabTabSourceFromExternalView = isOverMe && item.type === NodeType.Tab && item.tabViewId !== id;
+      const isInsertingTabTabSourceFromExternalView = isOverMe && type === NodeType.Tab && item.tabViewId !== id;
 
       return {
         isInsertable: isOverOnlyMe && item.id !== id,
@@ -99,8 +100,9 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
       };
     },
     drop: (item, monitor) => {
+      const type = item.type;
       //tab from somewhere else, not dropped on a tab
-      if (!monitor.didDrop() && item.type === NodeType.Tab) {
+      if (!monitor.didDrop() && type === NodeType.Tab) {
         props.onTabMove?.({ tabId: item.id, toViewId: id });
       }
     }
@@ -112,7 +114,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
       const isOverOnlyMe = monitor.isOver({ shallow: true });
       const item = monitor.getItem();
       return {
-        isDroppable: isOverOnlyMe && item.type === NodeType.Tab && item.tabViewId !== id
+        isDroppable: isOverOnlyMe && item?.type === NodeType.Tab && item.tabViewId !== id
       };
     },
     drop: (item, monitor) => {
@@ -250,7 +252,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
     collect: (monitor) => {
       const item = monitor.getItem();
       return {
-        isInserting: monitor.isOver() && item.type === NodeType.Tab
+        isInserting: monitor.isOver() && item?.type === NodeType.Tab
       };
     },
     drop: (item) => {

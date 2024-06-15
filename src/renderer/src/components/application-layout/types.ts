@@ -8,7 +8,10 @@ export enum NodeType {
   TabView = 'TabView',
   GroupView = 'GroupView',
   Window = 'Window',
-  ToolbarStackGroup = 'ToolbarStackGroup'
+  ToolbarStack = 'ToolbarStack',
+  FloatingToolbarWindow = 'FloatingToolbarWindow',
+  Container = 'Container',
+  Toolbar = 'Toolbar'
 }
 export interface ITab {
   type: NodeType.Tab;
@@ -52,19 +55,50 @@ export type IScene = {
 } & { [key: string]: any };
 
 export type ILayout = {
-  members: IToolbarStackGroup[];
+  members: IContainer[];
 } & { [key: string]: any };
-export interface IToolbarStackGroup {
-  type: NodeType.ToolbarStackGroup;
+
+export interface IFloatingToolbarWindow {
+  type: NodeType.FloatingToolbarWindow;
   id: string;
-  floating?: boolean;
   top?: number;
   left?: number;
   hidden?: boolean;
   zIndex?: number;
+  members: IToolbarStack[];
 }
 
-export type StateItem = ITab | ITabView | IGroupView | IWindow | IToolbarStackGroup;
+export interface IToolbarStack {
+  draggable?: boolean;
+  type: NodeType.ToolbarStack;
+  id: string;
+  members: IToolbar[];
+  direction: Direction;
+  header?: React.ReactElement;
+  maxItems?: number;
+}
+
+export interface IToolbar {
+  draggable?: boolean;
+  type: NodeType.Toolbar;
+  id: string;
+  members: any[];
+  direction: Direction;
+  dragHandle?: React.ReactNode;
+  maxItems?: number;
+  rows?: number;
+  columns?: number;
+  content?: React.ReactNode;
+}
+
+export interface IContainer {
+  type: NodeType.Container;
+  id: string;
+  members: IToolbarStack[];
+  maxItems?: number;
+}
+
+export type StateItem = ITab | ITabView | IGroupView | IWindow | IFloatingToolbarWindow | IToolbar | IToolbarStack | IContainer;
 export type NestedState = StateItem | IScene | ILayout;
 
 export type ParentType<T> = T extends ITab
@@ -75,8 +109,18 @@ export type ParentType<T> = T extends ITab
       ? IWindow | IGroupView
       : T extends IWindow
         ? IScene
-        : T extends IToolbarStackGroup
+        : T extends IFloatingToolbarWindow
           ? ILayout
-          : null;
+          : T extends IContainer
+            ? ILayout
+            : T extends IToolbarStack
+              ? IContainer | IFloatingToolbarWindow
+              : T extends IToolbar
+                ? IToolbarStack
+                : null;
 
 export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;
+
+type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends Record<string, any>> } ? { members?: Array<AsRegisterArgs<U>> } : never;
+
+export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members'> & OptionalMembersWithoutType<T>;

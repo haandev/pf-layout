@@ -1,6 +1,6 @@
 import { forwardRef, useRef } from 'react';
 import { useBoxResize } from '../';
-import { UseBoxResizeHandler } from '../types';
+import { UseBoxResizeHandler } from '../hooks/use-box-resize';
 
 const ResizeBox = forwardRef(
   (

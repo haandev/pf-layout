@@ -36,31 +36,26 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
 
   const rootRef = useRef<HTMLDivElement>(null);
 
-  //validate nesting order
-  useValidateElement(rootRef, { $parent: { $match: '.pf-container,body' } }, (validation) => {
-    if (!validation) {
-      throw new Error('Scene must be used within a Container or directly.');
-    }
-  });
-
   const [collected, drop] = useDrop<SceneDroppableItems, unknown, SceneDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
-      const isOverOnlyMe = monitor.isOver({ shallow: true });
       const item = monitor.getItem();
+      const type = item?.type;
+      const isOverOnlyMe = monitor.isOver({ shallow: true });
       return {
-        isDroppable: isOverOnlyMe && item.type === NodeType.TabView
+        isDroppable: isOverOnlyMe && type === NodeType.TabView
       };
     },
     drop: (item, monitor) => {
+      const type = item.type;
       const isOverOnlyMe = monitor.isOver({ shallow: true });
 
-   /*    if (!isOverOnlyMe && item.type === NodeType.TabView) {
+      /*    if (!isOverOnlyMe && item.type === NodeType.TabView) {
         const detachPosition = monitor.getClientOffset();
         store.detachView?.(item.id, detachPosition?.x, detachPosition?.y);
       } */
 
-      if (isOverOnlyMe && item.type === NodeType.TabView) {
+      if (isOverOnlyMe && type === NodeType.TabView) {
         store.attachView?.(item.id);
       }
 
@@ -84,6 +79,8 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
                 height={win.height}
                 top={win.top}
                 left={win.left}
+                onWindowClick={store.windowToFront}
+                onWindowMove={store.moveWindow}
                 onWindowResize={store.resizeWindow}
                 zIndex={win.zIndex}
                 minimized={win.minimized}

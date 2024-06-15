@@ -1,5 +1,5 @@
 import { isTab } from './guards';
-import { IScene, IGroupView, ITab, ITabView, IWindow, NestedState, NodeType, ParentType, StateItem, ILayout } from './types';
+import { IScene, IWindow, NestedState, NodeType, ParentType, StateItem, ILayout } from './types';
 
 /**
  * Checks if a given value is empty. An empty value can be false, null, undefined, an empty array, or an empty object.
@@ -35,7 +35,7 @@ export const evalBoolean = <T extends (...params: any[]) => boolean | any>(
   }
 };
 
-type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
+type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; key: string; depth: number };
 
 /**
  * Looks up an item by id in a nested state structure.
@@ -44,30 +44,38 @@ type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: nu
  * @param depth Current depth of the search.
  * @returns LookupResult containing the item, its parent, and index in parent, or nulls if not found.
  */
-export const lookUp = <T extends StateItem>(state: NestedState | NestedState[], id?: string, depth: number = 0): LookupResult<T> => {
+export const lookUp = <T extends StateItem>(
+  state: NestedState | NestedState[],
+  id: string | undefined,
+  keys: string[] = ['members'],
+  depth: number = 0
+): LookupResult<T> => {
   if (depth > 100) {
     throw new Error('Max depth reached');
   }
   if (!id) {
-    return { item: null, parent: null, index: -1, depth };
+    return { item: null, parent: null, index: -1, depth, key: '' };
   }
   if (Array.isArray(state)) {
     state = { members: state } as NestedState;
   }
   if ('id' in state && state.id === id) {
-    return { item: state, parent: null, index: -1, depth } as LookupResult<T>;
+    return { item: state, parent: null, index: -1, depth, key: '' } as LookupResult<T>;
   }
-  if ('members' in state && state.members) {
-    for (let i = 0; i < state.members.length; i++) {
-      if (state.members[i].id === id) {
-        return { item: state.members[i], parent: state, index: i, depth: depth + 1 } as LookupResult<T>;
-      }
-      let result = lookUp(state.members[i], id, depth + 1);
-      if (result.item) {
-        return result as LookupResult<T>;
+  for (let key of keys) {
+    if (key in state && state[key] && Array.isArray(state[key])) {
+      for (let i = 0; i < state[key].length; i++) {
+        if (state[key][i].id === id) {
+          return { item: state[key][i], parent: state, index: i, depth: depth + 1, key } as LookupResult<T>;
+        }
+        let result = lookUp(state[key][i], id, keys, depth + 1);
+        if (result.item) {
+          return result as LookupResult<T>;
+        }
       }
     }
   }
+
   return { item: null, parent: null, index: -1 } as LookupResult<T>;
 }; //TODO: implement with traverse function
 
@@ -189,12 +197,13 @@ export const nextUntitledCount = (state: NestedState) => {
  * @param state - The application state containing members with `zIndex` values.
  * @returns The next highest `zIndex` value.
  */
-export const nextZIndex = (state: IScene | ILayout) => {
+export const nextZIndex = (state: IScene | ILayout | Array<any>) => {
+  if (Array.isArray(state)) state = { members: state };
   return Math.max(...state.members.map((window) => window.zIndex || 0)) + 1;
 };
 
 /**
- * Generates random coordinates for a new Window or ToolbarStackGroup.
+ * Generates random coordinates for a new Window or FloatingToolbarWindow.
  * @returns An object containing the x and y coordinates.
  */
 export const generateRandomCoordinates = () => {
@@ -209,4 +218,21 @@ export const generateRandomCoordinates = () => {
   return { x: Math.floor(x), y: Math.floor(y) };
 };
 
+/**
+ * Prevents dragging of an element.
+ * Usage example: `<div {...(!props.draggable ? noDrag : {})}>`
+ */
 export const noDrag = { draggable: true, onDragStart: (event) => event.preventDefault() };
+
+/**
+ * Remaps the `zIndex` values of the windows in the state to be sequential.
+ * @param state - The state object containing members with `zIndex` values.
+ * @returns An object containing the updated members array.
+ */
+export const remapZIndex = (state: IScene) => {
+  state.members.sort((a, b) => (a.zIndex || 0) - (b.zIndex || 0));
+  state.members.forEach((window, index) => {
+    window.zIndex = index + 1;
+  });
+  return { members: state.members };
+};

@@ -1,4 +1,4 @@
-import { IGroupView, ITab, ITabView, IToolbarStackGroup, IWindow, NodeType, StateItem } from './types';
+import { IContainer, IGroupView, ITab, ITabView, IToolbar, IToolbarStack, IFloatingToolbarWindow, IWindow, NodeType, StateItem } from './types';
 
 /**
  * Type guard to check if the state object is a Window.
@@ -37,8 +37,30 @@ export const hasMembers = (state: any): state is { members: StateItem[] } & { [k
   state && 'members' in state && Array.isArray(state.members);
 
 /**
- * Type guard to check if the state object is a ToolbarStackGroup.
+ * Type guard to check if the state object is a FloatingToolbarWindow.
  * @param state The state object to check.
- * @returns true if the state is a ToolbarStackGroup, false otherwise.
+ * @returns true if the state is a FloatingToolbarWindow, false otherwise.
  */
-export const isToolbarStackGroup = (state: any): state is IToolbarStackGroup => state && 'type' in state && state.type === NodeType.ToolbarStackGroup;
+export const isFloatingToolbarWindow = (state: any): state is IFloatingToolbarWindow =>
+  state && 'type' in state && state.type === NodeType.FloatingToolbarWindow;
+
+/**
+ * Type guard to check if the state object is a Container.
+ * @param state The state object to check.
+ * @returns true if the state is a Container, false otherwise.
+ */
+export const isContainer = (state: any): state is IContainer => state && 'type' in state && state.type === NodeType.Container;
+
+/**
+ * Type guard to check if the state object is a ToolbarStack.
+ * @param state The state object to check.
+ * @returns true if the state is a ToolbarStack, false otherwise.
+ */
+export const isToolbarStack = (state: any): state is IToolbarStack => state && 'type' in state && state.type === NodeType.ToolbarStack;
+
+/**
+ * Type guard to check if the state object is a Toolbar.
+ * @param state The state object to check.
+ * @returns true if the state is a Toolbar, false otherwise.
+ */
+export const isToolbar = (state: any): state is IToolbar => state && 'type' in state && state.type === NodeType.Toolbar;

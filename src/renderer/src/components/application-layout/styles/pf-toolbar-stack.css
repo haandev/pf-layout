@@ -1,11 +1,10 @@
-.pf-toolbar-stack-group.pf-floating {
+.pf-floating-toolbar-window {
   position: absolute;
-
   border: 2px solid var(--pf-dark-border-color);
   border-radius: 5px;
-  left:200px;
+  left: 200px;
   top: 200px;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .pf-toolbar-stack {

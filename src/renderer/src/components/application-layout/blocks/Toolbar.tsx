@@ -1,27 +1,15 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
-import { useValidateElement } from '../hooks/use-validate-element';
-import { Direction } from '../types';
+import { AsComponentProps, Direction, IToolbar } from '../types';
 import clsx from 'clsx';
 import { noDrag } from '../util';
+import { DragHandle } from '../elements/DragHandle';
 
-export interface ToolbarProps extends PropsWithChildren {
-  name: string;
-  direction: Direction;
+export interface ToolbarProps extends PropsWithChildren, AsComponentProps<IToolbar> {
   className?: string;
-  dragHandle?: React.ReactNode;
   style?: React.CSSProperties;
-  maxItems?: number;
-  rows?: number;
-  columns?: number;
 }
 export const Toolbar: FC<ToolbarProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
-
-  useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack' } }, (validation) => {
-    if (!validation) {
-      throw new Error('Toolbar must be used within a ToolbarStack.');
-    }
-  });
 
   // If the direction is horizontal and rows are not set, set rows to 1
   const _rows = props.direction === Direction.Horizontal && !props.rows ? 1 : props.rows;
@@ -35,6 +23,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   };
   return (
     <div
+      {...(!props.draggable ? noDrag : {})}
       ref={rootRef}
       className={clsx({
         'pf-toolbar': true,
@@ -43,7 +32,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
         [props.className || '']: true
       })}
     >
-      {props.dragHandle || null}
+      {props.draggable ? props.dragHandle || <DragHandle /> : null}
       <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
         {props.children}
       </div>

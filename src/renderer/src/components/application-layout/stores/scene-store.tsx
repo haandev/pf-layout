@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { Direction, IGroupView, ITab, ITabView, IWindow, NodeType } from '../types';
-import { cleanUp, lookUp, nextUntitledCount, nextZIndex, traverse, updateSizes } from '../util';
+import { cleanUp, lookUp, nextUntitledCount, nextZIndex, remapZIndex, traverse, updateSizes } from '../util';
 import { v4 } from 'uuid';
 import { SceneEvents } from '../types.event';
 import { hasMembers, isGroupView, isTab, isTabView, isWindow } from '../guards';
@@ -19,6 +19,7 @@ export interface SceneStore {
   closeWindow: (id: string) => void;
   restoreWindowSize: (id: string) => void;
   moveWindow: (id: string, xDelta: number, yDelta: number) => void;
+  windowToFront: (id: string) => void;
 
   ////view actions
   attachView: (id: string) => void;
@@ -48,7 +49,6 @@ export const useScene = create<SceneStore>((set) => {
         const { item, parent } = lookUp<IWindow>(state, id);
         if (!isWindow(item) || !hasMembers(parent)) return { members };
 
-        const zIndex = Math.max(...parent.members.map((window) => window.zIndex || 0)) + 1;
         const widthChange = item.width ? width / item.width : 1;
         const heightChange = item.height ? height / item.height : 1;
         updateSizes(item, widthChange, heightChange);
@@ -58,7 +58,6 @@ export const useScene = create<SceneStore>((set) => {
           height: height,
           top: top,
           left: left,
-          zIndex,
           maximized: widthChange === 1 && heightChange === 1 ? item.maximized : false
         });
 
@@ -170,16 +169,23 @@ export const useScene = create<SceneStore>((set) => {
         if (!isWindow(item) || !hasMembers(parent)) return { members };
 
         Object.assign(item, {
-          top: item.top ? item.top + yDelta : 0,
-          left: item.left ? item.left + xDelta : 0
+          top: item.top !== undefined ? item.top + yDelta : 0,
+          left: item.left !== undefined ? item.left + xDelta : 0,
+          zIndex: nextZIndex(state)
         });
-
-        return { members };
+        return remapZIndex({ members });
+      }),
+    windowToFront: (id) =>
+      set((state) => {
+        const members = [...state.members];
+        const { item } = lookUp<IWindow>(state, id);
+        if (!isWindow(item)) return { members };
+        item.zIndex = nextZIndex(state);
+        return remapZIndex({ members });
       }),
     detachView: (id, x, y) =>
       set((state) => {
         const members = [...state.members];
-        const windows = state.members;
         const { item, parent, index } = lookUp<ITabView>(state, id);
         if (!isTabView(item) || !parent) return { members };
 
@@ -204,11 +210,11 @@ export const useScene = create<SceneStore>((set) => {
           zIndex: nextZIndex(state)
         };
         detachOffset++;
-        windows.push(newWindow);
+        members.push(newWindow);
 
         parent.members.splice(index, 1);
 
-        return cleanUp(state);
+        return cleanUp({ members });
       }),
     attachView: (id) =>
       set((state) => {
@@ -342,7 +348,7 @@ export const useScene = create<SceneStore>((set) => {
         const { item: toView } = lookUp(state, toViewId);
         if (!isTabView(toView)) return { members };
 
-        const beforeTab = lookUp<ITab>(toView, beforeTabId) || {};
+        const beforeTab = lookUp<ITab>(toView, beforeTabId || '') || {};
 
         //just reorder
         if (parent === toView) {
