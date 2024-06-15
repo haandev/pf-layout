@@ -6,18 +6,21 @@ import React, { PropsWithChildren } from 'react';
 import { ToolbarStack } from '../blocks/ToolbarStack';
 import { Toolbar } from '../blocks/Toolbar';
 import { v4 } from 'uuid';
+import { ContainerProps } from '../blocks/Container';
 
 export interface LayoutStore {
   members: IContainer[];
   floating: IFloatingToolbarWindow[];
   //container actions
-  containerProps: (id: string) => PropsWithChildren<Pick<IContainer, 'id' | 'maxItems'>>;
+  containerProps: (id: string) => ContainerProps;
   registerContainer: (container: AsRegisterArgs<IContainer>) => void;
+  dropOnContainer: (id: string, droppedItemId: string) => void;
 
   //stack actions
   toolbarStackProps: (id: string) => PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>>;
   registerToolbarStack: (stackGroup: string, stack: AsRegisterArgs<IToolbarStack>) => void;
   detachToolbarStack: (id: string, x: number, y: number) => void;
+  attachToolbarStack: (id: string, containerId: string) => void;
 
   //floating toolbar window actions
   moveFloatingToolbarWindow: (id: string, x: number, y: number) => void;
@@ -45,6 +48,21 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return { members };
       });
     },
+    dropOnContainer: (id, droppedItemId) => {
+      set((state) => {
+        const members = [...state.members];
+        const { item: container } = lookUp<IContainer>(state, id);
+        const { item: droppedItem } = lookUp(both(), droppedItemId);
+        console.log('dropped', droppedItemId, id, droppedItem?.type, container?.type);
+        if (!isContainer(container)) return state;
+        if (isToolbarStack(droppedItem)) {
+          get().attachToolbarStack(droppedItem.id, container.id);
+        } else if (isFloatingToolbarWindow(droppedItem)) {
+          container.members.push(...droppedItem.members);
+        }
+        return { members };
+      });
+    },
     toolbarProps: (id) => {
       const { item } = lookUp<IToolbar>(both(), id);
       if (!isToolbar(item)) return { id: '', direction: Direction.Vertical };
@@ -66,16 +84,18 @@ export const useLayout = create<LayoutStore>((set, get) => {
     containerProps: (id) => {
       const { item } = lookUp<IContainer>(both(), id);
       if (!isContainer(item)) {
-        return { id, maxItems: 1, children: [] };
+        return { id, maxItems: 1, children: [], direction: Direction.Vertical };
       }
       const children = item.members.map((toolbarStack) => {
         const toolbarStackProps = get().toolbarStackProps(toolbarStack.id);
         return <ToolbarStack {...toolbarStackProps} key={toolbarStack.id} />;
       });
 
-      const props: Pick<IContainer, 'id' | 'maxItems'> & { children: React.ReactNode } = {
-        id: item.id,
-        maxItems: item.maxItems,
+      const props: ContainerProps = {
+        ...item,
+        onDrop: (id: string, containerId: string) => {
+          get().dropOnContainer(containerId, id);
+        },
         children: children
       };
       return props;
@@ -140,11 +160,24 @@ export const useLayout = create<LayoutStore>((set, get) => {
           id: v4(),
           members: [stack],
           top: y,
-          left: x,
+          left: x
         };
         floating.push(newFloatingToolbarWindow);
 
         return { members, floating: floating.filter((item) => item.members.length > 0) };
+      });
+    },
+    attachToolbarStack: (id, containerId) => {
+      set((state) => {
+        const members = [...state.members];
+        let floating = [...state.floating];
+        const { item: stack, parent: floatingWindow } = lookUp<IToolbarStack>(both(), id);
+        const { item: container } = lookUp<IContainer>(state, containerId);
+        if (!isToolbarStack(stack) || !isContainer(container) || !floatingWindow) return state;
+        floatingWindow.members = floatingWindow.members.filter((item) => item.id !== stack.id);
+        container.members.push(stack);
+        floating = floating.filter((item) => item.members.length > 0);
+        return { members, floating };
       });
     },
     registerToolbar: (stack, toolbar) => {

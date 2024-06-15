@@ -3,18 +3,18 @@ import { useValidateElement } from '../hooks/use-validate-element';
 import clsx from 'clsx';
 import React from 'react';
 import { Direction } from '../types';
-import { OnSplitResizeHandler } from './TabView';
 import { SplitResizeHandle } from '../elements/SplitResizeHandle';
+import { SceneStore } from '../stores/scene-store';
 
 export interface ViewGroupProps extends PropsWithChildren {
+  store: SceneStore;
   direction: Direction;
   width?: number;
   height?: number;
-  onResize?: OnSplitResizeHandler;
   id: string;
 }
 
-export const ViewGroup: FC<ViewGroupProps> = React.memo(({  id, ...props }) => {
+export const ViewGroup: FC<ViewGroupProps> = React.memo(({ id, store, ...props }) => {
   const oppositeDirection = props.direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   const rootRef = useRef<HTMLDivElement>(null);
 
@@ -25,8 +25,9 @@ export const ViewGroup: FC<ViewGroupProps> = React.memo(({  id, ...props }) => {
   });
 
   const onResize = (size: number, nextItemSize?: number) => {
-    props.onResize?.(oppositeDirection, size, id, nextItemSize);
+    store.resizeView(oppositeDirection, size, id, nextItemSize);
   };
+
   const style = {
     width: props.width,
     minWidth: props.width,

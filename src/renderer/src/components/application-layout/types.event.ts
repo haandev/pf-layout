@@ -22,6 +22,7 @@ export type OnMoveTabHandler = (options: { tabId: string; toViewId: string; befo
 export interface SceneEvents {
   onAddTab?: OnAddTabHandlerHandler;
   onCloseTab?: OnCloseTabHandler;
+  newTabContent?: () => JSX.Element;
   /*   onNothingLeft?: OnNothingLeftHandler;
   onWindowResize?: OnWindowResizeHandler;
   onMaximize?: OnMaximizeHandler;

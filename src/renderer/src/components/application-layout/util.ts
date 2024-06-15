@@ -119,8 +119,21 @@ const cleanObject = (obj: NestedState, depth = 0): boolean => {
         'members' in value &&
         value.members &&
         value.members.length === 1 &&
-        value.members[0].type === NodeType.GroupView
+        value.members[0].type === NodeType.GroupView &&
+        depth > 1
       ) {
+        Object.assign(value, value.members[0]);
+        somethingRemoved = true;
+      } else if (
+        // causing unexpected behavior, TODO: further investigate
+        'type' in value &&
+        value.type === NodeType.GroupView &&
+        'members' in value &&
+        value.members.length === 1 &&
+        value.members[0].type === NodeType.TabView &&
+        depth > 3
+      ) {
+        console.log('new logic executed');
         Object.assign(value, value.members[0]);
         somethingRemoved = true;
       } else {

@@ -11,20 +11,15 @@ import IconPlus from '../icons/IconPlus';
 import { UseBoxResizeHandler } from '../hooks/use-box-resize';
 import ResizeBox from '../elements/ResizeBox';
 import { useDropDelta } from '../hooks/use-drop-delta';
+import { SceneStore } from '../stores/scene-store';
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow> {
-  onWindowResize?: OnResizeHandler;
-  onWindowClick?: (id: string) => void;
-  onWindowMove?: (id: string, xDelta: number, yDelta: number) => void;
+  store: SceneStore;
   direction?: Direction;
-  onMaximize?: (id: string) => void;
-  onMinimize?: (id: string) => void;
-  onClose?: (id: string) => void;
-  onRestore?: (id: string) => void;
 }
 
-export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
+export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
   useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {
@@ -40,24 +35,24 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     const visible = visibleDimension(element);
-    props.onWindowResize?.(visible.width, visible.height, props.top || 0, props.left || 0, id);
+    store.resizeWindow(visible.width, visible.height, props.top || 0, props.left || 0, id);
   }, [width, height, props.floating]);
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
-    props.onWindowResize?.(...args, id);
+    store.resizeWindow(...args, id);
   };
 
   //handle floating window move
   const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
     const element = rootRef.current;
     if (!element) return;
-    startTransition(() => props.onWindowMove?.(id, xDelta, yDelta));
+    startTransition(() => store.moveWindow(id, xDelta, yDelta));
   });
 
   //handle set zIndex to the top
   const onClickAnywhere = useEvent(() => {
-    props.onWindowClick?.(id);
+    store.windowToFront(id);
   });
 
   const header = useDragDelta<HTMLDivElement>({
@@ -80,8 +75,8 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
 
   const onHeaderDoubleClick = useEvent(() => {
     if (props.maximized) {
-      props.onRestore?.(id);
-    } else props.onMaximize?.(id);
+      store.restoreWindowSize(id);
+    } else store.maximizeWindow(id);
   });
   const floatingHeaderRender = () => {
     if (!props.floating) return null;
@@ -89,19 +84,19 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
       <div ref={header} className="pf-window__header" onDoubleClick={onHeaderDoubleClick}>
         <div className="pf-window__controls no-drag">
           <button
-            className={clsx({ 'pf-icon pf-icon__close ': true, 'pf-icon__disabled': !props.onClose })}
+            className={clsx({ 'pf-icon pf-icon__close ': true })}
             onClick={(e) => {
               e.stopPropagation();
-              return props.onClose?.(id);
+              return store.closeWindow(id);
             }}
           >
             <IconXmark width={8} height={8} />
           </button>
           <button
-            className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': !props.onMinimize || props.minimized })}
+            className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': props.minimized })}
             onClick={(e) => {
               e.stopPropagation();
-              return props.onMinimize?.(id);
+              return store.minimizeWindow(id);
             }}
           >
             <IconMinus width={8} height={8} />
@@ -109,20 +104,20 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
 
           {props.minimized || props.maximized ? (
             <button
-              className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onRestore })}
+              className={clsx({ 'pf-icon pf-icon__maximize ': true })}
               onClick={(e) => {
                 e.stopPropagation();
-                return props.onRestore?.(id);
+                return store.restoreWindowSize(id);
               }}
             >
               <IconPlus width={8} height={8} /> {/*TODO: add restore icon here */}
             </button>
           ) : (
             <button
-              className={clsx({ 'pf-icon pf-icon__maximize ': true, 'pf-icon__disabled': !props.onMaximize })}
+              className={clsx({ 'pf-icon pf-icon__maximize ': true })}
               onClick={(e) => {
                 e.stopPropagation();
-                return props.onMaximize?.(id);
+                return store.maximizeWindow(id);
               }}
             >
               <IconPlus width={8} height={8} />

@@ -79,16 +79,17 @@ export interface IToolbarStack {
 }
 
 export interface IToolbar {
-  draggable?: boolean;
-  type: NodeType.Toolbar;
-  id: string;
-  members: any[];
-  direction: Direction;
-  dragHandle?: React.ReactNode;
-  maxItems?: number;
-  rows?: number;
+  allowFloatingTools?: boolean;
   columns?: number;
   content?: React.ReactNode;
+  direction: Direction;
+  dragHandle?: React.ReactNode;
+  draggable?: boolean;
+  id: string;
+  maxItems?: number;
+  members: any[];
+  rows?: number;
+  type: NodeType.Toolbar;
 }
 
 export interface IContainer {
@@ -96,6 +97,7 @@ export interface IContainer {
   id: string;
   members: IToolbarStack[];
   maxItems?: number;
+  direction: Direction;
 }
 
 export type StateItem = ITab | ITabView | IGroupView | IWindow | IFloatingToolbarWindow | IToolbar | IToolbarStack | IContainer;

@@ -27,10 +27,9 @@ const canWindowDetachable = (win: IWindow) => true;
 
 export interface SceneProps extends SceneEvents {
   store: SceneStore;
-  newTabContent: () => JSX.Element;
 }
 
-export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
+export const Scene: FC<SceneProps> = ({ store, ...events }) => {
   //update contents of scene events with props events
   Object.assign(store.events, events);
 
@@ -72,6 +71,7 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
           store.members.map((win) => {
             const child = (
               <Window
+                store={store}
                 id={win.id}
                 floating={win.floating}
                 key={win.id}
@@ -79,38 +79,18 @@ export const Scene: FC<SceneProps> = ({ store, newTabContent, ...events }) => {
                 height={win.height}
                 top={win.top}
                 left={win.left}
-                onWindowClick={store.windowToFront}
-                onWindowMove={store.moveWindow}
-                onWindowResize={store.resizeWindow}
                 zIndex={win.zIndex}
                 minimized={win.minimized}
                 maximized={win.maximized}
-                onMaximize={store.maximizeWindow}
-                onMinimize={store.minimizeWindow}
-                onRestore={store.restoreWindowSize}
-                onClose={store.closeWindow}
               >
                 <NestedTabView
+                  store={store}
                   id={win.id}
                   view={win}
                   titleFormatter={(_tabView, tab) => tab.title}
                   titleEditable={true}
-                  onTabChange={store.changeTab}
-                  onTabClose={store.closeTab}
-                  onTabMove={store.moveTab}
-                  onResize={store.resizeView}
-                  onAddNewClick={
-                    !win.minimized
-                      ? (viewId) => {
-                          const content = newTabContent();
-                          store.addTab(viewId, { content, recentlyCreated: true });
-                        }
-                      : undefined
-                  }
                   detachable={canWindowDetachable(win)}
                   attachable={!!win.floating}
-                  onDetach={store.detachView}
-                  onAttach={store.attachView}
                   headerControls={
                     !win.minimized
                       ? [

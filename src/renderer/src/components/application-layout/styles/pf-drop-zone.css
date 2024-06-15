@@ -18,8 +18,15 @@
   align-self: stretch;
   box-sizing: border-box;
   background: #6495ed;
-  pointer-events: none;
   min-height: 3px;
   min-width: 3px;
 }
 
+.pf-container-insert-spacer {
+  align-self: stretch;
+  min-height: 3px;
+  min-width: 3px;
+}
+.pf-container-insert-spacer.pf-highlight {
+  background: #6495ed;
+}

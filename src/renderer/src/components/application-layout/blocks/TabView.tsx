@@ -10,6 +10,7 @@ import IconAdd from '../icons/IconAdd';
 import { evalBoolean, lookUp } from '../util';
 import useEvent from 'react-use-event-hook';
 import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDragSource, TabViewDropTarget, TabViewDroppableItems } from '../types.dnd';
+import { SceneStore } from '../stores/scene-store';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -22,26 +23,19 @@ export type TabTitleEditable = boolean | ((tabView: ITabView, tab: ITab) => bool
 export interface TabViewCommonProps {
   direction?: Direction;
   id: string; //path member
-  onAddNewClick?: OnAddNewClickHandler;
-  onResize?: OnSplitResizeHandler;
-  onTabChange?: OnTabChangeHandler;
-  onTabClose?: OnTabCloseHandler;
-  onTabMove?: OnTabMoveHandler;
   titleFormatter?: (tabView: ITabView, tab: ITab) => React.ReactNode;
   titleEditable?: boolean | ((tabView: ITabView, tab: ITab) => boolean);
   detachable: boolean | ((tabView: ITabView) => boolean);
   attachable: boolean | ((tabView: ITabView) => boolean);
-  onDetach?: (tabViewId: string, x?: number, y?: number) => void;
-  onAttach?: (tabViewId: string) => void;
 }
 export interface TabViewProps extends TabViewCommonProps, AsComponentProps<ITabView> {
-  //don't call directly, used for recursion
+  store: SceneStore;
   activeTabId?: string;
   headerControls?: React.ReactNode;
   noCache?: boolean;
 }
 
-const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
+const TabView: FC<TabViewProps> = ({ store, members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
   const view: ITabView = { type: NodeType.TabView, members: members || [], id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -54,13 +48,13 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
 
   useEffect(() => {
     if (activeTabId === undefined && view.members.length > 0) {
-      props.onTabChange?.(view.members[0].id);
+      store.changeTab(view.members[0].id);
     }
   }, []);
 
   const onTabChange = (tabId: string) => {
     if (activeTabId !== tabId) {
-      props.onTabChange?.(tabId);
+      store.changeTab(tabId);
     }
   };
 
@@ -70,18 +64,19 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
     const previousTabIndex = view.members.findIndex(({ id }) => id === tabId) - 1;
     const nextTabIndex = view.members.findIndex(({ id }) => id === tabId) + 1;
     if (previousTabIndex >= 0) {
-      props.onTabChange?.(view.members[previousTabIndex].id);
+      store.changeTab(view.members[previousTabIndex].id);
     } else if (nextTabIndex < view.members.length) {
-      props.onTabChange?.(view.members[nextTabIndex].id);
+      store.changeTab(view.members[nextTabIndex].id);
     }
-    props.onTabClose?.(tabId);
+    store.changeTab(tabId);
   };
   const onAddNew = () => {
-    props.onAddNewClick?.(id);
+    const content = store.events.newTabContent?.() || null;
+    store.addTab(id, { content, recentlyCreated: true });
   };
 
   const onResize = (size: number, nextItemSize?: number) => {
-    props.onResize?.(direction, size, id, nextItemSize);
+    store.resizeView(direction, size, id, nextItemSize);
   };
 
   const [collected, drop] = useDrop<TabViewDroppableItems, any, TabViewDropTarget>(() => ({
@@ -103,7 +98,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
       const type = item.type;
       //tab from somewhere else, not dropped on a tab
       if (!monitor.didDrop() && type === NodeType.Tab) {
-        props.onTabMove?.({ tabId: item.id, toViewId: id });
+        store.moveTab({ tabId: item.id, toViewId: id });
       }
     }
   }));
@@ -120,7 +115,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
     drop: (item, monitor) => {
       //tab from somewhere else, not dropped on a tab
       if (!monitor.didDrop() && item.type === NodeType.Tab) {
-        props.onTabMove?.({ tabId: item.id, toViewId: id });
+        store.moveTab({ tabId: item.id, toViewId: id });
       }
 
       //self window detach
@@ -136,8 +131,10 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
           y: client.y - offset.y - 25
         };
 
-        props.onDetach?.(view.id, newPosition.x, newPosition.y);
+        store.detachView(view.id, newPosition.x, newPosition.y);
       }
+
+      //TODO:implement merge tab views on drop header
     }
   }));
 
@@ -160,11 +157,15 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
   preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
-    props.onTabMove?.({ tabId, toViewId: id, beforeTabId });
+    store.moveTab({ tabId, toViewId: id, beforeTabId });
   };
   const content = lookUp<ITab>(view.members, activeTabId)?.item?.content;
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height };
 
+  const onAddNewHandler = () => {
+    const content = store.events.newTabContent?.() || null;
+    store.addTab(id, { content, recentlyCreated: true });
+  };
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
@@ -188,11 +189,11 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
             />
           ))}
           {collected.isInsertable && <div className="pf-insert-zone"></div>}
-          {props.onAddNewClick && (
+          {
             <button id="add-new" className="pf-tab-view__add" key="add-new" onClick={onAddNew}>
               <IconAdd width={16} height={16} />
             </button>
-          )}
+          }
         </div>
         {props.headerControls && <div className="pf-view-controls">{props.headerControls}</div>}
       </div>
@@ -256,7 +257,10 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
       };
     },
     drop: (item) => {
-      onDrop?.(item.id, id);
+      if (item.type === NodeType.Tab) {
+        onDrop?.(item.id, id);
+      }
+      //TODO:implement merge tab views on drop header
     }
   }));
 

@@ -4,8 +4,10 @@ import { ViewGroup } from './ViewGroup';
 import { FC } from 'react';
 import TabView, { TabViewCommonProps } from './TabView';
 import { evalBoolean } from '../util';
+import { SceneStore } from '../stores/scene-store';
 
 export interface NestedTabViewProps extends TabViewCommonProps {
+  store: SceneStore;
   view: IWindow | IGroupView;
   headerControls?: {
     isVisible: (view: ITabView) => boolean;
@@ -45,7 +47,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
       } else {
         return (
           //TODO: move viewgroup to tabview map
-          <ViewGroup id={viewItem.id} key={viewItem.id} direction={oppositeDirection} width={viewItem.width} height={viewItem.height} onResize={props.onResize}>
+          <ViewGroup store={props.store} id={viewItem.id} key={viewItem.id} direction={oppositeDirection} width={viewItem.width} height={viewItem.height}>
             <NestedTabView direction={oppositeDirection} headerControls={headerControls} id={viewItem.id} view={viewItem} {...props} />
           </ViewGroup>
         );
