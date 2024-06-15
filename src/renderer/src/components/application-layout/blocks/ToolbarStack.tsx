@@ -1,6 +1,5 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
 import { AsComponentProps, Direction, IToolbarStack, NodeType } from '../types';
-import { useValidateElement } from '../hooks/use-validate-element';
 import clsx from 'clsx';
 import { noDrag } from '../util';
 import { useDrag } from 'react-dnd';
@@ -27,12 +26,6 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
 
   drag(rootRef);
 
-  /*  useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack-group' } }, (validation) => {
-    if (!validation) {
-      throw new Error('ToolbarStack must be used within a FloatingToolbarWindow.');
-    }
-  });
- */
   const headerRender = typeof props.header === 'function' ? props.header() : props.header;
   let _header = headerRender && !headerRender.props.onClose ? React.cloneElement(headerRender, { onClose: props.onClose }) : headerRender;
 

@@ -76,8 +76,11 @@ export interface IToolbarStack {
   direction: Direction;
   header?: React.ReactElement | (() => React.ReactElement);
   maxItems?: number;
+  resizable?: boolean;
+  size?: number;
+  as?: 'toolbar' | 'tool-tabs';
+  activeFloatingToolId?: string;
 }
-
 export interface IToolbar {
   allowFloatingTools?: boolean;
   columns?: number;
@@ -85,11 +88,19 @@ export interface IToolbar {
   direction: Direction;
   dragHandle?: React.ReactNode;
   draggable?: boolean;
+  fullSize?: boolean;
   id: string;
   maxItems?: number;
-  members: any[];
+  members: IFloatingTool[];
   rows?: number;
   type: NodeType.Toolbar;
+}
+
+export interface IFloatingTool {
+  id: string;
+  icon: React.ReactNode;
+  title: string;
+  content: React.ReactNode;
 }
 
 export interface IContainer {
@@ -123,6 +134,6 @@ export type ParentType<T> = T extends ITab
 
 export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;
 
-type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends Record<string, any>> } ? { members?: Array<AsRegisterArgs<U>> } : never;
+type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends Record<string, any>> } ? { members?: Array<AsRegisterArgs<U>> } : {};
 
 export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members'> & OptionalMembersWithoutType<T>;

@@ -11,6 +11,9 @@ import { FlowPage } from './pages/FlowPage';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import MainTools from './components/layout-preset/MainTools';
 import TopToolbar from './components/layout-preset/TopToolbar';
+import InlineSvg from './components/application-layout/elements/InlineSvg';
+import colorPanel from './icons/illustrator/color-panel.svg';
+import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
 
 function App(): JSX.Element {
   const app = useApp();
@@ -19,6 +22,7 @@ function App(): JSX.Element {
 
   useInitialize(() => {
     layout.registerContainer({ id: 'container-top', maxItems: 1, direction: Direction.Vertical });
+
     layout.registerToolbarStack('container-top', {
       id: 'top-toolbar-stack',
       direction: Direction.Horizontal,
@@ -26,12 +30,13 @@ function App(): JSX.Element {
     });
     layout.registerToolbar('top-toolbar-stack', {
       draggable: true,
+      fullSize: true,
       id: 'top-tools',
       direction: Direction.Horizontal,
       content: <TopToolbar />
     });
-
     layout.registerContainer({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal });
+
     layout.registerToolbarStack('container-left', {
       id: 'main-tools-stack',
       draggable: true,
@@ -58,7 +63,35 @@ function App(): JSX.Element {
       draggable: true,
       direction: Direction.Vertical,
       columns: 2,
+      fullSize: true,
       content: <MainTools />
+    });
+    layout.registerContainer({ id: 'container-right', direction: Direction.Horizontal });
+
+    layout.registerToolbarStack('container-right', {
+      id: 'right-container-col-1',
+      draggable: true,
+      direction: Direction.Vertical
+    });
+    layout.registerToolbar('right-container-col-1', {
+      id: 'right-stack-1-toolbar-1',
+      draggable: true,
+      direction: Direction.Vertical,
+      columns:1,
+      members: [
+        {
+          id: 'color-panel',
+          icon: <InlineSvg source={colorPanel} />,
+          title: 'Color',
+          content: <div>ColorWindow {app.tool}</div>
+        },
+        {
+          id: 'color-guide-panel',
+          icon: <InlineSvg source={colorGuidePanel} />,
+          title: 'Color Guide' ,
+          content: <div>ColorWindow {app.tool}</div>
+        }
+      ]
     });
   });
 
@@ -85,6 +118,7 @@ function App(): JSX.Element {
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
         <Container {...layout.containerProps('container-left')} />
         <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
+        <Container {...layout.containerProps('container-right')} />
       </div>
     </ApplicationLayout>
   );

@@ -1,3 +1,15 @@
+.pf-toolbar-stack.pf-vertical .pf-toolbar{
+  padding-bottom:5px;
+  border-bottom: 1px solid var(--pf-dark-border-color);
+}
+.pf-toolbar-stack.pf-horizontal .pf-toolbar{
+  padding-right:5px;
+  border-right: 1px solid var(--pf-dark-border-color);
+}
+.pf-toolbar.pf-full-size {
+  flex: 1;
+}
+
 .pf-toolbar-item {
   display: flex;
   padding: 1px;
@@ -6,6 +18,7 @@
   flex-grow: 0;
   flex-shrink: 0;
 }
+
 
 .pf-toolbar.pf-horizontal .pf-toolbar-item {
   min-height: var(--pf-toolbar-row-size);

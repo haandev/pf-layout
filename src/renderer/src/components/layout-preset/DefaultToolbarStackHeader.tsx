@@ -58,7 +58,7 @@ export const DefaultToolbarStackHeader: FC<DefaultToolbarStackHeaderProps> = (pr
       </button>
     )
   ];
-  const group = rootRef.current?.closest('.pf-toolbar-stack-group');
+  const group = rootRef.current?.closest('.pf-floating-toolbar-window');
   const stack = rootRef.current?.closest('.pf-toolbar-stack');
   const isFirstChild = group?.firstElementChild === stack;
 

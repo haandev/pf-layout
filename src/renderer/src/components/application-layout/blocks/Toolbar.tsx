@@ -12,10 +12,10 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   // If the direction is horizontal and rows are not set, set rows to 1
-  const _rows = props.direction === Direction.Horizontal && !props.rows ? 1 : props.rows;
+  const _rows = props.direction === Direction.Horizontal && props.rows;
 
   // If the direction is vertical and columns are not set, set columns to 1
-  const _columns = props.direction === Direction.Vertical && !props.columns ? 1 : props.columns;
+  const _columns = props.direction === Direction.Vertical && props.columns;
 
   const itemsStyle = {
     ...(_rows && { maxHeight: `calc(${_rows} * var(--pf-toolbar-row-size))` }),
@@ -29,6 +29,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
         'pf-toolbar': true,
         'pf-vertical': props.direction === Direction.Vertical,
         'pf-horizontal': props.direction === Direction.Horizontal,
+        'pf-full-size': props.fullSize,
         [props.className || '']: true
       })}
     >
