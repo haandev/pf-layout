@@ -1,7 +1,7 @@
 import '../styles/main.css';
 
 import clsx from 'clsx';
-import { FC, PropsWithChildren, useEffect, useRef } from 'react';
+import { FC, PropsWithChildren,  useRef } from 'react';
 import { Direction, NodeType } from '../types';
 import { LayoutDropTarget, LayoutDroppableItems } from '../types.dnd';
 import { useDrop } from 'react-dnd';
@@ -20,7 +20,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
 
   const _direction = direction || Direction.Vertical;
 
-  const [collected, drop] = useDrop<LayoutDroppableItems, unknown, LayoutDropTarget>(() => ({
+  const [_collected, drop] = useDrop<LayoutDroppableItems, unknown, LayoutDropTarget>(() => ({
     accept: [NodeType.FloatingToolbarWindow, NodeType.ToolbarStack],
 
     drop: (item, monitor) => {

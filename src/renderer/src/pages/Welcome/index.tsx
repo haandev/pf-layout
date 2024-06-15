@@ -1,11 +1,11 @@
 import styles from './styles.module.css';
 import logo from './assets/logo.svg';
-import { useApp } from '@renderer/stores/app-store';
+import { useApp } from '../../stores/app-store';
 import clsx from 'clsx';
 import { useCallback } from 'react';
 import { FlowPage } from '../FlowPage';
 import { v4 } from 'uuid';
-import { useScene } from '@renderer/components/application-layout/stores/scene-store';
+import { useScene } from '../../components/application-layout/stores/scene-store';
 const Welcome = () => {
   const app = useApp();
   const scene = useScene();

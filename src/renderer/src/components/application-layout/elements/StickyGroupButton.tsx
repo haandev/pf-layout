@@ -71,7 +71,7 @@ export const StickyGroupButton: FC<StickyGroupButtonProps> = (props) => {
       {isMenuOpen && (
         <div ref={dropDownRef} className="pf-item-sticky-button-dropdown">
           {Object.keys(props.items).map((key) => {
-            const onClick = (e) => {
+            const onClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
               e.stopPropagation();
               if (props.value !== key) {
                 props.onChange?.(key);

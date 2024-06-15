@@ -162,10 +162,6 @@ const TabView: FC<TabViewProps> = ({ store, members, titleFormatter, activeTabId
   const content = lookUp<ITab>(view.members, activeTabId)?.item?.content;
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height };
 
-  const onAddNewHandler = () => {
-    const content = store.events.newTabContent?.() || null;
-    store.addTab(id, { content, recentlyCreated: true });
-  };
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
@@ -234,7 +230,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
   const ref = useRef(null);
 
   const [editing, setEditing] = useState(false);
-  const [newTitle, setNewTitle] = useState(title);
+  const [_newTitle, setNewTitle] = useState(title);
 
   const [, drag] = useDrag<TabDragSource>(() => ({
     type: NodeType.Tab,
@@ -265,7 +261,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
   }));
 
   const className = clsx({ 'pf-tab': true, 'pf-tab-active': props.isActive, [props.className || '']: true });
-  const onClose = (e) => {
+  const onClose:React.MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
     props.onClose?.(id);
   };

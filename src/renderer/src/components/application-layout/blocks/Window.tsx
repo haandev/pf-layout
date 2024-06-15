@@ -64,7 +64,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
   useDropDelta({
     ref: header,
     accepts: ['window'],
-    onDrop: (e) => {}
+    onDrop: (_e) => {}
   });
 
   //drag(header)
@@ -174,14 +174,14 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
   );
 });
 
-const calculateVisibleDimension = (totalSize, position, clientSize) => {
+const calculateVisibleDimension = (totalSize: number, position: number, clientSize: number) => {
   const endPosition = position + totalSize;
   if (endPosition > clientSize) {
     return Math.max(0, clientSize - position);
   }
   return totalSize;
 };
-const visibleDimension = (element) => {
+const visibleDimension = (element: HTMLElement) => {
   const rect = element.getBoundingClientRect();
   const clientWidth = document.documentElement.clientWidth;
   const clientHeight = document.documentElement.clientHeight;

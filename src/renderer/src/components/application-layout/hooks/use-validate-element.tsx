@@ -45,13 +45,13 @@ type ElementValidationRule = {
  * @returns boolean | null
  * Boolean if element is valid or invalid, null if no validation is performed (element is null or undefined)
  */
-export const validateElement = (element: Element | null | undefined, rules: ElementValidationRule, maxRecursion = 50) => {
+export const validateElement = (element: Element | null | undefined, rules: ElementValidationRule, maxRecursion = 50): boolean | number | null => {
   if (maxRecursion <= 0) return null;
   maxRecursion--;
   if (!element) return -1;
   const { className, id, name, dataAttributes, $match, $closest, $querySelector, $querySelectorAll, $children, $parent, $ancestors, $descendants, ...rest } =
     rules;
-  let result = true;
+  let result: boolean | number | null = true;
 
   // match validation
   if ($match && !element.matches($match)) {
@@ -128,7 +128,7 @@ export const validateElement = (element: Element | null | undefined, rules: Elem
   }
   // parent validation
   if ($parent) {
-    let result: boolean | null = false;
+    let result: boolean | null | number = false;
     result = validateElement(element.parentElement, $parent, maxRecursion);
     if (!result === true) return result;
   }
@@ -222,7 +222,7 @@ export const validateElements = (elements: Element[] | Element | null | undefine
 export const useValidateElement = (
   ref: React.RefObject<Element>,
   rules: ElementValidationRule,
-  callback: (validation: -1 | boolean) => void,
+  callback: (validation: -1 | boolean | null | number) => void,
   maxRecursion = 50
 ) => {
   useEffect(() => {

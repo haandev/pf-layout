@@ -1,19 +1,8 @@
 import { create } from 'zustand';
-import { generateRandomCoordinates, lookUp as _lookUp, nextZIndex, lookUp } from '../util';
-import {
-  AsRegisterArgs,
-  Direction,
-  IContainer,
-  IFloatingTool,
-  IFloatingToolbarWindow,
-  IToolbar,
-  IToolbarStack,
-  NestedState,
-  NodeType,
-  StateItem
-} from '../types';
+import { lookUp as _lookUp, lookUp } from '../util';
+import { AsRegisterArgs, Direction, IContainer, IFloatingTool, IFloatingToolbarWindow, IToolbar, IToolbarStack, NestedState, NodeType } from '../types';
 import { isContainer, isFloatingToolbarWindow, isToolbar, isToolbarStack } from '../guards';
-import React, { PropsWithChildren } from 'react';
+import { PropsWithChildren } from 'react';
 import { ToolbarStack } from '../blocks/ToolbarStack';
 import { Toolbar } from '../blocks/Toolbar';
 import { v4 } from 'uuid';
@@ -78,7 +67,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       const { item, parent } = lookUp<IToolbar>(both(), id);
       if (!isToolbar(item)) return { id: '', direction: Direction.Vertical };
 
-      const onClickHandler = (id) => {
+      const onClickHandler = (id: string) => {
         set((state) => {
           const members = [...state.members];
           const floating = [...state.floating];
@@ -240,7 +229,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
 });
 
 const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IFloatingTool[] => {
-  return (toolbar.members || []).map((tool) => ({ type: NodeType.Toolbar, ...tool }));
+  return (toolbar.members || []).map((tool) => ({ type: NodeType.FloatingTool, ...tool }));
 };
 const toolbarStackMembers = (stack: AsRegisterArgs<IToolbarStack>): IToolbar[] => {
   return (stack.members || []).map((toolbar) => ({ type: NodeType.Toolbar, ...toolbar, members: [] }));

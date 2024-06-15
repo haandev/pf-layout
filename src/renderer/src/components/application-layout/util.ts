@@ -1,5 +1,5 @@
 import { isTab } from './guards';
-import { IScene, IWindow, NestedState, NodeType, ParentType, StateItem, ILayout } from './types';
+import { IScene, IWindow, NestedState, NodeType, ParentType, StateItem } from './types';
 
 /**
  * Checks if a given value is empty. An empty value can be false, null, undefined, an empty array, or an empty object.
@@ -35,7 +35,7 @@ export const evalBoolean = <T extends (...params: any[]) => boolean | any>(
   }
 };
 
-type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; key: string; depth: number };
+type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
 
 /**
  * Looks up an item by id in a nested state structure.
@@ -44,34 +44,27 @@ type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: nu
  * @param depth Current depth of the search.
  * @returns LookupResult containing the item, its parent, and index in parent, or nulls if not found.
  */
-export const lookUp = <T extends StateItem>(
-  state: NestedState | NestedState[],
-  id: string | undefined,
-  keys: string[] = ['members'],
-  depth: number = 0
-): LookupResult<T> => {
+export const lookUp = <T extends StateItem>(state: NestedState | NestedState[], id: string | undefined, depth: number = 0): LookupResult<T> => {
   if (depth > 100) {
     throw new Error('Max depth reached');
   }
   if (!id) {
-    return { item: null, parent: null, index: -1, depth, key: '' };
+    return { item: null, parent: null, index: -1, depth };
   }
   if (Array.isArray(state)) {
     state = { members: state } as NestedState;
   }
   if ('id' in state && state.id === id) {
-    return { item: state, parent: null, index: -1, depth, key: '' } as LookupResult<T>;
+    return { item: state, parent: null, index: -1, depth } as LookupResult<T>;
   }
-  for (let key of keys) {
-    if (key in state && state[key] && Array.isArray(state[key])) {
-      for (let i = 0; i < state[key].length; i++) {
-        if (state[key][i].id === id) {
-          return { item: state[key][i], parent: state, index: i, depth: depth + 1, key } as LookupResult<T>;
-        }
-        let result = lookUp(state[key][i], id, keys, depth + 1);
-        if (result.item) {
-          return result as LookupResult<T>;
-        }
+  if ('members' in state && state['members'] && Array.isArray(state['members'])) {
+    for (let i = 0; i < state['members'].length; i++) {
+      if (state['members'][i].id === id) {
+        return { item: state['members'][i], parent: state, index: i, depth: depth + 1 } as LookupResult<T>;
+      }
+      let result = lookUp(state['members'][i], id, depth + 1);
+      if (result.item) {
+        return result as LookupResult<T>;
       }
     }
   }
@@ -210,7 +203,7 @@ export const nextUntitledCount = (state: NestedState) => {
  * @param state - The application state containing members with `zIndex` values.
  * @returns The next highest `zIndex` value.
  */
-export const nextZIndex = (state: IScene | ILayout | Array<any>) => {
+export const nextZIndex = (state: IScene | Array<any>) => {
   if (Array.isArray(state)) state = { members: state };
   return Math.max(...state.members.map((window) => window.zIndex || 0)) + 1;
 };
@@ -235,7 +228,7 @@ export const generateRandomCoordinates = () => {
  * Prevents dragging of an element.
  * Usage example: `<div {...(!props.draggable ? noDrag : {})}>`
  */
-export const noDrag = { draggable: true, onDragStart: (event) => event.preventDefault() };
+export const noDrag = { draggable: true, onDragStart: (event: any) => event.preventDefault() };
 
 /**
  * Remaps the `zIndex` values of the windows in the state to be sequential.

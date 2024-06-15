@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef } from 'react';
 import useEvent from 'react-use-event-hook';
 import { useClickAnyWhere } from 'usehooks-ts';
 import { validateElement } from './use-validate-element';
-import { DragSource, dndStore } from '../stores/dnd-store';
+import { DragSource } from '../stores/dnd-store';
 
 export type DragOptions<T extends HTMLElement> = {
   ref?: React.RefObject<T>;
@@ -24,7 +24,6 @@ export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions
   const internalRef = useRef<T>(null);
   const ref = options.ref || internalRef;
   isDragSource(options) && (dragSourceOptions.ref = ref);
-
 
   const initials = useRef({
     x: 0,
@@ -67,7 +66,7 @@ export function useDragDelta<T extends HTMLElement>(options: UseDragDeltaOptions
     onDragEnd?.(e);
   });
 
-  const handler = useCallback((e) => {
+  const handler = useCallback((e: any) => {
     if (validateElement(e.target, { $ancestors: { $match: '.no-drag' } })) {
       e.stopPropagation();
       return;

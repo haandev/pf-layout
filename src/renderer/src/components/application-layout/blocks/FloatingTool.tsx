@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren } from 'react';
+import { FC, PropsWithChildren } from 'react';
 import { AsComponentProps, IFloatingTool } from '../types';
 import { StickyButton } from '../elements/StickyButton';
 import { ToolbarItem } from '../elements/ToolbarItem';

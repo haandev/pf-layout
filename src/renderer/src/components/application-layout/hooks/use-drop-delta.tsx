@@ -29,7 +29,7 @@ export function useDropDelta<T extends HTMLElement>(options: UseDropDeltaOptions
     options.onDragOver?.(e);
   });
 
-  const mouseDownHandler = useEvent((e: MouseEvent) => {
+  const mouseDownHandler = useEvent(() => {
     document.addEventListener('mouseup', mouseUpHandler);
     document.addEventListener('mousemove', dragOverHandler);
   });

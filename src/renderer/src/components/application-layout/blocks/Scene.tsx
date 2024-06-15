@@ -1,6 +1,5 @@
 import clsx from 'clsx';
 import { FC, useRef } from 'react';
-import { useValidateElement } from '../hooks/use-validate-element';
 import { useDrop } from 'react-dnd';
 import { Direction, IWindow, NodeType } from '../types';
 import { SceneDropTarget, SceneDroppableItems } from '../types.dnd';
@@ -9,8 +8,6 @@ import IconSplitSquareHorizontal from '../icons/IconSplitSquareHorizontal';
 import { Window } from './Window';
 import { NestedTabView } from './NestedTabView';
 import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
-import IconWindowStack from '../icons/IconWindowStack';
-import IconLayout from '../icons/IconLayout';
 import { SceneEvents } from '../types.event';
 import { createPortal } from 'react-dom';
 
@@ -22,7 +19,7 @@ import { createPortal } from 'react-dom';
  *    structural setup that supports detaching.
  * 3. It is floating and there are multiple members within the first group - allowing for individual members to be detached.
  */
-const canWindowDetachable = (win: IWindow) => true;
+const canWindowDetachable = (_win: IWindow) => true;
 //!win.floating || (win.floating && win.members[0]?.members?.[0]?.type === NodeType.GroupView) || win.members[0]?.members?.length > 1;
 
 export interface SceneProps extends SceneEvents {

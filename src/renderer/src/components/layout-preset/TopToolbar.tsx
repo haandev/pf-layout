@@ -6,9 +6,9 @@ import selectionTool from '../../icons/illustrator/selection-tool.svg';
 import zoom from '../../icons/illustrator/zoom.svg';
 import zoomIn from '../../icons/illustrator/zoom-in.svg';
 import zoomOut from '../../icons/illustrator/zoom-out.svg';
-import IconHome from '@renderer/icons/IconHome';
-import IconSave from '@renderer/icons/IconSave';
-import IconFolderOpen from '@renderer/icons/IconFolderOpen';
+import IconHome from '../../icons/IconHome';
+import IconSave from '../../icons/IconSave';
+import IconFolderOpen from '../../icons/IconFolderOpen';
 import InlineSvg from '../application-layout/elements/InlineSvg';
 
 const TopToolbar = React.memo(() => {

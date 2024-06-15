@@ -2,7 +2,6 @@ import React, { FC, PropsWithChildren, useRef } from 'react';
 import { AsComponentProps, Direction, IContainer, NodeType } from '../types';
 import clsx from 'clsx';
 import { useDrop } from 'react-dnd';
-import { is } from '@electron-toolkit/utils';
 import { isEmpty } from '../util';
 
 export interface ContainerProps extends PropsWithChildren, AsComponentProps<IContainer> {

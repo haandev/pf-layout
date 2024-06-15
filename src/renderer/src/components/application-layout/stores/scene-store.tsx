@@ -411,7 +411,7 @@ export const useScene = create<SceneStore>((set) => {
               {
                 type: NodeType.TabView,
                 id: v4(),
-                members: tabs.toSpliced(activeTab.index, 1),
+                members: (tabs as any).toSpliced(activeTab.index, 1),
                 activeTabId: newActiveTabId
               },
               {

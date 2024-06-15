@@ -9,7 +9,7 @@ export interface StickyButtonProps extends PropsWithChildren {
 }
 export const StickyButton: FC<StickyButtonProps> = (props) => {
   const isActive = props.name === props.value;
-  const onClick = (e) => {
+  const onClick = (e: any) => {
     if (props.onChange && !isActive) {
       props.onChange(props.name);
     }

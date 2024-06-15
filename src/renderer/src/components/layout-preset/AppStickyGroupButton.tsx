@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { StickyGroupButton } from '../application-layout';
-import { useApp } from '@renderer/stores/app-store';
+import { useApp } from '../../stores/app-store';
 import InlineSvg from '../application-layout/elements/InlineSvg';
 
 export interface AppStickyGroupButtonProps {

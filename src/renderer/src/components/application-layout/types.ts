@@ -11,7 +11,8 @@ export enum NodeType {
   ToolbarStack = 'ToolbarStack',
   FloatingToolbarWindow = 'FloatingToolbarWindow',
   Container = 'Container',
-  Toolbar = 'Toolbar'
+  Toolbar = 'Toolbar',
+  FloatingTool = 'FloatingTool'
 }
 export interface ITab {
   type: NodeType.Tab;
@@ -97,6 +98,7 @@ export interface IToolbar {
 }
 
 export interface IFloatingTool {
+  type: NodeType.FloatingTool;
   id: string;
   icon: React.ReactNode;
   title: string;
@@ -111,7 +113,7 @@ export interface IContainer {
   direction: Direction;
 }
 
-export type StateItem = ITab | ITabView | IGroupView | IWindow | IFloatingToolbarWindow | IToolbar | IToolbarStack | IContainer;
+export type StateItem = ITab | ITabView | IGroupView | IWindow | IFloatingToolbarWindow | IFloatingTool | IToolbar | IToolbarStack | IContainer;
 export type NestedState = StateItem | IScene | ILayout;
 
 export type ParentType<T> = T extends ITab
@@ -130,7 +132,9 @@ export type ParentType<T> = T extends ITab
               ? IContainer | IFloatingToolbarWindow
               : T extends IToolbar
                 ? IToolbarStack
-                : null;
+                : T extends IFloatingTool
+                  ? IToolbar
+                  : null;
 
 export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;
 
