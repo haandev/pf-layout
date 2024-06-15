@@ -1,15 +1,22 @@
-import { ApplicationLayout, DragHandle, IconButton, Container, Toolbar, ToolbarItem, ToolbarStack, Separator, Label } from './components/application-layout';
+import {
+  ApplicationLayout,
+  DragHandle,
+  IconButton,
+  Container,
+  Toolbar,
+  ToolbarItem,
+  ToolbarStack,
+  Separator,
+  Label,
+  lookUp
+} from './components/application-layout';
 
-import { Direction, IWindow, NodeType } from './components/application-layout/types';
+import { Direction, IToolbarStackGroup, IWindow, NodeType } from './components/application-layout/types';
 
 import IconFolderOpen from './icons/IconFolderOpen';
 import IconHome from './icons/IconHome';
 import IconSave from './icons/IconSave';
 import InlineSvg from './components/application-layout/elements/InlineSvg';
-import IconLayout from './components/application-layout/icons/IconLayout';
-import IconSplitSquareHorizontal from './components/application-layout/icons/IconSplitSquareHorizontal';
-import IconSplitSquareVertical from './components/application-layout/icons/IconSplitSquareVertical';
-import IconWindowStack from './components/application-layout/icons/IconWindowStack';
 
 import addAnchor from './icons/illustrator/add-anchor.svg';
 import anchorPointTool from './icons/illustrator/anchor-point-tool.svg';
@@ -58,10 +65,12 @@ import { useApp } from './stores/app-store';
 import Welcome from './pages/Welcome';
 import { useScene } from './components/application-layout/stores/scene-store';
 import { FlowPage } from './pages/FlowPage';
+import { useLayout } from './components/application-layout/stores/layout-store';
 
 function App(): JSX.Element {
   const app = useApp();
   const scene = useScene();
+  const layout = useLayout();
 
   const newTabContentCtor = () => {
     const id = Math.random().toString(36).substring(7);
@@ -73,9 +82,9 @@ function App(): JSX.Element {
   const onCloseTab = () => requestAnimationFrame(() => scene.members.length < 1 && app.showHome());
 
   return (
-    <ApplicationLayout home={app.home && <Welcome />}>
+    <ApplicationLayout home={app.home && <Welcome />} store={layout}>
       <Container name="top-toolbar-container" direction={Direction.Vertical} maxItems={1}>
-        <ToolbarStackGroup>
+        <ToolbarStackGroup {...lookUp<IToolbarStackGroup>(layout, 'top-toolbar-stack-group').item} id="top-toolbar-stack-group">
           <ToolbarStack name="top-toolbar-stack" direction={Direction.Horizontal} maxItems={1}>
             <Toolbar name="main-toolbar" direction={Direction.Horizontal}>
               <DragHandle />
@@ -95,7 +104,7 @@ function App(): JSX.Element {
         </ToolbarStackGroup>
       </Container>
       <Container name="center-container" style={{ flex: 1 }} direction={Direction.Horizontal}>
-        <ToolbarStackGroup onClose={() => {}}>
+        <ToolbarStackGroup {...layout.toolbarStackGroupProps('main-tools-stack-group')} onClose={() => {}}>
           <ToolbarStack
             name="main-tools-stack"
             direction={Direction.Vertical}
@@ -195,105 +204,6 @@ function App(): JSX.Element {
           </ToolbarStack>
         </ToolbarStackGroup>
         <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
-        <ToolbarStackGroup onClose={() => {}}>
-          <ToolbarStack
-            name="main-tools-stack"
-            direction={Direction.Vertical}
-            header={
-              <DefaultToolbarStackHeader
-                leftButton={{
-                  onLeftChevronClick: app.toolbarColSize === 2 && (() => app.setToolbarColSize(1)),
-                  onRightChevronClick: app.toolbarColSize === 1 && (() => app.setToolbarColSize(2))
-                }}
-              />
-            }
-          >
-            <Toolbar name="main-tools" direction={Direction.Vertical} dragHandle={<DragHandle />} columns={app.toolbarColSize}>
-              <ToolbarItem children={<AppToolsStickySvgButton source={selectionTool} name="selection" />} />
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      directSelection: { source: directSelectTool, label: 'Direct Selection Tool' },
-                      groupSelection: { source: groupSelectionTool, label: 'Group Selection Tool' }
-                    }}
-                  />
-                }
-              />
-              <ToolbarItem children={<AppToolsStickySvgButton source={magicWandTool} name="magic" />} />{' '}
-              <ToolbarItem children={<AppToolsStickySvgButton source={lassoTool} name="lasso" />} />{' '}
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      pen: { source: penTool, label: 'Pen Tool' },
-                      penPlus: { source: addAnchor, label: 'Add Anchor Point Tool' },
-                      penMinus: { source: minusAnchor, label: 'Delete Anchor Point Tool' },
-                      anchorPointCorner: { source: anchorPointTool, label: 'Anchor Point Tool' }
-                    }}
-                  />
-                }
-              />
-              <ToolbarItem children={<AppToolsStickySvgButton source={curvatureTool} name="curve-pen" />} />
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      type1: { source: typeTool, label: 'Type Tool' },
-                      areaType: { source: areaTypeTool, label: 'Area Type Tool' },
-                      typeOnPath: { source: typeOnAPathTool, label: 'Type on Path Tool' },
-                      typeVertical: { source: verticalTypeTool, label: 'Vertical Type Tool' },
-                      areaTypeVertical: { source: verticalAreaTypeTool, label: 'Vertical Area Type Tool' },
-                      typeOnPathVertical: { source: verticalTypeOnAPathTool, label: 'Vertical Type on Path Tool' },
-                      typeTap: { source: touchTypeTool, label: 'Type Tap Tool' }
-                    }}
-                  />
-                }
-              />
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      line: { source: lineSegmentTool, label: 'Line Segment Tool' },
-                      arc: { source: arcTool, label: 'Arc Tool' },
-                      spiral: { source: spiralTool, label: 'Spiral Tool' },
-                      polarGrid: { source: polarGridTool, label: 'Polar Grid Tool' },
-                      grid: { source: gridTool, label: 'Grid Tool' }
-                    }}
-                  />
-                }
-              />
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      rectangle: { source: rectangleTool, label: 'Rectangle Tool' },
-                      roundedRectangle: { source: roundedRectangleTool, label: 'Rounded Rectangle Tool' },
-                      ellipse: { source: ellipsesTool, label: 'Ellipse Tool' },
-                      polygon: { source: polygonTOol, label: 'Polygon Tool' },
-                      star: { source: starTool, label: 'Star Tool' },
-                      flare: { source: flareTool, label: 'Flare Tool' }
-                    }}
-                  />
-                }
-              />
-              <ToolbarItem
-                children={
-                  <AppStickyGroupButton
-                    items={{
-                      areaGraph: { source: areaGraphTool, label: 'Graph Tool' },
-                      columnGraph: { source: columnGraphTool, label: 'Column Graph Tool' },
-                      lineGraph: { source: lineGraphTool, label: 'Line Graph Tool' },
-                      pieGraph: { source: pieGraphTool, label: 'Pie Graph Tool' },
-                      scatterGraph: { source: scatterGraphTool, label: 'Scatter Graph Tool' },
-                      barGraph: { source: barGraphTool, label: 'Bar Graph Tool' }
-                    }}
-                  />
-                }
-              />
-            </Toolbar>
-          </ToolbarStack>
-        </ToolbarStackGroup>
       </Container>
     </ApplicationLayout>
   );

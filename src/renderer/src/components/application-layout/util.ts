@@ -1,4 +1,5 @@
-import { IScene, IGroupView, ITab, ITabView, IWindow, NestedState, NodeType, ParentType, StateItem } from './types';
+import { isTab } from './guards';
+import { IScene, IGroupView, ITab, ITabView, IWindow, NestedState, NodeType, ParentType, StateItem, ILayout } from './types';
 
 /**
  * Checks if a given value is empty. An empty value can be false, null, undefined, an empty array, or an empty object.
@@ -33,42 +34,6 @@ export const evalBoolean = <T extends (...params: any[]) => boolean | any>(
     return true;
   }
 };
-
-/**
- * Type guard to check if the state object is a Window.
- * @param state The state object to check.
- * @returns true if the state is a Window, false otherwise.
- */
-export const isWindow = (state: any): state is IWindow => state && 'type' in state && state.type === NodeType.Window;
-
-/**
- * Type guard to check if the state object is a GroupView.
- * @param state The state object to check.
- * @returns true if the state is a GroupView, false otherwise.
- */
-export const isGroupView = (state: any): state is IGroupView => state && 'type' in state && state.type === NodeType.GroupView;
-
-/**
- * Type guard to check if the state object is a TabView.
- * @param state The state object to check.
- * @returns true if the state is a TabView, false otherwise.
- */
-export const isTabView = (state: any): state is ITabView => state && 'type' in state && state.type === NodeType.TabView;
-
-/**
- * Type guard to check if the state object is a Tab.
- * @param state The state object to check.
- * @returns true if the state is a Tab, false otherwise.
- */
-export const isTab = (state: any): state is ITab => state && 'type' in state && state.type === NodeType.Tab;
-
-/**
- * Checks if the state object has members array.
- * @param state The state object to check.
- * @returns true if the state has a members array, false otherwise.
- */
-export const hasMembers = (state: any): state is { members: StateItem[] } & { [key: string]: any } =>
-  state && 'members' in state && Array.isArray(state.members);
 
 type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
 
@@ -224,6 +189,24 @@ export const nextUntitledCount = (state: NestedState) => {
  * @param state - The application state containing members with `zIndex` values.
  * @returns The next highest `zIndex` value.
  */
-export const nextZIndex = (state: IScene) => {
+export const nextZIndex = (state: IScene | ILayout) => {
   return Math.max(...state.members.map((window) => window.zIndex || 0)) + 1;
 };
+
+/**
+ * Generates random coordinates for a new Window or ToolbarStackGroup.
+ * @returns An object containing the x and y coordinates.
+ */
+export const generateRandomCoordinates = () => {
+  const minX = 100;
+  const minY = 100;
+  const maxX = window.innerWidth - 200;
+  const maxY = window.innerHeight - 200;
+
+  const x = Math.random() * (maxX - minX) + minX;
+  const y = Math.random() * (maxY - minY) + minY;
+
+  return { x: Math.floor(x), y: Math.floor(y) };
+};
+
+export const noDrag = { draggable: true, onDragStart: (event) => event.preventDefault() };

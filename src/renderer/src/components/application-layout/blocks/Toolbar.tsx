@@ -2,6 +2,7 @@ import React, { FC, PropsWithChildren, useRef } from 'react';
 import { useValidateElement } from '../hooks/use-validate-element';
 import { Direction } from '../types';
 import clsx from 'clsx';
+import { noDrag } from '../util';
 
 export interface ToolbarProps extends PropsWithChildren {
   name: string;
@@ -43,7 +44,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
       })}
     >
       {props.dragHandle || null}
-      <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle}>
+      <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
         {props.children}
       </div>
     </div>

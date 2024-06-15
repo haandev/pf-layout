@@ -1,9 +1,9 @@
-import React, { FC, PropsWithChildren, useEffect, useRef } from 'react';
+import React, { FC, PropsWithChildren, startTransition, useEffect, useRef } from 'react';
 import clsx from 'clsx';
 import useEvent from 'react-use-event-hook';
 import { useWindowSize } from 'usehooks-ts';
 
-import { Direction } from '../types';
+import { AsComponentProps, Direction, IWindow } from '../types';
 import { useDragDelta, useValidateElement } from '..';
 import IconXmark from '../icons/IconXmark';
 import IconMinus from '../icons/IconMinus';
@@ -13,18 +13,9 @@ import ResizeBox from '../elements/ResizeBox';
 import { useDropDelta } from '../hooks/use-drop-delta';
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
-export interface WindowProps extends PropsWithChildren {
+export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow> {
   onWindowResize?: OnResizeHandler;
   direction?: Direction;
-  floating?: boolean;
-  width?: number;
-  height?: number;
-  top?: number;
-  left?: number;
-  id: string;
-  zIndex?: number;
-  minimized?: boolean;
-  maximized?: boolean;
   onMaximize?: (id: string) => void;
   onMinimize?: (id: string) => void;
   onClose?: (id: string) => void;
@@ -60,7 +51,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     const initialRect = element.getBoundingClientRect();
-    props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, id);
+    startTransition(() => props.onWindowResize?.(props.width || 0, props.height || 0, initialRect.top + yDelta, initialRect.left + xDelta, id));
   });
 
   //handle set zIndex to the top

@@ -32,8 +32,15 @@ export type TabDropTarget = {
 export interface SceneDropTarget {
   isDroppable: boolean;
 }
+export interface ToolbarStackGroupDragSource {
+  type: NodeType.ToolbarStackGroup;
+  id: string;
+}
+
+export interface LayoutDropTarget {}
 
 //droppable items
 export type TabViewDroppableItems = TabViewDragSource | TabDragSource;
 export type SceneDroppableItems = TabViewDragSource | TabDragSource | WindowDragSource;
 export type TabDroppableItems = TabDragSource;
+export type LayoutDroppableItems = ToolbarStackGroupDragSource;

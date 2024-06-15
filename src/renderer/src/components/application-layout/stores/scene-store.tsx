@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { Direction, IGroupView, ITab, ITabView, IWindow, NodeType } from '../types';
-import { cleanUp, hasMembers, isGroupView, isTab, isTabView, isWindow, lookUp, nextUntitledCount, nextZIndex, traverse, updateSizes } from '../util';
+import { cleanUp, lookUp, nextUntitledCount, nextZIndex, traverse, updateSizes } from '../util';
 import { v4 } from 'uuid';
 import { SceneEvents } from '../types.event';
+import { hasMembers, isGroupView, isTab, isTabView, isWindow } from '../guards';
 
 let detachOffset = 0;
 

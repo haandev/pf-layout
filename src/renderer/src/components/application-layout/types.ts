@@ -7,7 +7,8 @@ export enum NodeType {
   Tab = 'Tab',
   TabView = 'TabView',
   GroupView = 'GroupView',
-  Window = 'Window'
+  Window = 'Window',
+  ToolbarStackGroup = 'ToolbarStackGroup'
 }
 export interface ITab {
   type: NodeType.Tab;
@@ -45,11 +46,26 @@ export type IWindow = {
   previousPosition?: { top: number; left: number; width?: number; height?: number };
   zIndex?: number;
 };
+
 export type IScene = {
   members: IWindow[];
 } & { [key: string]: any };
-export type StateItem = ITab | ITabView | IGroupView | IWindow;
-export type NestedState = StateItem | IScene;
+
+export type ILayout = {
+  members: IToolbarStackGroup[];
+} & { [key: string]: any };
+export interface IToolbarStackGroup {
+  type: NodeType.ToolbarStackGroup;
+  id: string;
+  floating?: boolean;
+  top?: number;
+  left?: number;
+  hidden?: boolean;
+  zIndex?: number;
+}
+
+export type StateItem = ITab | ITabView | IGroupView | IWindow | IToolbarStackGroup;
+export type NestedState = StateItem | IScene | ILayout;
 
 export type ParentType<T> = T extends ITab
   ? ITabView
@@ -59,4 +75,8 @@ export type ParentType<T> = T extends ITab
       ? IWindow | IGroupView
       : T extends IWindow
         ? IScene
-        : null;
+        : T extends IToolbarStackGroup
+          ? ILayout
+          : null;
+
+export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;

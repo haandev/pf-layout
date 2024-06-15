@@ -3,7 +3,7 @@ import { useDrag, useDrop } from 'react-dnd';
 
 import React, { CSSProperties, FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
 import { useParentDirection, useValidateElement, SplitResizeHandle } from '..';
-import { Direction, ITab, ITabView, NodeType } from '../types';
+import { AsComponentProps, Direction, ITab, ITabView, NodeType } from '../types';
 
 import IconXmark from '../icons/IconXmark';
 import IconAdd from '../icons/IconAdd';
@@ -34,7 +34,7 @@ export interface TabViewCommonProps {
   onDetach?: (tabViewId: string, x?: number, y?: number) => void;
   onAttach?: (tabViewId: string) => void;
 }
-export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'> {
+export interface TabViewProps extends TabViewCommonProps, AsComponentProps<ITabView> {
   //don't call directly, used for recursion
   activeTabId?: string;
   headerControls?: React.ReactNode;
@@ -42,7 +42,7 @@ export interface TabViewProps extends TabViewCommonProps, Omit<ITabView, 'type'>
 }
 
 const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
-  const view: ITabView = { type: NodeType.TabView, members, id, activeTabId, width, height };
+  const view: ITabView = { type: NodeType.TabView, members: members || [], id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
@@ -53,8 +53,8 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
   });
 
   useEffect(() => {
-    if (activeTabId === undefined && members.length > 0) {
-      props.onTabChange?.(members[0].id);
+    if (activeTabId === undefined && view.members.length > 0) {
+      props.onTabChange?.(view.members[0].id);
     }
   }, []);
 
@@ -67,12 +67,12 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
   const direction = useParentDirection(rootRef, '.pf-view-group');
 
   const onTabClose = (tabId: string) => {
-    const previousTabIndex = members.findIndex(({ id }) => id === tabId) - 1;
-    const nextTabIndex = members.findIndex(({ id }) => id === tabId) + 1;
+    const previousTabIndex = view.members.findIndex(({ id }) => id === tabId) - 1;
+    const nextTabIndex = view.members.findIndex(({ id }) => id === tabId) + 1;
     if (previousTabIndex >= 0) {
-      props.onTabChange?.(members[previousTabIndex].id);
-    } else if (nextTabIndex < members.length) {
-      props.onTabChange?.(members[nextTabIndex].id);
+      props.onTabChange?.(view.members[previousTabIndex].id);
+    } else if (nextTabIndex < view.members.length) {
+      props.onTabChange?.(view.members[nextTabIndex].id);
     }
     props.onTabClose?.(tabId);
   };
@@ -148,7 +148,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
         type: NodeType.TabView,
         id: id,
         x: rootRef.current?.getBoundingClientRect().x || 0,
-        y: rootRef.current?.getBoundingClientRect().y || 0
+        y: rootRef.current?.getBoundingClientRect().y || 0
       };
     }
   });
@@ -160,19 +160,19 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
   const onDrop = (tabId: string, beforeTabId: string) => {
     props.onTabMove?.({ tabId, toViewId: id, beforeTabId });
   };
-  const content = lookUp<ITab>(members, activeTabId)?.item?.content;
-  const style: CSSProperties = { width, height, minWidth: width, minHeight: height, opacity: isDragging ? '0' : '1' };
+  const content = lookUp<ITab>(view.members, activeTabId)?.item?.content;
+  const style: CSSProperties = { width, height, minWidth: width, minHeight: height };
 
   return (
-    <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
+    <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collectedOnContentSection.isDroppable })} />
-      <div ref={headerRef} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(members).length === 0 })}>
+      <div ref={headerRef} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(view.members).length === 0 })}>
         <div className="pf-tab-title-list">
-          {members.map((tab, index) => (
+          {view.members.map((tab, index) => (
             <Tab
               id={tab.id}
-              prevTabId={members[index - 1]?.id}
+              prevTabId={view.members[index - 1]?.id}
               tabViewId={id}
               className="pf-tab-view__tab-title"
               key={tab.id}
@@ -198,7 +198,7 @@ const TabView: FC<TabViewProps> = ({ members, titleFormatter, activeTabId, id, w
         {props.noCache ? (
           <div className="pf-tab-view__content-inner">{content}</div>
         ) : (
-          members.map((tab) => (
+          view.members.map((tab) => (
             <div
               key={tab.id}
               className={clsx({

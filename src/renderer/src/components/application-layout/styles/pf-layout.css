@@ -51,3 +51,13 @@
 .pf-container.pf-horizontal .pf-toolbar-stack-group {
   flex-direction: row;
 }
+
+.pf-opaque {
+  opacity: 1;
+}
+.pf-transparent {
+  opacity: 0;
+}
+.pf-half-transparent {
+  opacity: 0.5;
+}
