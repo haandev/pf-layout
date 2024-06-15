@@ -41,7 +41,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
         };
         const newPosition = {
           x: client.x - offset.x,
-          y: client.y - offset.y - 5
+          y: client.y - offset.y - 3
         };
         store.detachToolbarStack(item.id, newPosition.x, newPosition.y);
       }
@@ -66,7 +66,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
         <div className="pf-floating-toolbar-host">
           {store.floating.length > 0
             ? store.floating.map((item) => {
-                return <FloatingToolbarWindow {...store.floatingToolbarWindowProps(item.id)} />;
+                return <FloatingToolbarWindow {...store.floatingToolbarWindowProps(item.id)} key={item.id}/>;
               })
             : null}
         </div>

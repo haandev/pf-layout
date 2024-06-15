@@ -58,7 +58,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
 
       const children = item.members.map((toolbar) => {
         const toolbarProps = get().toolbarProps(toolbar.id);
-        return <Toolbar {...toolbarProps} />;
+        return <Toolbar {...toolbarProps} key={toolbar.id} />;
       });
       const props: PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>> = { ...item, children };
       return props;
@@ -70,7 +70,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       }
       const children = item.members.map((toolbarStack) => {
         const toolbarStackProps = get().toolbarStackProps(toolbarStack.id);
-        return <ToolbarStack {...toolbarStackProps} />;
+        return <ToolbarStack {...toolbarStackProps} key={toolbarStack.id} />;
       });
 
       const props: Pick<IContainer, 'id' | 'maxItems'> & { children: React.ReactNode } = {
@@ -87,7 +87,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       }
       const children = item.members.map((stack) => {
         const stackProps = get().toolbarStackProps(stack.id);
-        return <ToolbarStack {...stackProps} />;
+        return <ToolbarStack {...stackProps} key={stack.id} />;
       });
 
       const props: PropsWithChildren<Pick<IFloatingToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>> = {
@@ -141,11 +141,10 @@ export const useLayout = create<LayoutStore>((set, get) => {
           members: [stack],
           top: y,
           left: x,
-          zIndex: nextZIndex(state.floating)
         };
         floating.push(newFloatingToolbarWindow);
 
-        return { members, floating };
+        return { members, floating: floating.filter((item) => item.members.length > 0) };
       });
     },
     registerToolbar: (stack, toolbar) => {

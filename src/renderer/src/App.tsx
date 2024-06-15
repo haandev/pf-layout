@@ -54,7 +54,6 @@ import Welcome from './pages/Welcome';
 import { useScene } from './components/application-layout/stores/scene-store';
 import { FlowPage } from './pages/FlowPage';
 import { useLayout } from './components/application-layout/stores/layout-store';
-import FloatingToolbars from './components/application-layout/blocks/FloatingToolbars';
 
 function App(): JSX.Element {
   const app = useApp();
@@ -94,18 +93,18 @@ function App(): JSX.Element {
       id: 'main-tools-stack',
       draggable: true,
       direction: Direction.Vertical,
-      header: (
+      header: () => (
         <DefaultToolbarStackHeader
           leftButton={{
             onLeftChevronClick:
-              app.toolbarColSize === 2 &&
+              layout.getToolbarAttribute('main-tools', 'columns') === 2 &&
               (() => {
                 return layout.setToolbarAttributes('main-tools', { columns: 1 });
               }),
             onRightChevronClick:
-              app.toolbarColSize === 1 &&
+              layout.getToolbarAttribute('main-tools', 'columns') === 1 &&
               (() => {
-                return layout.setToolbarAttributes('main-tools', { columns: 1 });
+                return layout.setToolbarAttributes('main-tools', { columns: 2 });
               })
           }}
         />
@@ -115,6 +114,7 @@ function App(): JSX.Element {
       id: 'main-tools',
       draggable: true,
       direction: Direction.Vertical,
+      columns: 2,
       content: (
         <>
           <ToolbarItem children={<AppToolsStickySvgButton source={selectionTool} name="selection" />} />
@@ -147,7 +147,7 @@ function App(): JSX.Element {
             children={
               <AppStickyGroupButton
                 items={{
-                  type1: { source: typeTool, label: 'Type Tool' },
+                  type: { source: typeTool, label: 'Type Tool' },
                   areaType: { source: areaTypeTool, label: 'Area Type Tool' },
                   typeOnPath: { source: typeOnAPathTool, label: 'Type on Path Tool' },
                   typeVertical: { source: verticalTypeTool, label: 'Vertical Type Tool' },
@@ -228,7 +228,6 @@ function App(): JSX.Element {
         <Container direction={Direction.Horizontal} {...layout.containerProps('container-left')} />
         <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
       </div>
-
     </ApplicationLayout>
   );
 }

@@ -74,7 +74,7 @@ export interface IToolbarStack {
   id: string;
   members: IToolbar[];
   direction: Direction;
-  header?: React.ReactElement;
+  header?: React.ReactElement | (() => React.ReactElement);
   maxItems?: number;
 }
 

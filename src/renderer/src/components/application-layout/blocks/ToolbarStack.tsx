@@ -33,7 +33,8 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
     }
   });
  */
-  let _header = props.header && !props.header.props.onClose ? React.cloneElement(props.header, { onClose: props.onClose }) : props.header;
+  const headerRender = typeof props.header === 'function' ? props.header() : props.header;
+  let _header = headerRender && !headerRender.props.onClose ? React.cloneElement(headerRender, { onClose: props.onClose }) : headerRender;
 
   return (
     <div
@@ -44,6 +45,7 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
         'pf-stack': true,
         'pf-vertical': props.direction === Direction.Vertical,
         'pf-horizontal': props.direction === Direction.Horizontal,
+        'pf-transparent': isDragging,
         [props.className || '']: true
       })}
     >

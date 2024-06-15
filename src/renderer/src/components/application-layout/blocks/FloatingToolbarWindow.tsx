@@ -35,7 +35,7 @@ export const FloatingToolbarWindow: FC<FloatingToolbarWindowProps> = (props) => 
         ref={rootRef}
         className={clsx({
           'pf-floating-toolbar-window': true,
-          'pf-half-transparent': isDragging
+          'pf-transparent': isDragging
         })}
         style={style}
       >
