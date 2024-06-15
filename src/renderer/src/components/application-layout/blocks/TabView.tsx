@@ -68,7 +68,7 @@ const TabView: FC<TabViewProps> = ({ store, members, titleFormatter, activeTabId
     } else if (nextTabIndex < view.members.length) {
       store.changeTab(view.members[nextTabIndex].id);
     }
-    store.changeTab(tabId);
+    store.closeTab(tabId);
   };
   const onAddNew = () => {
     const content = store.events.newTabContent?.() || null;

@@ -103,16 +103,6 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                             isVisible: (view) => view && view.members.length > 1,
                             render: <IconSplitSquareVertical width={16} height={16} />,
                             onClick: (viewId) => store.splitTabView(viewId, Direction.Vertical)
-                          },
-                          {
-                            isVisible: () => !win.floating,
-                            render: <IconWindowStack width={16} height={16} />,
-                            onClick: (viewId) => store.detachView(viewId)
-                          },
-                          {
-                            isVisible: () => !!win.floating,
-                            render: <IconLayout width={16} height={16} />,
-                            onClick: (viewId) => store.attachView(viewId)
                           }
                         ]
                       : []
