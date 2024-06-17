@@ -1,12 +1,12 @@
 import '../styles/main.css';
 
 import clsx from 'clsx';
-import { FC, PropsWithChildren,  useRef } from 'react';
+import { FC, PropsWithChildren, useRef } from 'react';
 import { Direction, NodeType } from '../types';
 import { LayoutDropTarget, LayoutDroppableItems } from '../types.dnd';
 import { useDrop } from 'react-dnd';
 import { LayoutStore } from '../stores/layout-store';
-import { FloatingToolbarWindow } from './FloatingToolbarWindow';
+import { ToolbarWindow } from './ToolbarWindow';
 
 export interface ApplicationLayoutProps extends PropsWithChildren {
   home?: false | null | React.ReactNode;
@@ -15,21 +15,28 @@ export interface ApplicationLayoutProps extends PropsWithChildren {
   direction?: Direction;
   store: LayoutStore;
 }
-export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, style, className, direction, children }) => {
+export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
+  store,
+  home,
+  style,
+  className,
+  direction,
+  children
+}) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const _direction = direction || Direction.Vertical;
 
   const [_collected, drop] = useDrop<LayoutDroppableItems, unknown, LayoutDropTarget>(() => ({
-    accept: [NodeType.FloatingToolbarWindow, NodeType.ToolbarStack],
+    accept: [NodeType.ToolbarWindow, NodeType.ToolbarStack],
 
     drop: (item, monitor) => {
       const type = item.type;
       const didDrop = monitor.didDrop();
 
-      if (!didDrop && type === NodeType.FloatingToolbarWindow) {
+      if (!didDrop && type === NodeType.ToolbarWindow) {
         const delta = monitor.getDifferenceFromInitialOffset() || { x: 0, y: 0 };
-        store.moveFloatingToolbarWindow(item.id, delta.x, delta.y);
+        store.toolbarWindow(item.id).$move(delta.x, delta.y);
       }
 
       if (!didDrop && type === NodeType.ToolbarStack) {
@@ -43,7 +50,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
           x: client.x - offset.x,
           y: client.y - offset.y - 3
         };
-        store.detachToolbarStack(item.id, newPosition.x, newPosition.y);
+        store.toolbarStack(item.id)?.$detach(newPosition.x, newPosition.y);
       }
     }
   }));
@@ -66,7 +73,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({ store, home, sty
         <div className="pf-floating-toolbar-host">
           {store.floating.length > 0
             ? store.floating.map((item) => {
-                return <FloatingToolbarWindow {...store.floatingToolbarWindowProps(item.id)} key={item.id}/>;
+                return <ToolbarWindow {...store.toolbarWindow(item.id)?.$props} key={item.id} />;
               })
             : null}
         </div>

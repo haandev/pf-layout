@@ -1,5 +1,6 @@
 .pf-toolbar-stack.pf-vertical .pf-toolbar{
   padding-bottom:5px;
+  padding-top:5px;
   border-bottom: 1px solid var(--pf-dark-border-color);
 }
 .pf-toolbar-stack.pf-horizontal .pf-toolbar{

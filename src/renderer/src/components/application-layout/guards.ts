@@ -1,4 +1,4 @@
-import { IContainer, IGroupView, ITab, ITabView, IToolbar, IToolbarStack, IFloatingToolbarWindow, IWindow, NodeType, StateItem } from './types';
+import { IContainer, IGroupView, ITab, ITabView, IToolbar, IToolbarStack, IToolbarWindow, IWindow, NodeType, StateItem } from './types';
 
 /**
  * Type guard to check if the state object is a Window.
@@ -37,12 +37,12 @@ export const hasMembers = (state: any): state is { members: StateItem[] } & { [k
   state && 'members' in state && Array.isArray(state.members);
 
 /**
- * Type guard to check if the state object is a FloatingToolbarWindow.
+ * Type guard to check if the state object is a ToolbarWindow.
  * @param state The state object to check.
- * @returns true if the state is a FloatingToolbarWindow, false otherwise.
+ * @returns true if the state is a ToolbarWindow, false otherwise.
  */
-export const isFloatingToolbarWindow = (state: any): state is IFloatingToolbarWindow =>
-  state && 'type' in state && state.type === NodeType.FloatingToolbarWindow;
+export const isToolbarWindow = (state: any): state is IToolbarWindow =>
+  state && 'type' in state && state.type === NodeType.ToolbarWindow;
 
 /**
  * Type guard to check if the state object is a Container.

@@ -2,7 +2,6 @@ import { ApplicationLayout, Container, useInitialize } from './components/applic
 
 import { Direction } from './components/application-layout/types';
 
-import { DefaultToolbarStackHeader } from './components/layout-preset/DefaultToolbarStackHeader';
 import { Scene } from './components/application-layout/blocks/Scene';
 import { useApp } from './stores/app-store';
 import Welcome from './pages/Welcome';
@@ -21,78 +20,68 @@ function App(): JSX.Element {
   const layout = useLayout();
 
   useInitialize(() => {
-    layout.registerContainer({ id: 'container-top', maxItems: 1, direction: Direction.Vertical });
+    //top container
+    layout
+      .container({ id: 'container-top', maxItems: 1, direction: Direction.Vertical })
+      .$stack({ id: 'top-toolbar-stack', direction: Direction.Horizontal, draggable: true })
+      .$toolbar({
+        draggable: true,
+        fullSize: true,
+        id: 'top-tools',
+        direction: Direction.Horizontal,
+        content: <TopToolbar />
+      });
 
-    layout.registerToolbarStack('container-top', {
-      id: 'top-toolbar-stack',
-      direction: Direction.Horizontal,
-      draggable: true
-    });
-    layout.registerToolbar('top-toolbar-stack', {
-      draggable: true,
-      fullSize: true,
-      id: 'top-tools',
-      direction: Direction.Horizontal,
-      content: <TopToolbar />
-    });
-    layout.registerContainer({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal });
+    //left container
+    layout
+      .container({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal, chevronPosition: 'start' })
+      .$stack({
+        id: 'main-tools-stack',
+        draggable: true,
+        direction: Direction.Vertical,
+        isExpanded: () => layout.toolbar('main-tools')?.columns === 2,
+        onCollapse: () => layout.toolbar('main-tools')?.$set({ columns: 1 }),
+        onExpand: () => layout.toolbar('main-tools')?.$set({ columns: 2 })
+      })
+      .$toolbar({
+        id: 'main-tools',
+        draggable: true,
+        direction: Direction.Vertical,
+        columns: 2,
+        fullSize: true,
+        showHandle: true,
+        content: <MainTools />
+      });
 
-    layout.registerToolbarStack('container-left', {
-      id: 'main-tools-stack',
-      draggable: true,
-      direction: Direction.Vertical,
-      header: () => (
-        <DefaultToolbarStackHeader
-          leftButton={{
-            onLeftChevronClick:
-              layout.getToolbarAttribute('main-tools', 'columns') === 2 &&
-              (() => {
-                return layout.setToolbarAttributes('main-tools', { columns: 1 });
-              }),
-            onRightChevronClick:
-              layout.getToolbarAttribute('main-tools', 'columns') === 1 &&
-              (() => {
-                return layout.setToolbarAttributes('main-tools', { columns: 2 });
-              })
-          }}
-        />
-      )
-    });
-    layout.registerToolbar('main-tools-stack', {
-      id: 'main-tools',
-      draggable: true,
-      direction: Direction.Vertical,
-      columns: 2,
-      fullSize: true,
-      content: <MainTools />
-    });
-    layout.registerContainer({ id: 'container-right', direction: Direction.Horizontal });
-
-    layout.registerToolbarStack('container-right', {
-      id: 'right-container-col-1',
-      draggable: true,
-      direction: Direction.Vertical
-    });
-    layout.registerToolbar('right-container-col-1', {
-      id: 'right-stack-1-toolbar-1',
-      draggable: true,
-      direction: Direction.Vertical,
-      columns:1,
-      members: [
-        {
-          id: 'color-panel',
-          icon: <InlineSvg source={colorPanel} />,
-          title: 'Color',
-          content: <div>ColorWindow {app.tool}</div>
-        },
-        {
-          id: 'color-guide-panel',
-          icon: <InlineSvg source={colorGuidePanel} />,
-          title: 'Color Guide' ,
-          content: <div>ColorWindow {app.tool}</div>
-        }
-      ]
-    });
+    //right container
+    layout
+      .container({ id: 'container-right', direction: Direction.Horizontal })
+      .$stack({
+        id: 'right-container-col-1',
+        direction: Direction.Vertical,
+        draggable: true
+      })
+      .$toolbar({
+        id: 'right-stack-1-toolbar-1',
+        draggable: true,
+        showHandle: true,
+        direction: Direction.Vertical,
+        columns: 1,
+        members: [
+          {
+            id: 'color-panel',
+            icon: <InlineSvg source={colorPanel} />,
+            title: 'Color',
+            content: <div>ColorWindow {app.tool}</div>
+          },
+          {
+            id: 'color-guide-panel',
+            icon: <InlineSvg source={colorGuidePanel} />,
+            title: 'Color Guide',
+            content: <div>ColorWindow {app.tool}</div>
+          }
+        ]
+      });
   });
 
   const newTabContentCtor = () => {
@@ -113,12 +102,12 @@ function App(): JSX.Element {
           alignItems: 'stretch'
         }}
       >
-        <Container {...layout.containerProps('container-top')} />
+        <Container {...layout.container('container-top').$props} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
-        <Container {...layout.containerProps('container-left')} />
+        <Container {...layout.container('container-left').$props} />
         <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
-        <Container {...layout.containerProps('container-right')} />
+        <Container {...layout.container('container-right').$props} />
       </div>
     </ApplicationLayout>
   );

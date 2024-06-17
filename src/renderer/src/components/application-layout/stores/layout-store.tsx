@@ -1,252 +1,427 @@
 import { create } from 'zustand';
-import { lookUp as _lookUp, lookUp } from '../util';
-import { AsRegisterArgs, Direction, IContainer, IFloatingTool, IFloatingToolbarWindow, IToolbar, IToolbarStack, NestedState, NodeType } from '../types';
-import { isContainer, isFloatingToolbarWindow, isToolbar, isToolbarStack } from '../guards';
+import { LookupResult, lookUp as _lookUp, lookUp, opposite } from '../util';
+import {
+  AsRegisterArgs,
+  Direction,
+  GatheredContainer,
+  IContainer,
+  IPanel,
+  IToolbarWindow,
+  IToolbar,
+  IToolbarStack,
+  NodeType,
+  StateItem,
+  GatheredStack,
+  Maybe,
+  GatheredToolbar,
+  GatheredToolbarWindow
+} from '../types';
+import { isContainer, isToolbarWindow, isToolbar, isToolbarStack } from '../guards';
 import { PropsWithChildren } from 'react';
 import { ToolbarStack } from '../blocks/ToolbarStack';
 import { Toolbar } from '../blocks/Toolbar';
 import { v4 } from 'uuid';
 import { ContainerProps } from '../blocks/Container';
-import FloatingTool from '../blocks/FloatingTool';
+import Panel from '../blocks/Panel';
 
 export interface LayoutStore {
   members: IContainer[];
-  floating: IFloatingToolbarWindow[];
+  floating: IToolbarWindow[];
   //container actions
-  containerProps: (id: string) => ContainerProps;
-  registerContainer: (container: AsRegisterArgs<IContainer>) => void;
-  dropOnContainer: (id: string, droppedItemId: string) => void;
 
-  //stack actions
-  toolbarStackProps: (id: string) => PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>>;
-  registerToolbarStack: (stackGroup: string, stack: AsRegisterArgs<IToolbarStack>) => void;
-  detachToolbarStack: (id: string, x: number, y: number) => void;
-  attachToolbarStack: (id: string, containerId: string) => void;
+  /**
+   * Retrieves a container with the given id or creates a new one if it doesn't exist.
+   * To create a new container, pass an object with the container's properties.
+   * @param toolbarWindow - The id of the toolbarWindow or an object with the toolbarWindow's properties.
+   * @returns The GatheredToolbarWindow that also has the methods to manipulate the toolbarWindow.
+   */
+  toolbarWindow: (toolbarWindow: string | AsRegisterArgs<IToolbarWindow>) => GatheredToolbarWindow;
 
-  //floating toolbar window actions
-  moveFloatingToolbarWindow: (id: string, x: number, y: number) => void;
-  floatingToolbarWindowProps: (id: string) => PropsWithChildren<Pick<IFloatingToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>>;
+  /**
+   * Retrieves a container with the given id or creates a new one if it doesn't exist.
+   * To create a new container, pass an object with the container's properties.
+   * @param container - The id of the container or an object with the container's properties.
+   * @returns The GatheredContainer that also has the methods to manipulate the container.
+   */
+  container: (container: string | AsRegisterArgs<IContainer>) => GatheredContainer;
 
-  //toolbar actions
-  toolbarProps: (id: string) => PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>>;
-  registerToolbar: (stack: string, toolbar: AsRegisterArgs<IToolbar>) => void;
-  setToolbarAttributes: (id: string, attributes: Partial<IToolbar>) => void;
-  getToolbarAttribute: (id: string, attribute: keyof IToolbar) => any;
+  /**
+   * Retrieves a container with the given id or creates a new one if it doesn't exist.
+   * To create a new container, pass an object with the container's properties.
+   * @param stack - The id of the stack or an object with the stack's properties.
+   * @param hostId - The id of the container where the stack will be placed.
+   * @returns The GatheredStack that also has the methods to manipulate the stack.
+   */
+  toolbarStack: (stack: string | AsRegisterArgs<IToolbarStack>, hostId?: string) => Maybe<GatheredStack>;
+
+  /**
+   * Retrieves a container with the given id or creates a new one if it doesn't exist.
+   * To create a new container, pass an object with the container's properties.
+   * @param toolbar - The id of the toolbar or an object with the toolbar's properties.
+   * @param stack - The id of the stack where the toolbar will be placed.
+   * @returns The GatheredToolbar that also has the methods to manipulate the toolbar.
+   */
+  toolbar: (toolbar: string | AsRegisterArgs<IToolbar>, stack?: string) => Maybe<GatheredToolbar>;
+
+  lookUp: <T extends StateItem>(id: string | undefined) => LookupResult<T>;
+  both: () => { members: (IContainer | IToolbarWindow)[] };
 }
 
 export const useLayout = create<LayoutStore>((set, get) => {
-  const both = () => ({ members: [...get().members, ...get().floating] }) as NestedState;
-  return {
-    members: [],
-    floating: [],
-    moveFloatingToolbarWindow: (id, xDelta, yDelta) => {
-      return set((state) => {
-        const members = [...state.members];
-        const { item } = lookUp<IFloatingToolbarWindow>(state, id);
-        if (!isFloatingToolbarWindow(item)) return state;
-        item.top = (item.top || 0) + yDelta;
-        item.left = (item.left || 0) + xDelta;
-        return { members };
-      });
-    },
-    dropOnContainer: (id, droppedItemId) => {
+  const both = () => ({ members: [...get().members, ...get().floating] });
+  //props generation
+  const generateContainerProps = (item: IContainer): ContainerProps => {
+    const children = item.members.map((toolbarStack) => {
+      const toolbarStackProps = generateToolbarStackProps(toolbarStack);
+      return (
+        <ToolbarStack
+          {...toolbarStackProps}
+          chevronsPosition={item.chevronPosition}
+          parentId={item.id}
+          key={toolbarStack.id}
+        />
+      );
+    });
+
+    const props: ContainerProps = {
+      ...item,
+      onDrop: (id: string, type: NodeType, containerId: string) => {
+        get().container(containerId).$dropOn(id, type);
+      },
+      children: children
+    };
+    return props;
+  };
+  const generateToolbarWindowProps = (item: IToolbarWindow) => {
+    const children = item.members.map((stack) => {
+      const stackProps = generateToolbarStackProps(stack);
+      return <ToolbarStack {...stackProps} parentId={item.id} key={stack.id} />;
+    });
+
+    const props: PropsWithChildren<Pick<IToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>> = {
+      id: item.id,
+      top: item.top || 0,
+      left: item.left || 0,
+      zIndex: item.zIndex || 0,
+      hidden: item.hidden || false,
+      children
+    };
+    return props;
+  };
+  const generateToolbarStackProps = (item: IToolbarStack) => {
+    const children = item.members.map((toolbar) => {
+      const toolbarProps = generateToolbarProps(toolbar, item);
+      return <Toolbar {...toolbarProps} key={toolbar.id} />;
+    });
+    const props: PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>> = { ...item, children };
+    return props;
+  };
+  const generateToolbarProps = (item: IToolbar, parent: IToolbarStack) => {
+    const onClickHandler = (id: string) => {
       set((state) => {
         const members = [...state.members];
-        const { item: container } = lookUp<IContainer>(state, id);
-        const { item: droppedItem } = lookUp(both(), droppedItemId);
-        if (!isContainer(container)) return state;
-        if (isToolbarStack(droppedItem)) {
-          get().attachToolbarStack(droppedItem.id, container.id);
-        } else if (isFloatingToolbarWindow(droppedItem)) {
-          container.members.push(...droppedItem.members);
-        }
-        return { members };
+        const floating = [...state.floating];
+        if (!isToolbarStack(parent)) return { members, floating };
+        parent.activePanelId = id;
+        return { members, floating };
       });
-    },
-    toolbarProps: (id) => {
-      const { item, parent } = lookUp<IToolbar>(both(), id);
-      if (!isToolbar(item)) return { id: '', direction: Direction.Vertical };
+    };
+    const panels = item.members.map((tool) => {
+      return <Panel key={tool.id} {...tool} value={parent?.activePanelId} onClick={() => onClickHandler(tool.id)} />;
+    });
 
-      const onClickHandler = (id: string) => {
+    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = { ...item, children: [item.content, panels] };
+    return props;
+  };
+
+  //members generation
+  const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IPanel[] => {
+    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, ...tool }));
+  };
+  const toolbarStackMembers = (stack: AsRegisterArgs<IToolbarStack>): GatheredToolbar[] => {
+    const typedMembers = (stack.members || []).map((toolbar) => ({
+      ...toolbar,
+      type: NodeType.Toolbar as NodeType.Toolbar,
+      members: toolbarMembers(toolbar)
+    }));
+    const typedStack = { ...stack, type: NodeType.ToolbarStack as NodeType.ToolbarStack, members: typedMembers };
+    return typedMembers.map((toolbar) => toolbarMethods(toolbar, typedStack));
+  };
+  const toolbarWindowMembers = (toolbarWindow: AsRegisterArgs<IToolbarWindow>): GatheredStack[] => {
+    const typedMembers = (toolbarWindow.members || []).map((stack) => ({
+      ...stack,
+      type: NodeType.ToolbarStack as NodeType.ToolbarStack,
+      members: toolbarStackMembers(stack)
+    }));
+    const typedWindow = {
+      ...toolbarWindow,
+      type: NodeType.ToolbarWindow as NodeType.ToolbarWindow,
+      members: typedMembers
+    };
+    return typedMembers.map((stack) => stackMethods(stack, typedWindow));
+  };
+  const containerMembers = (container: AsRegisterArgs<IContainer>): GatheredStack[] => {
+    const typedMembers = (container.members || []).map((stack) => ({
+      ...stack,
+      type: NodeType.ToolbarStack as NodeType.ToolbarStack,
+      members: toolbarStackMembers(stack)
+    }));
+    const typedContainer = {
+      ...container,
+      type: NodeType.Container as NodeType.Container,
+      members: typedMembers
+    };
+    return typedMembers.map((stack) => stackMethods(stack, typedContainer));
+  };
+
+  //gather item with methods
+  const toolbarWindowMethods = (toolbarWindow?: IToolbarWindow): GatheredToolbarWindow => {
+    if (!toolbarWindow) toolbarWindow = { type: NodeType.ToolbarWindow, id: v4(), members: [] };
+    return {
+      ...toolbarWindow,
+      get $props() {
+        return generateToolbarWindowProps(toolbarWindow);
+      },
+      $stack: (stack) => get().toolbarStack(stack, toolbarWindow.id),
+      $set: (attributes) => {
+        set((state) => {
+          const floating = [...state.floating];
+          const item = floating.find((item) => item.id === toolbarWindow.id);
+          if (!isToolbarWindow(item)) return state;
+          Object.assign(item, attributes);
+          return { floating };
+        });
+      },
+      $move: (xDelta, yDelta) => {
+        console.log('move');
+        return set((state) => {
+          const floating = [...state.floating];
+          toolbarWindow.top = (toolbarWindow.top || 0) + yDelta;
+          toolbarWindow.left = (toolbarWindow.left || 0) + xDelta;
+          return { floating };
+        });
+      },
+      $close: () => {
+        return set((state) => {
+          const floating = state.floating.filter((tw) => tw.id !== toolbarWindow.id);
+          return { floating };
+        });
+      },
+      $hide: () => {
+        return set((state) => {
+          const floating = [...state.floating];
+          toolbarWindow.hidden = true;
+          return { floating };
+        });
+      }
+    };
+  };
+  const containerMethods = (container?: IContainer): GatheredContainer => {
+    if (!container) {
+      container = {
+        type: NodeType.Container,
+        id: '',
+        members: [],
+        direction: Direction.Vertical
+      };
+    }
+    return {
+      ...container,
+      get members() {
+        return containerMembers(container);
+      },
+      get $props() {
+        return generateContainerProps(container);
+      },
+      $stack: (stack) => get().toolbarStack(stack, container.id),
+      $set: (attributes) => {
+        set((state) => {
+          const members = [...state.members];
+          const item = members.find((item) => item.id === container.id);
+          if (!isContainer(item)) return state;
+          Object.assign(item, attributes);
+          return { members };
+        });
+      },
+      $dropOn: (droppedItemId, droppedItemType) => {
+        set((state) => {
+          const members = [...state.members];
+          if (droppedItemType === NodeType.ToolbarStack) {
+            get().toolbarStack(droppedItemId)?.$attach(container.id);
+          } else if (droppedItemType === NodeType.ToolbarWindow) {
+            const toolbarWindow = get().toolbarWindow(droppedItemId);
+            container.members.push(...toolbarWindow.members);
+            toolbarWindow.$close();
+          }
+          return { members };
+        });
+      }
+    };
+  };
+  const stackMethods = (stack: IToolbarStack, parent?: IToolbarWindow | IContainer): GatheredStack => {
+    return {
+      ...stack,
+      get members() {
+        return toolbarStackMembers(stack);
+      },
+      get $props() {
+        return generateToolbarStackProps(stack);
+      },
+      get $parent() {
+        return parent ? (isContainer(parent) ? containerMethods(parent) : toolbarWindowMethods(parent)) : undefined;
+      },
+      $toolbar: (toolbar) => get().toolbar(toolbar, stack.id),
+      $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
           const floating = [...state.floating];
-          if (!isToolbarStack(parent)) return { members, floating };
-          parent.activeFloatingToolId = id;
+          Object.assign(stack, attributes);
           return { members, floating };
         });
-      };
-      const floatingTools = item.members.map((tool) => {
-        return <FloatingTool key={tool.id} {...tool} value={parent?.activeFloatingToolId} onClick={() => onClickHandler(tool.id)} />;
-      });
-
-      const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = { ...item, children: [item.content, floatingTools] };
-      return props;
-    },
-    toolbarStackProps: (id) => {
-      const { item } = lookUp<IToolbarStack>(both(), id);
-      if (!isToolbarStack(item)) return { id: '', direction: Direction.Vertical, maxItems: 1 };
-
-      const children = item.members.map((toolbar) => {
-        const toolbarProps = get().toolbarProps(toolbar.id);
-        return <Toolbar {...toolbarProps} key={toolbar.id} />;
-      });
-      const props: PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>> = { ...item, children };
-      return props;
-    },
-    containerProps: (id) => {
-      const { item } = lookUp<IContainer>(both(), id);
-      if (!isContainer(item)) {
-        return { id, maxItems: 1, children: [], direction: Direction.Vertical };
+      },
+      $detach: (x, y) => {
+        set((state) => {
+          const members = [...state.members];
+          const floating = [...state.floating];
+          const { parent } = lookUp<IToolbarStack>(both(), stack.id);
+          if (!parent) return state;
+          parent.members = parent.members.filter((item) => item.id !== stack.id);
+          const newToolbarWindow: IToolbarWindow = {
+            type: NodeType.ToolbarWindow,
+            id: v4(),
+            members: [stack],
+            top: y,
+            left: x
+          };
+          floating.push(newToolbarWindow);
+          return { members, floating: floating.filter((item) => item.members.length > 0) };
+        });
+      },
+      $attach: (containerId) => {
+        set((state) => {
+          const members = [...state.members];
+          const floating = [...state.floating];
+          const { item: container } = lookUp<IContainer>(state, containerId);
+          const { parent } = lookUp<IToolbarStack>(both(), stack.id);
+          if (!isContainer(container)) return state;
+          parent && (parent.members = parent.members.filter((item) => item.id !== stack.id));
+          container.members.push(stack);
+          return { members, floating };
+        });
       }
-      const children = item.members.map((toolbarStack) => {
-        const toolbarStackProps = get().toolbarStackProps(toolbarStack.id);
-        return <ToolbarStack {...toolbarStackProps} key={toolbarStack.id} />;
-      });
-
-      const props: ContainerProps = {
-        ...item,
-        onDrop: (id: string, containerId: string) => {
-          get().dropOnContainer(containerId, id);
-        },
-        children: children
-      };
-      return props;
-    },
-    floatingToolbarWindowProps: (id) => {
-      const { item } = lookUp<IFloatingToolbarWindow>(get().floating, id);
-      if (!isFloatingToolbarWindow(item)) {
-        return { id, top: 0, left: 0, zIndex: 0, hidden: false, members: [] };
+    };
+  };
+  const toolbarMethods = (toolbar: IToolbar, parent: IToolbarStack): GatheredToolbar => {
+    return {
+      ...toolbar,
+      get $props() {
+        return generateToolbarProps(toolbar, parent);
+      },
+      get $parent() {
+        return stackMethods(parent, undefined);
+      },
+      $panel: (panel) => lookUp<IPanel>(get().both(), panel),
+      $set: (attributes) => {
+        set((state) => {
+          const members = [...state.members];
+          const item = lookUp<IToolbar>(both(), toolbar.id).item;
+          if (!isToolbar(item)) return state;
+          Object.assign(item, attributes);
+          return { members };
+        });
       }
-      const children = item.members.map((stack) => {
-        const stackProps = get().toolbarStackProps(stack.id);
-        return <ToolbarStack {...stackProps} key={stack.id} />;
-      });
+    };
+  };
 
-      const props: PropsWithChildren<Pick<IFloatingToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>> = {
-        id: item.id,
-        top: item.top || 0,
-        left: item.left || 0,
-        zIndex: item.zIndex || 0,
-        hidden: item.hidden || false,
-        children
-      };
-      return props;
+  return {
+    both,
+    members: [],
+    floating: [],
+    toolbarWindow: (toolbarWindow) => {
+      if (typeof toolbarWindow === 'string') {
+        const { item } = lookUp<IToolbarWindow>(get().floating, toolbarWindow);
+        if (item) return toolbarWindowMethods(item);
+        return toolbarWindowMethods(); //default empty toolbar window
+      } else {
+        const { item } = lookUp<IToolbarWindow>(get().floating, toolbarWindow.id);
+        if (item) return toolbarWindowMethods(item);
+        const newToolbarWindow: IToolbarWindow = {
+          type: NodeType.ToolbarWindow,
+          ...toolbarWindow,
+          members: toolbarWindowMembers(toolbarWindow)
+        };
+        set((state) => {
+          const floating = [...state.floating];
+          floating.push(newToolbarWindow);
+          return { floating };
+        });
+        return toolbarWindowMethods(newToolbarWindow);
+      }
     },
-    registerContainer: (container) => {
-      set((state) => {
-        const members = [...state.members];
-        const { item } = lookUp<IContainer>(state, container.id);
-        if (item) return state;
-        members.push({
+    container: (container) => {
+      if (typeof container === 'string') {
+        const { item } = lookUp<IContainer>(get(), container);
+        if (item) return containerMethods(item);
+        return containerMethods(); //default empty container
+      } else {
+        const { item } = lookUp<IContainer>(get(), container.id);
+        if (item) return containerMethods(item);
+        const newContainer: IContainer = {
           type: NodeType.Container,
           ...container,
           members: containerMembers(container)
-        });
-        return { members };
-      });
-    },
-    registerToolbarStack: (containerId, stack) => {
-      set((state) => {
-        const members = [...state.members];
-        const floating = [...state.floating];
-        const { item: container } = lookUp<IContainer>(state, containerId);
-        const { item: floatingWindow } = lookUp<IFloatingToolbarWindow>(state.floating, containerId);
-        const { item } = lookUp<IToolbarStack>(both(), stack.id);
-        if (item) return state;
-        const newStack: IToolbarStack = { type: NodeType.ToolbarStack, ...stack, members: toolbarStackMembers(stack) };
-        if (isContainer(container)) {
-          container.members.push(newStack);
-          return { members };
-        } else if (isFloatingToolbarWindow(floatingWindow)) {
-          floatingWindow.members.push(newStack);
-          return { floating };
-        } else return state;
-      });
-    },
-    detachToolbarStack: (id, x, y) => {
-      set((state) => {
-        const members = [...state.members];
-        const floating = [...state.floating];
-        const { item: stack, parent: container } = lookUp<IToolbarStack>(both(), id);
-        if (!isToolbarStack(stack) || !container) return state;
-        container.members = container.members.filter((item) => item.id !== stack.id);
-
-        const newFloatingToolbarWindow: IFloatingToolbarWindow = {
-          type: NodeType.FloatingToolbarWindow,
-          id: v4(),
-          members: [stack],
-          top: y,
-          left: x
         };
-        floating.push(newFloatingToolbarWindow);
+        set((state) => {
+          const members = [...state.members];
+          members.push(newContainer);
+          return { members };
+        });
+        return containerMethods(newContainer);
+      }
+    },
+    toolbarStack: (stack, hostId) => {
+      if (typeof stack === 'string') {
+        const { item, parent } = lookUp<IToolbarStack>(both(), stack);
+        if (item && parent) return stackMethods(item, parent);
+      } else {
+        const { item, parent } = lookUp<IToolbarStack>(both(), stack.id);
+        if (item && parent) return stackMethods(item, parent);
+        const { item: host } = lookUp<IContainer>(both(), hostId);
+        if (!isContainer(host) && !isToolbarWindow(host)) return;
 
-        return { members, floating: floating.filter((item) => item.members.length > 0) };
-      });
+        const newStack: IToolbarStack = { type: NodeType.ToolbarStack, ...stack, members: toolbarStackMembers(stack) };
+        set((state) => {
+          const members = [...state.members];
+          host.members.push(newStack);
+          return { members };
+        });
+        return stackMethods(newStack, host);
+      }
     },
-    attachToolbarStack: (id, containerId) => {
-      set((state) => {
-        const members = [...state.members];
-        let floating = [...state.floating];
-        const { item: stack, parent: floatingWindow } = lookUp<IToolbarStack>(both(), id);
-        const { item: container } = lookUp<IContainer>(state, containerId);
-        if (!isToolbarStack(stack) || !isContainer(container) || !floatingWindow) return state;
-        floatingWindow.members = floatingWindow.members.filter((item) => item.id !== stack.id);
-        container.members.push(stack);
-        floating = floating.filter((item) => item.members.length > 0);
-        return { members, floating };
-      });
-    },
-    registerToolbar: (stack, toolbar) => {
-      set((state) => {
-        const members = [...state.members];
-        const floating = [...state.floating];
+    toolbar: (toolbar, stack) => {
+      //potential best solution for this type of operations
+      if (typeof toolbar === 'string') {
+        const { item, parent } = lookUp<IToolbar>(both(), toolbar);
+        if (item && parent) return toolbarMethods(item, parent);
+      } else {
+        const { item, parent } = lookUp<IToolbar>(both(), toolbar.id);
+        if (item && parent) return toolbarMethods(item, parent);
         const { item: toolbarStack } = lookUp<IToolbarStack>(both(), stack);
-        const { item } = lookUp<IToolbar>(both(), toolbar.id);
-        if (item) return state;
-        if (!isToolbarStack(toolbarStack)) return state;
+        if (!isToolbarStack(toolbarStack)) return;
+
         const newToolbar: IToolbar = { type: NodeType.Toolbar, ...toolbar, members: toolbarMembers(toolbar) };
-        toolbarStack.members.push(newToolbar);
-        return { members, floating };
-      });
+        set((state) => {
+          const members = [...state.members];
+          const floating = [...state.floating];
+          toolbarStack.members.push(newToolbar);
+          return { members, floating };
+        });
+        return toolbarMethods(newToolbar, toolbarStack);
+      }
     },
-    setToolbarAttributes: (id, attributes) => {
-      set((state) => {
-        const members = [...state.members];
-        const floating = [...state.floating];
-        const { item } = lookUp<IToolbar>(both(), id);
-        if (!isToolbar(item)) return state;
-        Object.assign(item, attributes);
-        return { members, floating };
-      });
-    },
-    getToolbarAttribute: (id, attribute) => {
-      const { item } = lookUp<IToolbar>(both(), id);
-      if (!isToolbar(item)) return null;
-      return item[attribute];
+
+    lookUp: <T extends StateItem>(id: string | undefined) => {
+      return lookUp<T>(both(), id);
     }
   };
 });
-
-const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IFloatingTool[] => {
-  return (toolbar.members || []).map((tool) => ({ type: NodeType.FloatingTool, ...tool }));
-};
-const toolbarStackMembers = (stack: AsRegisterArgs<IToolbarStack>): IToolbar[] => {
-  return (stack.members || []).map((toolbar) => ({ type: NodeType.Toolbar, ...toolbar, members: [] }));
-};
-/*
-const FloatingToolbarWindowMembers = (stackGroup: AsRegisterArgs<IFloatingToolbarWindow>): IToolbarStack[] => {
-  return (stackGroup.members || []).map((stack) => ({
-    type: NodeType.ToolbarStack,
-    ...stack,
-    members: toolbarStackMembers(stack)
-  }));
-}; */
-
-const containerMembers = (container: AsRegisterArgs<IContainer>): IToolbarStack[] => {
-  return (container.members || []).map((toolbarStack) => ({
-    type: NodeType.ToolbarStack,
-    ...toolbarStack,
-    members: toolbarStackMembers(toolbarStack)
-  }));
-};

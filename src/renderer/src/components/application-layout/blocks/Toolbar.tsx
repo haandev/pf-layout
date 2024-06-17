@@ -23,7 +23,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   };
   return (
     <div
-      {...(!props.draggable ? noDrag : {})}
+    /*   {...(!props.draggable ? noDrag : {})} */
       ref={rootRef}
       className={clsx({
         'pf-toolbar': true,
@@ -33,7 +33,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
         [props.className || '']: true
       })}
     >
-      {props.draggable ? props.dragHandle || <DragHandle /> : null}
+      {props.showHandle ? props.dragHandle || <DragHandle /> : null}
       <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
         {props.children}
       </div>

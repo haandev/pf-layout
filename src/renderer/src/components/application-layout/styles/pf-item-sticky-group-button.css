@@ -7,7 +7,7 @@
 .pf-item-sticky-button-dropdown {
   background: var(--pf-primary-color);
   position: absolute;
-  z-index: 100;
+  z-index: 100000;
   width: fit-content;
   left: 0;
   top: -1px;
@@ -15,6 +15,7 @@
   border: 1px solid #000;
   border-radius: 3px;
   overflow: hidden;
+  display: flex;
 }
 
 .pf-item-sticky-button-dropdown-item {
@@ -57,4 +58,12 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.pf-detach-group-button {
+  align-self: stretch;
+  background: var(--pf-secondary-color);
+  width: 10px;
+}
+.pf-detach-group-button:hover {
+  background: var(--pf-primary-color);
 }

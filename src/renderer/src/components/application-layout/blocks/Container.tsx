@@ -8,26 +8,33 @@ export interface ContainerProps extends PropsWithChildren, AsComponentProps<ICon
   className?: string;
   direction: Direction;
   style?: React.CSSProperties;
-  onDrop?: (id: string, containerId: string) => void;
+  onDrop?: (id: string, type: NodeType, containerId: string) => void;
 }
 
 export const Container: FC<ContainerProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [isInserting, drop] = useDrop({
-    accept: [NodeType.ToolbarStack, NodeType.FloatingToolbarWindow],
+    accept: [NodeType.ToolbarStack, NodeType.ToolbarWindow],
     collect: (monitor) => {
       const isOverOnlyMe = monitor.isOver({ shallow: true });
-      return isOverOnlyMe;
+      const item = monitor.getItem();
+      return (
+        isOverOnlyMe &&
+        (props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
+        item.direction !== props.direction
+      );
     },
     drop: (item: any) => {
-      console.log('dropped', item.id, props.id, item.type);
+      if (!props.onDrop) return;
+      if (
+        !(props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
+        item.direction !== props.direction
+      )
+        return;
 
       if (item.type === NodeType.ToolbarStack) {
-        if (props.onDrop) {
-          console.log('dropped', item.id, props.id);
-          props.onDrop(item.id, props.id);
-        }
+        props.onDrop(item.id, item.type, props.id);
       }
     }
   });

@@ -1,14 +1,16 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
 import { AsComponentProps, Direction, IToolbarStack, NodeType } from '../types';
 import clsx from 'clsx';
-import { noDrag } from '../util';
+import { evalBoolean, noDrag } from '../util';
 import { useDrag } from 'react-dnd';
 import { ToolbarStackDragSource } from '../types.dnd';
+import { ToolbarStackHeader } from '../elements/ToolbarStackHeader';
 
 export interface ToolbarStackProps extends PropsWithChildren, AsComponentProps<IToolbarStack> {
   className?: string;
   style?: React.CSSProperties;
   onClose?: () => void;
+  parentId?: string;
 }
 export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -19,15 +21,28 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
       type: NodeType.ToolbarStack,
       id: props.id,
       x: rootRef.current?.getBoundingClientRect().x || 0,
-      y: rootRef.current?.getBoundingClientRect().y || 0
+      y: rootRef.current?.getBoundingClientRect().y || 0,
+      direction: props.direction
     }),
     collect: (monitor) => monitor.isDragging()
   });
 
   drag(rootRef);
 
-  const headerRender = typeof props.header === 'function' ? props.header() : props.header;
-  let _header = headerRender && !headerRender.props.onClose ? React.cloneElement(headerRender, { onClose: props.onClose }) : headerRender;
+  //undefined, default behavior (visible in vertical mode, hidden in horizontal mode), true, always visible, false, always hidden
+  const shouldRenderHeader = props.header === undefined ? props.direction === Direction.Vertical : props.header;
+
+  const header = shouldRenderHeader && (
+    <ToolbarStackHeader
+      stackId={props.id}
+      parentId={props.parentId}
+      onClose={props.onClose}
+      onCollapse={props.onCollapse}
+      onExpand={props.onExpand}
+      isExpanded={evalBoolean(props.isExpanded)}
+      chevronPosition={props.chevronsPosition}
+    />
+  );
 
   return (
     <div
@@ -42,7 +57,7 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
         [props.className || '']: true
       })}
     >
-      {_header}
+      {header}
       {props.children}
     </div>
   );

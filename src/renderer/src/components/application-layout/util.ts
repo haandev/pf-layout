@@ -1,5 +1,5 @@
 import { isTab } from './guards';
-import { IScene, IWindow, NestedState, NodeType, ParentType, StateItem } from './types';
+import { Direction, IScene, IWindow, NestedState, NodeType, ParentType, StateItem } from './types';
 
 /**
  * Checks if a given value is empty. An empty value can be false, null, undefined, an empty array, or an empty object.
@@ -7,7 +7,13 @@ import { IScene, IWindow, NestedState, NodeType, ParentType, StateItem } from '.
  * @returns true if the value is considered empty, false otherwise.
  */
 export const isEmpty = (value: unknown) => {
-  return value === false || value === null || value === undefined || (Array.isArray(value) && value.length === 0) || Object.keys(value).length === 0;
+  return (
+    value === false ||
+    value === null ||
+    value === undefined ||
+    (Array.isArray(value) && value.length === 0) ||
+    Object.keys(value).length === 0
+  );
 };
 
 /**
@@ -35,7 +41,7 @@ export const evalBoolean = <T extends (...params: any[]) => boolean | any>(
   }
 };
 
-type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
+export type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: number; depth: number };
 
 /**
  * Looks up an item by id in a nested state structure.
@@ -44,7 +50,11 @@ type LookupResult<T> = { item: T | null; parent: ParentType<T> | null; index: nu
  * @param depth Current depth of the search.
  * @returns LookupResult containing the item, its parent, and index in parent, or nulls if not found.
  */
-export const lookUp = <T extends StateItem>(state: NestedState | NestedState[], id: string | undefined, depth: number = 0): LookupResult<T> => {
+export const lookUp = <T extends StateItem>(
+  state: NestedState | NestedState[],
+  id: string | undefined,
+  depth: number = 0
+): LookupResult<T> => {
   if (depth > 100) {
     throw new Error('Max depth reached');
   }
@@ -81,7 +91,11 @@ type Traversable<T extends string> = { [key in T]?: Traversable<T>[] } & { [key:
  * @param func The function to execute at each node.
  * @returns true if the function returns true at any node, false otherwise.
  */
-export const traverse = <F extends (...params: any[]) => any, T extends string>(state: Traversable<T>, key: T, func: F): any => {
+export const traverse = <F extends (...params: any[]) => any, T extends string>(
+  state: Traversable<T>,
+  key: T,
+  func: F
+): any => {
   if (func(state)) {
     return true;
   }
@@ -126,7 +140,6 @@ const cleanObject = (obj: NestedState, depth = 0): boolean => {
         value.members[0].type === NodeType.TabView &&
         depth > 3
       ) {
-        console.log('new logic executed');
         Object.assign(value, value.members[0]);
         somethingRemoved = true;
       } else {
@@ -209,7 +222,7 @@ export const nextZIndex = (state: IScene | Array<any>) => {
 };
 
 /**
- * Generates random coordinates for a new Window or FloatingToolbarWindow.
+ * Generates random coordinates for a new Window or ToolbarWindow.
  * @returns An object containing the x and y coordinates.
  */
 export const generateRandomCoordinates = () => {
@@ -241,4 +254,12 @@ export const remapZIndex = (state: IScene) => {
     window.zIndex = index + 1;
   });
   return { members: state.members };
+};
+
+/**
+ * Determines the direction opposite to the provided direction.
+ * @param direction - The direction to find the opposite of.
+ */
+export const opposite = (direction: Direction) => {
+  return direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
 };

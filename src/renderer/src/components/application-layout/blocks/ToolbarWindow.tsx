@@ -1,24 +1,24 @@
 import { FC, PropsWithChildren, cloneElement, useRef } from 'react';
 import clsx from 'clsx';
-import { AsComponentProps, IFloatingToolbarWindow, NodeType } from '../types';
+import { AsComponentProps, IToolbarWindow, NodeType } from '../types';
 import { useDrag } from 'react-dnd';
-import { FloatingToolbarWindowDragSource } from '../types.dnd';
+import { ToolbarWindowDragSource } from '../types.dnd';
 
-export interface FloatingToolbarWindowEvents {
+export interface ToolbarWindowEvents {
   onClose?: () => void;
 }
-export interface FloatingToolbarWindowProps extends PropsWithChildren, AsComponentProps<IFloatingToolbarWindow>, FloatingToolbarWindowEvents {}
+export interface ToolbarWindowProps extends PropsWithChildren, AsComponentProps<IToolbarWindow>, ToolbarWindowEvents {}
 
-export const FloatingToolbarWindow: FC<FloatingToolbarWindowProps> = (props) => {
+export const ToolbarWindow: FC<ToolbarWindowProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const firstChild = Array.isArray(props.children) ? props.children[0] : props.children;
   const firstChildWithProps = firstChild && !firstChild.props.onClose ? cloneElement(firstChild, { onClose: props.onClose }) : firstChild;
   const [, ...rest] = Array.isArray(props.children) ? props.children : [props.children];
 
-  const [isDragging, drag] = useDrag<FloatingToolbarWindowDragSource>({
-    type: NodeType.FloatingToolbarWindow,
-    item: { type: NodeType.FloatingToolbarWindow, id: props.id },
+  const [isDragging, drag] = useDrag<ToolbarWindowDragSource>({
+    type: NodeType.ToolbarWindow,
+    item: { type: NodeType.ToolbarWindow, id: props.id },
     collect: (monitor) => monitor.isDragging()
   });
 

@@ -1,13 +1,13 @@
 import { FC, PropsWithChildren } from 'react';
-import { AsComponentProps, IFloatingTool } from '../types';
+import { AsComponentProps, IPanel } from '../types';
 import { StickyButton } from '../elements/StickyButton';
 import { ToolbarItem } from '../elements/ToolbarItem';
 
-export interface FloatingToolProps extends PropsWithChildren, AsComponentProps<IFloatingTool> {
+export interface PanelProps extends PropsWithChildren, AsComponentProps<IPanel> {
   value?: string;
   onClick?: () => void;
 }
-const FloatingTool: FC<FloatingToolProps> = (props) => {
+const Panel: FC<PanelProps> = (props) => {
   return (
     <ToolbarItem>
       <StickyButton value={props.value} name={props.id} onClick={props.onClick}>
@@ -17,4 +17,4 @@ const FloatingTool: FC<FloatingToolProps> = (props) => {
   );
 };
 
-export default FloatingTool;
+export default Panel;
