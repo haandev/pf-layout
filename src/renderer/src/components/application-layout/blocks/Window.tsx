@@ -37,26 +37,34 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     if (!element) return;
     const visible = visibleDimension(element);
     store.resizeWindow(visible.width, visible.height, props.top || 0, props.left || 0, id);
+    store.events.onWindowResize?.(id, {
+      width: visible.width,
+      height: visible.height,
+      top: props.top || 0,
+      left: props.left || 0,
+      id
+    });
   }, [width, height, props.floating]);
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
-    clearTimeout(moveTimeout.current);
     store.resizeWindow(...args, id);
-    moveTimeout.current = setTimeout(() => {
-      window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue, TODO:onwindowresize handler on scene component
-    }, 500);
+    store.events.onWindowResize?.(id, {
+      width: args[0],
+      height: args[1],
+      top: props.top || 0,
+      left: props.left || 0,
+      id
+    });
   };
 
   //handle floating window move
   const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
-    clearTimeout(moveTimeout.current);
     const element = rootRef.current;
     if (!element) return;
     startTransition(() => store.moveWindow(id, xDelta, yDelta));
-    moveTimeout.current = setTimeout(() => {
-      window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue //TODO:onwindowmove handler on scene component
-    }, 500);
+    store.events.onWindowMove?.(id, { top: props.top || 0, left: props.left || 0, id });
+
   });
 
   //handle set zIndex to the top

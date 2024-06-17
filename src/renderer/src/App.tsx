@@ -14,11 +14,21 @@ import colorPanel from './icons/illustrator/color-panel.svg';
 import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
 import { ContainerProps } from './components/application-layout/blocks/Container';
 import CadPage from './pages/CadPage';
+import { useCallback, useRef } from 'react';
 
 function App(): JSX.Element {
+  const timeout = useRef<any | null>(null);
   const app = useApp();
   const scene = useScene();
   const layout = useLayout();
+
+  const windowMoveOrResize = useCallback(() => {
+    //this is a patch for blueprint component pointer issue
+    timeout.current && clearTimeout(timeout.current);
+    timeout.current = setTimeout(() => {
+      window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue //TODO:onwindowmove handler on scene component
+    }, 500);
+  }, []);
 
   useInitialize(() => {
     //top container
@@ -107,7 +117,14 @@ function App(): JSX.Element {
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
         <Container {...(layout.container('container-left')?.$props as ContainerProps)} />
-        <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
+        <Scene
+          store={scene}
+          newTabContent={newTabContentCtor}
+          onAddTab={onAddTab}
+          onCloseTab={onCloseTab}
+          onWindowMove={windowMoveOrResize}
+          onWindowResize={windowMoveOrResize}
+        />
         <Container {...(layout.container('container-right')?.$props as ContainerProps)} />
       </div>
     </ApplicationLayout>

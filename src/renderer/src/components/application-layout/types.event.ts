@@ -2,10 +2,14 @@ import { ITab } from './types';
 
 //TODO: this page is still draft
 
-export type OnAddTabHandlerHandler = (tabViewId: string, tab: Omit<ITab, 'type' | 'id' | 'title'> & { id?: string; title?: string }) => void;
-export type OnCloseTabHandler = (id: string) => void;
+export type OnAddTabHandlerHandler = (tabViewId: string, tab: ITab) => void;
+export type OnCloseTabHandler = (tabViewId: string, id: string) => void;
+export type OnWindowResizeHandler = (
+  windowId: string,
+  props: { width: number; height: number; top: number; left: number; id: string }
+) => void;
+export type OnWindowMoveHandler = (windowId: string, props: { top: number; left: number; id: string }) => void;
 /* export type OnNothingLeftHandler = () => void;
-export type OnWindowResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export type OnMaximizeHandler = (id: string) => void;
 export type OnMinimizeHandler = (id: string) => void;
 export type OnRestoreHandler = (id: string) => void;
@@ -23,8 +27,9 @@ export interface SceneEvents {
   onAddTab?: OnAddTabHandlerHandler;
   onCloseTab?: OnCloseTabHandler;
   newTabContent?: () => JSX.Element;
-  /*   onNothingLeft?: OnNothingLeftHandler;
   onWindowResize?: OnWindowResizeHandler;
+  onWindowMove?: OnWindowMoveHandler;
+  /*   onNothingLeft?: OnNothingLeftHandler;
   onMaximize?: OnMaximizeHandler;
   onMinimize?: OnMinimizeHandler;
   onRestore?: OnRestoreHandler;

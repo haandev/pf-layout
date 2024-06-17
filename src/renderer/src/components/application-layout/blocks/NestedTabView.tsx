@@ -46,7 +46,6 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
         );
       } else {
         return (
-          //TODO: move viewgroup to tabview map
           <ViewGroup store={props.store} id={viewItem.id} key={viewItem.id} direction={oppositeDirection} width={viewItem.width} height={viewItem.height}>
             <NestedTabView direction={oppositeDirection} headerControls={headerControls} id={viewItem.id} view={viewItem} {...props} />
           </ViewGroup>
