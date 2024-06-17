@@ -20,7 +20,6 @@ export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow
 }
 
 export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
-  const moveTimeout = useRef<any | null>(null);
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
   useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {

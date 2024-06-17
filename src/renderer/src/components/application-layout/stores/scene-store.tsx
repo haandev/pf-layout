@@ -320,7 +320,7 @@ export const useScene = create<SceneStore>((set) => {
         if (!isTabView(parent)) return { members };
         if (!item) return { members };
         parent.members.splice(index, 1);
-        state.events.onCloseTab?.(tabId);
+        state.events.onCloseTab?.(parent.id, tabId);
         return cleanUp(state);
       }),
     addTab: (id, tab) =>
@@ -355,7 +355,11 @@ export const useScene = create<SceneStore>((set) => {
           if (tabId === beforeTabId) return { members };
           if (beforeTab.item) {
             parent.members.splice(index, 1);
-            const newIndex = beforeTab.item ? (beforeTab.index > index ? beforeTab.index - 1 : beforeTab.index) : toView.members.length;
+            const newIndex = beforeTab.item
+              ? beforeTab.index > index
+                ? beforeTab.index - 1
+                : beforeTab.index
+              : toView.members.length;
             toView.members.splice(newIndex, 0, item);
           } else {
             parent.members.splice(index, 1);
@@ -363,7 +367,8 @@ export const useScene = create<SceneStore>((set) => {
           }
         } else {
           //move to another view
-          const newActiveTabId = parent.members[index - 1]?.id || (index !== 0 && parent.members[0]?.id) || parent.members[1]?.id;
+          const newActiveTabId =
+            parent.members[index - 1]?.id || (index !== 0 && parent.members[0]?.id) || parent.members[1]?.id;
           if (parent.activeTabId === tabId) parent.activeTabId = newActiveTabId;
 
           parent.members.splice(index, 1);
@@ -446,11 +451,21 @@ export const useScene = create<SceneStore>((set) => {
         const members = [...state.members];
         const { item: source, parent: sourceParent, index } = lookUp<ITabView>(state, options.id);
         const { item: target, parent: targetParent } = lookUp<ITabView>(state, options.targetId);
-        if (!isTabView(source) || !isTabView(target) || !isGroupView(sourceParent) || target.id === source.id || !parent || !targetParent) return { members };
+        if (
+          !isTabView(source) ||
+          !isTabView(target) ||
+          !isGroupView(sourceParent) ||
+          target.id === source.id ||
+          !parent ||
+          !targetParent
+        )
+          return { members };
 
         const targetTabs = target.members;
 
-        const spliceIndex = options.beforeTabId ? lookUp<ITabView>(target, options.beforeTabId).index || targetTabs.length : targetTabs.length;
+        const spliceIndex = options.beforeTabId
+          ? lookUp<ITabView>(target, options.beforeTabId).index || targetTabs.length
+          : targetTabs.length;
         target.members.splice(spliceIndex, 0, ...source.members);
         target.activeTabId = source.activeTabId || target.activeTabId;
         sourceParent.members.splice(index, 1);
