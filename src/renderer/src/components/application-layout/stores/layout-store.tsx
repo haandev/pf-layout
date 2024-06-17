@@ -105,7 +105,17 @@ export const useLayout = create<LayoutStore>((set, get) => {
   const generateToolbarWindowProps = (item: IToolbarWindow) => {
     const children = item.members.map((stack) => {
       const stackProps = generateToolbarStackProps(stack);
-      return <ToolbarStack {...stackProps} parentId={item.id} key={stack.id} />;
+      return (
+        <ToolbarStack
+          onClose={() => {
+            const parent = get().toolbarStack(stack.id)?.$parent;
+            if (parent?.type === NodeType.ToolbarWindow) return parent.$close();
+          }}
+          {...stackProps}
+          parentId={item.id}
+          key={stack.id}
+        />
+      );
     });
 
     const props: PropsWithChildren<Pick<IToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>> = {
