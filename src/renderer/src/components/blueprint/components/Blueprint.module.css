@@ -1,6 +1,5 @@
 /* add css styles here (optional) */
 
-
 .view {
   color: #fff;
   position: absolute;
@@ -14,7 +13,10 @@
   overflow: visible;
 }
 
-.view svg g path, .view svg g line, .view svg g circle, .view svg g :global(.flow) {
+.view svg g path,
+.view svg g line,
+.view svg g circle,
+.view svg g :global(.flow) {
   stroke: #fff;
   stroke-width: 2px;
 }
@@ -32,7 +34,8 @@ g text {
   display: none;
 }
 
-header, section {
+header,
+section {
   clear: both;
   position: relative;
 }
@@ -54,12 +57,12 @@ header h1 {
 
 .renderingOptionsTop {
   width: 14em;
-  padding: .5em 1em 1em 1em;
+  padding: 0.5em 1em 1em 1em;
   margin: 1em;
   background-color: #fff;
   border: 1px solid #ddd;
   color: #555;
-  box-shadow: 6px 6px 6px rgba(0,0,0,0.15);
+  box-shadow: 6px 6px 6px rgba(0, 0, 0, 0.15);
 }
 
 .renderingOptionsTop {
@@ -93,7 +96,7 @@ header h1 {
   background-color: black;
   overflow: hidden;
   height: 100%;
-  cursor: crosshair;
+  cursor: none;
 }
 
 .viewParams {
@@ -110,11 +113,11 @@ header h1 {
 #rendering-options-menu .view-controls {
   letter-spacing: 1px;
   font-variant: small-caps;
-  color: #777
+  color: #777;
 }
 
 #rendering-options-menu #measurement {
-  padding-bottom: .5em;
+  padding-bottom: 0.5em;
   color: #333;
 }
 
@@ -126,7 +129,8 @@ header h1 {
   clear: right;
 }
 
-.collapse-rendering-options #rendering-options-menu, .collapse-insert-menu #insert-menu {
+.collapse-rendering-options #rendering-options-menu,
+.collapse-insert-menu #insert-menu {
   display: none;
 }
 
@@ -134,20 +138,23 @@ header h1 {
   background-color: rgba(255, 255, 255, 0.1);
 }
 
-.param-active #rendering-options-menu > div > div, .param-active #params-link {
+.param-active #rendering-options-menu > div > div,
+.param-active #params-link {
   visibility: hidden;
 }
 
-.param-active #rendering-options-menu > div > div.active, .param-active #rendering-options-menu #measurement {
+.param-active #rendering-options-menu > div > div.active,
+.param-active #rendering-options-menu #measurement {
   visibility: visible;
   color: #0ff;
-  text-shadow: 0 0 1em rgba(0,0,0,.5);
+  text-shadow: 0 0 1em rgba(0, 0, 0, 0.5);
 }
 
 .touchShield {
   background-color: transparent;
 }
 
-.pointing svg.pointers, .pointing .touchShield {
+.pointing svg.pointers,
+.pointing .touchShield {
   display: block;
 }

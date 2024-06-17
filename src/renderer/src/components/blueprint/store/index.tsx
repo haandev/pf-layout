@@ -1,33 +1,39 @@
 import * as React from 'react';
-import { useEffect, createContext, useReducer, FunctionComponent } from 'react';
+import { useEffect, createContext, FunctionComponent } from 'react';
 import * as makerjs from 'makerjs';
 
-import reducer from './reducer';
-import { ActionType } from './actions';
-import { initialState, OptionState } from './state';
+import { BlueprintStore, createBlueprintStore, OptionState } from './state';
+import { StoreApi, UseBoundStore } from 'zustand';
+import { useStoreWithEqualityFn } from 'zustand/traditional';
 
-const store = createContext(initialState);
-const dispatchStore: React.Context<React.Dispatch<ActionType>> = createContext({}) as any;
+type ContextValue = UseBoundStore<StoreApi<BlueprintStore>>;
+const store = createContext<ContextValue | null>(null);
 
-type ProviderProps = React.PropsWithChildren & {
+export type ProviderProps = React.PropsWithChildren & {
   options?: Partial<OptionState>;
   model?: makerjs.IModel | string;
 };
 
-const StateProvider: FunctionComponent<ProviderProps> = ({ options, model, children }) => {
-  const initialOptions: OptionState = { ...initialState.options, ...options };
-  const firstState = { ...initialState, options: initialOptions };
-  const [state, dispatch] = useReducer(reducer, firstState);
-
+export const StateProvider: FunctionComponent<ProviderProps> = ({ options, model, children }) => {
+  const useStoreInstance = React.useRef<ContextValue>(createBlueprintStore(options)).current;
+  const storeModel = useStoreInstance((state) => state.storeModel);
   useEffect(() => {
-    dispatch({ type: 'STORE_MODEL', model: model ? model : null });
+    storeModel(model ? model : null);
   }, [model]);
 
-  return (
-    <store.Provider value={state}>
-      <dispatchStore.Provider value={dispatch}>{children}</dispatchStore.Provider>
-    </store.Provider>
-  );
+  return <store.Provider value={useStoreInstance}>{children}</store.Provider>;
 };
 
-export { store, dispatchStore, StateProvider };
+export const useBlueprint = <T,>(selector?: (state: BlueprintStore) => T, equalityFn?: (a: T, b: T) => boolean): T => {
+  const context = React.useContext(store);
+  if (context === null) {
+    throw new Error('useBlueprint must be used within a StateProvider');
+  }
+  if (!selector && !equalityFn) {
+    return context() as T;
+  } else if (selector && !equalityFn) {
+    return context(selector);
+  } else if (selector && equalityFn) {
+    return useStoreWithEqualityFn(context, selector, equalityFn);
+  } else return context() as T;
+};

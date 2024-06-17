@@ -11,11 +11,11 @@ import { OptionState } from './store/state';
 export type Props = React.PropsWithChildren &
   BlueprintProps & { model: makerjs.IModel | string; options?: Partial<OptionState> };
 
-const Main: React.FunctionComponent<Props> = ({ model, options, children }) => {
+const Main: React.FunctionComponent<Props> = ({ model, options, ...props }) => {
   return (
     <I18nextProvider i18n={i18n}>
       <StateProvider options={options} model={model}>
-        <Blueprint>{children}</Blueprint>
+        <Blueprint {...props} />
       </StateProvider>
     </I18nextProvider>
   );

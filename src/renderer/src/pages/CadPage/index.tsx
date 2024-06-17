@@ -7,7 +7,7 @@ const model = {
 const CadPage: FC<IPageProps> = () => {
   return (
     <div style={{ flex: '1' }} className="grid-blue">
-      <Blueprint model={model} />
+      <Blueprint alwaysShowPointers={true} model={model} />
     </div>
   );
 };

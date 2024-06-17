@@ -1,12 +1,12 @@
 import * as React from 'react';
 import styles from './Grid.module.css';
-import { store } from '../store';
+import { useBlueprint } from '../store';
 import { getGridScale } from '../geometry';
 import * as makerjs from 'makerjs';
 
 const Grid = ({}: {}) => {
   const [patternId] = React.useState(() => Math.ceil(Math.random() * 100000).toString() + '-gridPattern');
-  const { view } = React.useContext(store);
+  const view = useBlueprint((state) => state.view);
   let gridScale = getGridScale(view);
   let p = makerjs.point.add(view.origin, view.panOffset);
   let transform = `translate(${p[0]},${p[1]})`;

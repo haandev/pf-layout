@@ -5,16 +5,20 @@ import Statusbar from './Statusbar';
 import OptionsMenu from './OptionsMenu';
 import styles from './Blueprint.module.css';
 import { useTranslation } from 'react-i18next';
-import { store, dispatchStore } from '../store';
+import { useBlueprint } from '../store';
 import Pointers from './Pointers';
+import { BlueprintStore } from '../store/state';
 
 export type BlueprintProps = React.PropsWithChildren & {
   header?: boolean;
+  /**
+   * Always show pointers, even if the mouse is not down
+   */
+  alwaysShowPointers?: boolean;
 };
 
-const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }) => {
-  const { options, view, content } = React.useContext(store);
-  const dispatch = React.useContext(dispatchStore);
+const Blueprint: React.FunctionComponent<BlueprintProps> = (props) => {
+  const { view, content, options, ...blueprint } = useBlueprint<BlueprintStore>();
 
   const [isMenuExpanded, setIsMenuExpanded] = useState(false);
   const { t } = useTranslation();
@@ -44,11 +48,7 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }
           curtop += el.offsetTop;
         } while ((el = el.offsetParent as HTMLElement));
       }
-      dispatch({
-        type: 'SET_VIEW_MEASUREMENTS',
-        point: [curleft, curtop],
-        size: [b.width, b.height]
-      });
+      blueprint.setViewMeasurements([curleft, curtop], [b.width, b.height]);
     }
   };
 
@@ -60,7 +60,7 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }
       // onWheel stopPropagation is currently broken on Chrome 73 ( https://github.com/facebook/react/issues/14856 )
       mainViewRef.current.addEventListener('wheel', (e) => {
         e.preventDefault();
-        dispatch({ type: 'MOUSE_WHEEL', delta: e.deltaY });
+        blueprint.mouseWheel(e.deltaY);
       });
     }
   }, [mainViewRef]);
@@ -85,14 +85,20 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }
       e.stopPropagation();
       // console.log(`Event: ${type}, e.page ${[e.pageX, e.pageY]}`, )
       // console.log(`Event: ${type}, target: ${e.nativeEvent.target}`, )
-      dispatch({ type: type, point: [e.pageX, e.pageY] });
+      if (type === 'MOUSE_DOWN') {
+        blueprint.mouseDown([e.pageX, e.pageY]);
+      } else if (type === 'MOUSE_MOVE') {
+        blueprint.mouseMove([e.pageX, e.pageY]);
+      } else if (type === 'MOUSE_UP') {
+        blueprint.mouseUp([e.pageX, e.pageY]);
+      }
     };
   }
   return (
     <>
-      {header && (
+      {props.header && (
         <header>
-          {children}
+          {props.children}
           <div
             className={`${styles.renderingOptionsTop} ${!isMenuExpanded ? styles.collapsedRenderingOptionsTop : ''}`}
           >
@@ -104,7 +110,6 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }
       )}
 
       <section className={styles.blueprintCanvas}>
-
         {options.showGrid ? <Grid /> : null}
 
         <div className={styles.viewParams}>
@@ -121,7 +126,7 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = ({ children, header }
                 <svg {...content.svgNode.props} width={width} height={height} style={svgStyle} />
               ) : null}
             </div>
-            {view.isMouseDown ? <Pointers /> : null}
+            {(props.alwaysShowPointers ? true : view.isMouseDown) && <Pointers />}
             <div className={styles.touchShield}></div>
           </div>
           {isMenuExpanded ? <OptionsMenu /> : null}

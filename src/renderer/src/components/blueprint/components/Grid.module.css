@@ -6,15 +6,15 @@
 }
 
 .gridLine1 {
-  stroke: #333333;
+  stroke: #222222;
   opacity: 0.6;
 }
 
 .gridLine10 {
-  stroke: #666666;
+  stroke: #444444;
   opacity: 0.8;
 }
 
 .crosshairsLine {
-  stroke: #999999;
+  stroke: #666666;
 }
