@@ -20,6 +20,7 @@ export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow
 }
 
 export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
+  const moveTimeout = useRef<any | null>(null);
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
   useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {
@@ -40,16 +41,22 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
+    clearTimeout(moveTimeout.current);
     store.resizeWindow(...args, id);
-    window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue
+    moveTimeout.current = setTimeout(() => {
+      window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue, TODO:onwindowresize handler on scene component
+    }, 500);
   };
 
   //handle floating window move
   const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
+    clearTimeout(moveTimeout.current);
     const element = rootRef.current;
     if (!element) return;
     startTransition(() => store.moveWindow(id, xDelta, yDelta));
-    window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue
+    moveTimeout.current = setTimeout(() => {
+      window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue //TODO:onwindowmove handler on scene component
+    }, 500);
   });
 
   //handle set zIndex to the top
