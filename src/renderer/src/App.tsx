@@ -14,6 +14,7 @@ import InlineSvg from './components/application-layout/elements/InlineSvg';
 import colorPanel from './icons/illustrator/color-panel.svg';
 import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
 import { ContainerProps } from './components/application-layout/blocks/Container';
+import CadPage from './pages/CadPage';
 
 function App(): JSX.Element {
   const app = useApp();
@@ -87,7 +88,7 @@ function App(): JSX.Element {
 
   const newTabContentCtor = () => {
     const id = Math.random().toString(36).substring(7);
-    const content = <FlowPage id={id} />;
+    const content = <CadPage id={id} />;
     return content;
   };
 
@@ -95,7 +96,7 @@ function App(): JSX.Element {
   const onCloseTab = () => requestAnimationFrame(() => scene.members.length < 1 && app.showHome());
 
   return (
-    <ApplicationLayout home={app.home && <Welcome />} store={layout}>
+    <ApplicationLayout home={app.home && <Welcome id="welcome" />} store={layout}>
       <div
         style={{
           display: 'flex',

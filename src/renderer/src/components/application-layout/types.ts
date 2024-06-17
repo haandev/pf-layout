@@ -203,3 +203,7 @@ export interface GatheredToolbar extends IToolbar {
 export interface GatheredPanel extends LookupResult<IPanel> {}
 
 export type Maybe<T> = T | null | undefined;
+
+export type IPageProps = {
+  id: string;
+};

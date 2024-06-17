@@ -1,10 +1,9 @@
+import { IPageProps } from '@renderer/components/application-layout/types';
 import React, { FC } from 'react';
 import ReactFlow, { Background, ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 
-export interface FlowPageProps {
-  id: string;
-}
+export interface FlowPageProps extends IPageProps {}
 
 export const FlowPage: FC<FlowPageProps> = React.memo(({ id }) => {
   return (

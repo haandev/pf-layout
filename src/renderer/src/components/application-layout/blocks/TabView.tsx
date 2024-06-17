@@ -9,7 +9,14 @@ import IconXmark from '../icons/IconXmark';
 import IconAdd from '../icons/IconAdd';
 import { evalBoolean, lookUp } from '../util';
 import useEvent from 'react-use-event-hook';
-import { TabDragSource, TabDropTarget, TabDroppableItems, TabViewDragSource, TabViewDropTarget, TabViewDroppableItems } from '../types.dnd';
+import {
+  TabDragSource,
+  TabDropTarget,
+  TabDroppableItems,
+  TabViewDragSource,
+  TabViewDropTarget,
+  TabViewDroppableItems
+} from '../types.dnd';
 import { SceneStore } from '../stores/scene-store';
 
 export type OnTabChangeHandler = (tabId: string) => void;
@@ -35,7 +42,18 @@ export interface TabViewProps extends TabViewCommonProps, AsComponentProps<ITabV
   noCache?: boolean;
 }
 
-const TabView: FC<TabViewProps> = ({ store, members, titleFormatter, activeTabId, id, width, height, detachable, attachable, ...props }) => {
+const TabView: FC<TabViewProps> = ({
+  store,
+  members,
+  titleFormatter,
+  activeTabId,
+  id,
+  width,
+  height,
+  detachable,
+  attachable,
+  ...props
+}) => {
   const view: ITabView = { type: NodeType.TabView, members: members || [], id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -166,7 +184,10 @@ const TabView: FC<TabViewProps> = ({ store, members, titleFormatter, activeTabId
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
       <SplitResizeHandle direction={direction} onResize={onResize} />
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collectedOnContentSection.isDroppable })} />
-      <div ref={headerRef} className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(view.members).length === 0 })}>
+      <div
+        ref={headerRef}
+        className={clsx({ 'pf-tab-view__tabs': true, 'pf-hidden': Object.keys(view.members).length === 0 })}
+      >
         <div className="pf-tab-title-list">
           {view.members.map((tab, index) => (
             <Tab
@@ -261,7 +282,7 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
   }));
 
   const className = clsx({ 'pf-tab': true, 'pf-tab-active': props.isActive, [props.className || '']: true });
-  const onClose:React.MouseEventHandler<HTMLButtonElement> = (e) => {
+  const onClose: React.MouseEventHandler<HTMLButtonElement> = (e) => {
     e.stopPropagation();
     props.onClose?.(id);
   };
@@ -290,7 +311,11 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
             <IconXmark width={10} height={10} />
           </button>
         )}
-        {!editing ? props.children : <input autoFocus defaultValue={title} onBlur={onBlur} onChange={(e) => setNewTitle(e.currentTarget.value)} />}
+        {!editing ? (
+          props.children
+        ) : (
+          <input autoFocus defaultValue={title} onBlur={onBlur} onChange={(e) => setNewTitle(e.currentTarget.value)} />
+        )}
       </div>
     </>
   );

@@ -1,0 +1,12 @@
+svg.pointers g .line {
+    stroke: #aaaaaa;
+    stroke-width: 1px;
+}
+
+.pointers {
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}

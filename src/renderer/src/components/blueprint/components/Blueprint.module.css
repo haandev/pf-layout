@@ -1,0 +1,153 @@
+/* add css styles here (optional) */
+
+
+.view {
+  color: #fff;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.view svg {
+  overflow: visible;
+}
+
+.view svg g path, .view svg g line, .view svg g circle, .view svg g :global(.flow) {
+  stroke: #fff;
+  stroke-width: 2px;
+}
+
+.view .collapseflow svg g :global(.flow) {
+  display: none;
+}
+
+g text {
+  fill: turquoise;
+  stroke: none;
+}
+
+.collapseannotation g text {
+  display: none;
+}
+
+header, section {
+  clear: both;
+  position: relative;
+}
+
+header {
+  margin-bottom: 1em;
+  padding-top: 1em;
+}
+
+header h1 {
+  font-size: 24px;
+  font-weight: normal;
+  color: #aaa;
+  line-height: 18px;
+  text-transform: lowercase;
+  letter-spacing: 2px;
+  display: inline;
+}
+
+.renderingOptionsTop {
+  width: 14em;
+  padding: .5em 1em 1em 1em;
+  margin: 1em;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  color: #555;
+  box-shadow: 6px 6px 6px rgba(0,0,0,0.15);
+}
+
+.renderingOptionsTop {
+  position: absolute;
+  right: 0;
+  bottom: -30px;
+  padding-bottom: 30px;
+  margin-bottom: 0;
+  border-bottom-color: #fff;
+  text-align: right;
+}
+
+.collapsedRenderingOptionsTop {
+  background-color: transparent;
+  border-color: transparent;
+  bottom: 0;
+  padding-bottom: 0;
+  box-shadow: none;
+}
+
+.renderOptionsButton {
+  background-color: #fff;
+  color: #555;
+  border: none;
+  outline: none;
+  font-size: medium;
+  padding-right: 0;
+}
+
+.blueprintCanvas {
+  background-color: black;
+  overflow: hidden;
+  height: 100%;
+  cursor: crosshair;
+}
+
+.viewParams {
+  height: 100%;
+  min-height: 23em;
+  overflow: hidden;
+  position: relative;
+}
+
+.viewSVGContainer {
+  margin: 2em;
+}
+
+#rendering-options-menu .view-controls {
+  letter-spacing: 1px;
+  font-variant: small-caps;
+  color: #777
+}
+
+#rendering-options-menu #measurement {
+  padding-bottom: .5em;
+  color: #333;
+}
+
+#rendering-options-menu .view-controls .zoom-unit {
+  float: right;
+}
+
+#rendering-options-menu .view-controls div {
+  clear: right;
+}
+
+.collapse-rendering-options #rendering-options-menu, .collapse-insert-menu #insert-menu {
+  display: none;
+}
+
+.param-active #rendering-options-menu {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.param-active #rendering-options-menu > div > div, .param-active #params-link {
+  visibility: hidden;
+}
+
+.param-active #rendering-options-menu > div > div.active, .param-active #rendering-options-menu #measurement {
+  visibility: visible;
+  color: #0ff;
+  text-shadow: 0 0 1em rgba(0,0,0,.5);
+}
+
+.touchShield {
+  background-color: transparent;
+}
+
+.pointing svg.pointers, .pointing .touchShield {
+  display: block;
+}

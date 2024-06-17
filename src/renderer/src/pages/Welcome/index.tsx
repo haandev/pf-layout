@@ -1,12 +1,14 @@
-import styles from './styles.module.css';
-import logo from './assets/logo.svg';
-import { useApp } from '../../stores/app-store';
 import clsx from 'clsx';
-import { useCallback } from 'react';
+import logo from './assets/logo.svg';
+import styles from './styles.module.css';
+import { FC, useCallback } from 'react';
 import { FlowPage } from '../FlowPage';
+import { IPageProps } from '@renderer/components/application-layout/types';
+import { useApp } from '../../stores/app-store';
+import { useScene } from '@renderer/components/application-layout/stores/scene-store';
 import { v4 } from 'uuid';
-import { useScene } from '../../components/application-layout/stores/scene-store';
-const Welcome = () => {
+import CadPage from '../CadPage';
+const Welcome: FC<IPageProps> = () => {
   const app = useApp();
   const scene = useScene();
 
@@ -14,7 +16,7 @@ const Welcome = () => {
     const id = v4();
     scene.addTabInitial({
       id,
-      content: <FlowPage id={id} />,
+      content: <CadPage id={id} />,
       recentlyCreated: true
     });
   }, [scene]);

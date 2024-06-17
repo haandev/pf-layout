@@ -41,6 +41,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
     store.resizeWindow(...args, id);
+    window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue
   };
 
   //handle floating window move
@@ -48,6 +49,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     startTransition(() => store.moveWindow(id, xDelta, yDelta));
+    window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue
   });
 
   //handle set zIndex to the top
@@ -158,7 +160,11 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
         {floatingHeaderRender()}
 
         {props.floating && !props.minimized && (
-          <ResizeBox ref={rootRef} handler={resizeBoxHandler} safetyMargins={{ top: 50, left: 50, right: 50, bottom: 50 }} />
+          <ResizeBox
+            ref={rootRef}
+            handler={resizeBoxHandler}
+            safetyMargins={{ top: 50, left: 50, right: 50, bottom: 50 }}
+          />
         )}
 
         <div
