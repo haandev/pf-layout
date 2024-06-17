@@ -263,3 +263,5 @@ export const remapZIndex = (state: IScene) => {
 export const opposite = (direction: Direction) => {
   return direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
 };
+
+

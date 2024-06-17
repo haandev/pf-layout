@@ -6,7 +6,7 @@ import { Direction, NodeType } from '../types';
 import { LayoutDropTarget, LayoutDroppableItems } from '../types.dnd';
 import { useDrop } from 'react-dnd';
 import { LayoutStore } from '../stores/layout-store';
-import { ToolbarWindow } from './ToolbarWindow';
+import { ToolbarWindow, ToolbarWindowProps } from './ToolbarWindow';
 
 export interface ApplicationLayoutProps extends PropsWithChildren {
   home?: false | null | React.ReactNode;
@@ -36,7 +36,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
 
       if (!didDrop && type === NodeType.ToolbarWindow) {
         const delta = monitor.getDifferenceFromInitialOffset() || { x: 0, y: 0 };
-        store.toolbarWindow(item.id).$move(delta.x, delta.y);
+        store.toolbarWindow(item.id)?.$move(delta.x, delta.y);
       }
 
       if (!didDrop && type === NodeType.ToolbarStack) {
@@ -73,7 +73,9 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
         <div className="pf-floating-toolbar-host">
           {store.floating.length > 0
             ? store.floating.map((item) => {
-                return <ToolbarWindow {...store.toolbarWindow(item.id)?.$props} key={item.id} />;
+                return (
+                  <ToolbarWindow {...(store.toolbarWindow(item.id)?.$props as ToolbarWindowProps)} key={item.id} />
+                );
               })
             : null}
         </div>

@@ -1,4 +1,15 @@
-import { IContainer, IGroupView, ITab, ITabView, IToolbar, IToolbarStack, IToolbarWindow, IWindow, NodeType, StateItem } from './types';
+import {
+  IContainer,
+  IGroupView,
+  ITab,
+  ITabView,
+  IToolbar,
+  IToolbarStack,
+  IToolbarWindow,
+  IWindow,
+  NodeType,
+  StateItem
+} from './types';
 
 /**
  * Type guard to check if the state object is a Window.
@@ -12,7 +23,8 @@ export const isWindow = (state: any): state is IWindow => state && 'type' in sta
  * @param state The state object to check.
  * @returns true if the state is a GroupView, false otherwise.
  */
-export const isGroupView = (state: any): state is IGroupView => state && 'type' in state && state.type === NodeType.GroupView;
+export const isGroupView = (state: any): state is IGroupView =>
+  state && 'type' in state && state.type === NodeType.GroupView;
 
 /**
  * Type guard to check if the state object is a TabView.
@@ -49,14 +61,16 @@ export const isToolbarWindow = (state: any): state is IToolbarWindow =>
  * @param state The state object to check.
  * @returns true if the state is a Container, false otherwise.
  */
-export const isContainer = (state: any): state is IContainer => state && 'type' in state && state.type === NodeType.Container;
+export const isContainer = (state: any): state is IContainer =>
+  state && 'type' in state && state.type === NodeType.Container;
 
 /**
  * Type guard to check if the state object is a ToolbarStack.
  * @param state The state object to check.
  * @returns true if the state is a ToolbarStack, false otherwise.
  */
-export const isToolbarStack = (state: any): state is IToolbarStack => state && 'type' in state && state.type === NodeType.ToolbarStack;
+export const isToolbarStack = (state: any): state is IToolbarStack =>
+  state && 'type' in state && state.type === NodeType.ToolbarStack;
 
 /**
  * Type guard to check if the state object is a Toolbar.
@@ -64,3 +78,5 @@ export const isToolbarStack = (state: any): state is IToolbarStack => state && '
  * @returns true if the state is a Toolbar, false otherwise.
  */
 export const isToolbar = (state: any): state is IToolbar => state && 'type' in state && state.type === NodeType.Toolbar;
+
+export const isString = (value: any): value is string => typeof value === 'string';

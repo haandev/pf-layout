@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LookupResult, lookUp as _lookUp, lookUp, opposite } from '../util';
+import { LookupResult, lookUp as _lookUp, lookUp } from '../util';
 import {
   AsRegisterArgs,
   Direction,
@@ -16,7 +16,7 @@ import {
   GatheredToolbar,
   GatheredToolbarWindow
 } from '../types';
-import { isContainer, isToolbarWindow, isToolbar, isToolbarStack } from '../guards';
+import { isContainer, isToolbarWindow, isToolbar, isToolbarStack, isString } from '../guards';
 import { PropsWithChildren } from 'react';
 import { ToolbarStack } from '../blocks/ToolbarStack';
 import { Toolbar } from '../blocks/Toolbar';
@@ -35,7 +35,9 @@ export interface LayoutStore {
    * @param toolbarWindow - The id of the toolbarWindow or an object with the toolbarWindow's properties.
    * @returns The GatheredToolbarWindow that also has the methods to manipulate the toolbarWindow.
    */
-  toolbarWindow: (toolbarWindow: string | AsRegisterArgs<IToolbarWindow>) => GatheredToolbarWindow;
+  toolbarWindow: <T extends string | AsRegisterArgs<IToolbarWindow>>(
+    toolbarWindow: T
+  ) => T extends string ? Maybe<GatheredToolbarWindow> : GatheredToolbarWindow;
 
   /**
    * Retrieves a container with the given id or creates a new one if it doesn't exist.
@@ -43,7 +45,9 @@ export interface LayoutStore {
    * @param container - The id of the container or an object with the container's properties.
    * @returns The GatheredContainer that also has the methods to manipulate the container.
    */
-  container: (container: string | AsRegisterArgs<IContainer>) => GatheredContainer;
+  container: <T extends string | AsRegisterArgs<IContainer>>(
+    container: T
+  ) => T extends string ? Maybe<GatheredContainer> : GatheredContainer;
 
   /**
    * Retrieves a container with the given id or creates a new one if it doesn't exist.
@@ -52,7 +56,10 @@ export interface LayoutStore {
    * @param hostId - The id of the container where the stack will be placed.
    * @returns The GatheredStack that also has the methods to manipulate the stack.
    */
-  toolbarStack: (stack: string | AsRegisterArgs<IToolbarStack>, hostId?: string) => Maybe<GatheredStack>;
+  toolbarStack: <T extends string | AsRegisterArgs<IToolbarStack>>(
+    stack: T,
+    hostId?: string
+  ) => T extends string ? Maybe<GatheredStack> : GatheredStack;
 
   /**
    * Retrieves a container with the given id or creates a new one if it doesn't exist.
@@ -61,7 +68,10 @@ export interface LayoutStore {
    * @param stack - The id of the stack where the toolbar will be placed.
    * @returns The GatheredToolbar that also has the methods to manipulate the toolbar.
    */
-  toolbar: (toolbar: string | AsRegisterArgs<IToolbar>, stack?: string) => Maybe<GatheredToolbar>;
+  toolbar: <T extends string | AsRegisterArgs<IToolbar>>(
+    toolbar: T,
+    stack?: string
+  ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
 
   lookUp: <T extends StateItem>(id: string | undefined) => LookupResult<T>;
   both: () => { members: (IContainer | IToolbarWindow)[] };
@@ -86,7 +96,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
     const props: ContainerProps = {
       ...item,
       onDrop: (id: string, type: NodeType, containerId: string) => {
-        get().container(containerId).$dropOn(id, type);
+        get().container(containerId)?.$dropOn(id, type);
       },
       children: children
     };
@@ -250,6 +260,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
             get().toolbarStack(droppedItemId)?.$attach(container.id);
           } else if (droppedItemType === NodeType.ToolbarWindow) {
             const toolbarWindow = get().toolbarWindow(droppedItemId);
+            if (!toolbarWindow) return state;
             container.members.push(...toolbarWindow.members);
             toolbarWindow.$close();
           }
@@ -362,7 +373,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       if (typeof container === 'string') {
         const { item } = lookUp<IContainer>(get(), container);
         if (item) return containerMethods(item);
-        return containerMethods(); //default empty container
+        return undefined as any; //possibly typescript issue
       } else {
         const { item } = lookUp<IContainer>(get(), container.id);
         if (item) return containerMethods(item);
@@ -380,14 +391,15 @@ export const useLayout = create<LayoutStore>((set, get) => {
       }
     },
     toolbarStack: (stack, hostId) => {
-      if (typeof stack === 'string') {
+      if (isString(stack)) {
         const { item, parent } = lookUp<IToolbarStack>(both(), stack);
         if (item && parent) return stackMethods(item, parent);
+        return undefined as any;
       } else {
         const { item, parent } = lookUp<IToolbarStack>(both(), stack.id);
         if (item && parent) return stackMethods(item, parent);
         const { item: host } = lookUp<IContainer>(both(), hostId);
-        if (!isContainer(host) && !isToolbarWindow(host)) return;
+        if (!isContainer(host) && !isToolbarWindow(host)) throw new Error('Invalid host');
 
         const newStack: IToolbarStack = { type: NodeType.ToolbarStack, ...stack, members: toolbarStackMembers(stack) };
         set((state) => {
@@ -403,6 +415,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       if (typeof toolbar === 'string') {
         const { item, parent } = lookUp<IToolbar>(both(), toolbar);
         if (item && parent) return toolbarMethods(item, parent);
+        return undefined as any;
       } else {
         const { item, parent } = lookUp<IToolbar>(both(), toolbar.id);
         if (item && parent) return toolbarMethods(item, parent);

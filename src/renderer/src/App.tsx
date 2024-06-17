@@ -13,6 +13,7 @@ import TopToolbar from './components/layout-preset/TopToolbar';
 import InlineSvg from './components/application-layout/elements/InlineSvg';
 import colorPanel from './icons/illustrator/color-panel.svg';
 import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
+import { ContainerProps } from './components/application-layout/blocks/Container';
 
 function App(): JSX.Element {
   const app = useApp();
@@ -102,12 +103,12 @@ function App(): JSX.Element {
           alignItems: 'stretch'
         }}
       >
-        <Container {...layout.container('container-top').$props} />
+        {<Container {...(layout.container('container-top')?.$props as ContainerProps)} />}
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
-        <Container {...layout.container('container-left').$props} />
+        <Container {...(layout.container('container-left')?.$props as ContainerProps)} />
         <Scene store={scene} newTabContent={newTabContentCtor} onAddTab={onAddTab} onCloseTab={onCloseTab} />
-        <Container {...layout.container('container-right').$props} />
+        <Container {...(layout.container('container-right')?.$props as ContainerProps)} />
       </div>
     </ApplicationLayout>
   );

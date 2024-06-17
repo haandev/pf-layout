@@ -3,7 +3,7 @@ import { StickyGroupButton, ToolbarItem } from '../application-layout';
 import { useApp } from '../../stores/app-store';
 import InlineSvg from '../application-layout/elements/InlineSvg';
 import { useLayout } from '../application-layout/stores/layout-store';
-import { Direction, IToolbarStack } from '../application-layout/types';
+import { Direction } from '../application-layout/types';
 import { isContainer, isToolbarWindow } from '../application-layout/guards';
 import { AppToolsStickySvgButton } from './AppStickyButton';
 
@@ -61,7 +61,7 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
       layout.toolbar(toolbarId)?.$set({ columns: Object.keys(items).length });
       return;
     } else if (isToolbarWindow(parent)) {
-      layout.toolbarWindow(parent.id).$close();
+      layout.toolbarWindow(parent.id)?.$close();
     }
     const newPosition = { x: 0, y: 0 };
     const box = ref.current?.getBoundingClientRect();
