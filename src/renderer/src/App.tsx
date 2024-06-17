@@ -6,7 +6,6 @@ import { Scene } from './components/application-layout/blocks/Scene';
 import { useApp } from './stores/app-store';
 import Welcome from './pages/Welcome';
 import { useScene } from './components/application-layout/stores/scene-store';
-import { FlowPage } from './pages/FlowPage';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import MainTools from './components/layout-preset/MainTools';
 import TopToolbar from './components/layout-preset/TopToolbar';

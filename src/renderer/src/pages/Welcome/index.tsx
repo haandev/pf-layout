@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import logo from './assets/logo.svg';
 import styles from './styles.module.css';
 import { FC, useCallback } from 'react';
-import { FlowPage } from '../FlowPage';
 import { IPageProps } from '@renderer/components/application-layout/types';
 import { useApp } from '../../stores/app-store';
 import { useScene } from '@renderer/components/application-layout/stores/scene-store';

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import styles from './Pointers.module.css';
 import { useBlueprint } from '../store';
 

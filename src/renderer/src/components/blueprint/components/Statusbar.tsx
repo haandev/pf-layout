@@ -1,4 +1,3 @@
-import * as React from 'react';
 import styles from './Statusbar.module.css';
 import { useTranslation } from 'react-i18next';
 import { useBlueprint } from '../store';
