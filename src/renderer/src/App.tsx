@@ -33,7 +33,7 @@ function App(): JSX.Element {
   useInitialize(() => {
     //top container
     layout
-      .container({ id: 'container-top', maxItems: 1, direction: Direction.Vertical })
+      .$container({ id: 'container-top', maxItems: 1, direction: Direction.Vertical })
       .$stack({ id: 'top-toolbar-stack', direction: Direction.Horizontal, draggable: true })
       .$toolbar({
         draggable: true,
@@ -45,14 +45,14 @@ function App(): JSX.Element {
 
     //left container
     layout
-      .container({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal, chevronPosition: 'start' })
+      .$container({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal, chevronPosition: 'start' })
       .$stack({
         id: 'main-tools-stack',
         draggable: true,
         direction: Direction.Vertical,
-        isExpanded: () => layout.toolbar('main-tools')?.columns === 2,
-        onCollapse: () => layout.toolbar('main-tools')?.$set({ columns: 1 }),
-        onExpand: () => layout.toolbar('main-tools')?.$set({ columns: 2 })
+        isExpanded: () => layout.$toolbar('main-tools')?.columns === 2,
+        onCollapse: () => layout.$toolbar('main-tools')?.$set({ columns: 1 }),
+        onExpand: () => layout.$toolbar('main-tools')?.$set({ columns: 2 })
       })
       .$toolbar({
         id: 'main-tools',
@@ -66,7 +66,7 @@ function App(): JSX.Element {
 
     //right container
     layout
-      .container({ id: 'container-right', direction: Direction.Horizontal })
+      .$container({ id: 'container-right', direction: Direction.Horizontal })
       .$stack({
         id: 'right-container-col-1',
         direction: Direction.Vertical,
@@ -116,10 +116,10 @@ function App(): JSX.Element {
           alignItems: 'stretch'
         }}
       >
-        {<Container {...(layout.container('container-top')?.$props as ContainerProps)} />}
+        {<Container {...(layout.$container('container-top')?.$props as ContainerProps)} />}
       </div>
       <div style={{ display: 'flex', flexDirection: 'row', flex: 1 }}>
-        <Container {...(layout.container('container-left')?.$props as ContainerProps)} />
+        <Container {...(layout.$container('container-left')?.$props as ContainerProps)} />
         <Scene
           store={scene}
           newTabContent={newTabContentCtor}
@@ -131,7 +131,7 @@ function App(): JSX.Element {
           onDetach={updateBlueprintPointerOffset}
           onMoveTab={updateBlueprintPointerOffset}
         />
-        <Container {...(layout.container('container-right')?.$props as ContainerProps)} />
+        <Container {...(layout.$container('container-right')?.$props as ContainerProps)} />
       </div>
     </ApplicationLayout>
   );

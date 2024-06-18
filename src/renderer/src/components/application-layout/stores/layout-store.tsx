@@ -33,7 +33,7 @@ export interface LayoutStore {
    * @param toolbarWindow - The id of the toolbarWindow or an object with the toolbarWindow's properties.
    * @returns The GatheredToolbarWindow that also has the methods to manipulate the toolbarWindow.
    */
-  toolbarWindow: <T extends string | AsRegisterArgs<IToolbarWindow>>(
+  $toolbarWindow: <T extends string | AsRegisterArgs<IToolbarWindow>>(
     toolbarWindow: T
   ) => T extends string ? Maybe<GatheredToolbarWindow> : GatheredToolbarWindow;
 
@@ -43,7 +43,7 @@ export interface LayoutStore {
    * @param container - The id of the container or an object with the container's properties.
    * @returns The GatheredContainer that also has the methods to manipulate the container.
    */
-  container: <T extends string | AsRegisterArgs<IContainer>>(
+  $container: <T extends string | AsRegisterArgs<IContainer>>(
     container: T
   ) => T extends string ? Maybe<GatheredContainer> : GatheredContainer;
 
@@ -54,7 +54,7 @@ export interface LayoutStore {
    * @param hostId - The id of the container where the stack will be placed.
    * @returns The GatheredStack that also has the methods to manipulate the stack.
    */
-  stack: <T extends string | AsRegisterArgs<IStack>>(
+  $stack: <T extends string | AsRegisterArgs<IStack>>(
     stack: T,
     hostId?: string
   ) => T extends string ? Maybe<GatheredStack> : GatheredStack;
@@ -66,7 +66,7 @@ export interface LayoutStore {
    * @param stack - The id of the stack where the toolbar will be placed.
    * @returns The GatheredToolbar that also has the methods to manipulate the toolbar.
    */
-  toolbar: <T extends string | AsRegisterArgs<IToolbar>>(
+  $toolbar: <T extends string | AsRegisterArgs<IToolbar>>(
     toolbar: T,
     stack?: string
   ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
@@ -81,8 +81,8 @@ export const useLayout = create<LayoutStore>((set, get) => {
       return (
         <Stack
           onClose={() => {
-            const parent = get().stack(stack.id)?.$parent;
-            if (parent?.type === NodeType.ToolbarWindow) return parent.$close();
+            const parent = get().$stack(stack.id)?.$parent;
+            if (parent?.type === NodeType.ToolbarWindow) return parent.$hide();
           }}
           {...childrenProps}
           parentId={item.id}
@@ -110,7 +110,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
     const props: ContainerProps = {
       ...item,
       onDrop: (id: string, type: NodeType, containerId: string) => {
-        get().container(containerId)?.$dropOn(id, type);
+        get().$container(containerId)?.$dropOn(id, type);
       },
       children: children
     };
@@ -203,7 +203,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       get $props() {
         return containerProps(container);
       },
-      $stack: (stack) => get().stack(stack, container.id),
+      $stack: (stack) => get().$stack(stack, container.id),
       $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
@@ -217,9 +217,9 @@ export const useLayout = create<LayoutStore>((set, get) => {
         set((state) => {
           const members = [...state.members];
           if (droppedItemType === NodeType.Stack) {
-            get().stack(droppedItemId)?.$attach(container.id);
+            get().$stack(droppedItemId)?.$attach(container.id);
           } else if (droppedItemType === NodeType.ToolbarWindow) {
-            const toolbarWindow = get().toolbarWindow(droppedItemId);
+            const toolbarWindow = get().$toolbarWindow(droppedItemId);
             if (!toolbarWindow) return state;
             container.members.push(...toolbarWindow.members);
             toolbarWindow.$close();
@@ -236,7 +236,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       get $props() {
         return toolbarWindowProps(toolbarWindow);
       },
-      $stack: (stack) => get().stack(stack, toolbarWindow.id),
+      $stack: (stack) => get().$stack(stack, toolbarWindow.id),
       $set: (attributes) => {
         set((state) => {
           const floating = [...state.floating];
@@ -280,9 +280,9 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return stackProps(stack);
       },
       get $parent() {
-        return parent ? (isContainer(parent) ? get().container(parent) : get().toolbarWindow(parent)) : undefined;
+        return parent ? (isContainer(parent) ? get().$container(parent) : get().$toolbarWindow(parent)) : undefined;
       },
-      $toolbar: (toolbar) => get().toolbar(toolbar, stack.id),
+      $toolbar: (toolbar) => get().$toolbar(toolbar, stack.id),
       $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
@@ -330,7 +330,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return toolbarProps(toolbar, parent);
       },
       get $parent() {
-        return get().stack(parent);
+        return get().$stack(parent);
       },
       $panel: (panel) => lookUp<IPanel>(both(), panel).item,
       $set: (attributes) => {
@@ -349,7 +349,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
     members: [],
     floating: [],
 
-    toolbarWindow: (toolbarWindow) => {
+    $toolbarWindow: (toolbarWindow) => {
       if (typeof toolbarWindow === 'string') {
         const { item } = lookUp<IToolbarWindow>(get().floating, toolbarWindow);
         if (item) return getToolbarWindow(item);
@@ -370,7 +370,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return getToolbarWindow(newToolbarWindow);
       }
     },
-    container: (container) => {
+    $container: (container) => {
       if (typeof container === 'string') {
         const { item } = lookUp<IContainer>(get(), container);
         if (item) return getContainer(item);
@@ -391,7 +391,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return getContainer(newContainer);
       }
     },
-    stack: (stack, hostId) => {
+    $stack: (stack, hostId) => {
       if (isString(stack)) {
         const { item, parent } = lookUp<IStack>(both(), stack);
         if (item && parent) return getStack(item, parent);
@@ -411,7 +411,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return getStack(newStack, host);
       }
     },
-    toolbar: (toolbar, stack) => {
+    $toolbar: (toolbar, stack) => {
       //potential best solution for this type of operations
       if (typeof toolbar === 'string') {
         const { item, parent } = lookUp<IToolbar>(both(), toolbar);

@@ -54,7 +54,7 @@ const TabView: FC<TabViewProps> = ({
   attachable,
   ...props
 }) => {
-  const [tabViewInstance] = useState(store.tabView(id));
+  const [tabViewInstance] = useState(store.$tabView(id));
   const view: ITabView = { type: NodeType.TabView, members: members || [], id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);

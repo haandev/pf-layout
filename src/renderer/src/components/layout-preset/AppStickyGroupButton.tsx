@@ -54,14 +54,14 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
         })}
       </>
     );
-    const stack = layout.stack(stackId);
+    const stack = layout.$stack(stackId);
     const parent = stack?.$parent;
     if (isContainer(parent)) {
       //nothing, already attached
-      layout.toolbar(toolbarId)?.$set({ columns: Object.keys(items).length });
+      layout.$toolbar(toolbarId)?.$set({ columns: Object.keys(items).length });
       return;
     } else if (isToolbarWindow(parent)) {
-      layout.toolbarWindow(parent.id)?.$close();
+      layout.$toolbarWindow(parent.id)?.$close();
     }
     const newPosition = { x: 0, y: 0 };
     const box = ref.current?.getBoundingClientRect();
@@ -87,7 +87,7 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
     }
 
     layout
-      .toolbarWindow({
+      .$toolbarWindow({
         id: windowId,
         top: newPosition.y,
         left: newPosition.x
@@ -96,9 +96,9 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
         id: stackId,
         draggable: true,
         direction: Direction.Vertical,
-        onCollapse: () => layout.toolbar(toolbarId)?.$set({ columns: 1 }),
-        onExpand: () => layout.toolbar(toolbarId)?.$set({ columns: Object.keys(items).length }),
-        isExpanded: () => layout.toolbar(toolbarId)?.columns === Object.keys(items).length
+        onCollapse: () => layout.$toolbar(toolbarId)?.$set({ columns: 1 }),
+        onExpand: () => layout.$toolbar(toolbarId)?.$set({ columns: Object.keys(items).length }),
+        isExpanded: () => layout.$toolbar(toolbarId)?.columns === Object.keys(items).length
       })
       ?.$toolbar({
         id: toolbarId,

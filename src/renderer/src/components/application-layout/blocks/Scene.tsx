@@ -52,7 +52,7 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
       } */
 
       if (isOverOnlyMe && type === NodeType.TabView) {
-        store.tabView(item.id)?.$attach();
+        store.$tabView(item.id)?.$attach();
       }
 
       //
@@ -105,12 +105,12 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                           {
                             isVisible: (view) => view && view.members.length > 1,
                             render: <IconSplitSquareHorizontal width={16} height={16} />,
-                            onClick: (viewId) => store.tabView(viewId)?.$split(Direction.Horizontal)
+                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Horizontal)
                           },
                           {
                             isVisible: (view) => view && view.members.length > 1,
                             render: <IconSplitSquareVertical width={16} height={16} />,
-                            onClick: (viewId) => store.tabView(viewId)?.$split(Direction.Vertical)
+                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Vertical)
                           }
                         ]
                       : []

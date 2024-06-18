@@ -20,7 +20,7 @@ export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow
 }
 
 export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
-  const [windowInstance] = useState(store.window(id)); // no setter, just stable reference
+  const [windowInstance] = useState(store.$window(id)); // no setter, just stable reference
 
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);

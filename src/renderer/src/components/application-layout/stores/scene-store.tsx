@@ -31,7 +31,7 @@ export interface SceneStore {
    * @param window - The id of the window or an object with the window's properties.
    * @returns The GatheredWindow that also has the methods to manipulate the window.
    */
-  window: <T extends string | AsRegisterArgs<IWindow>>(
+  $window: <T extends string | AsRegisterArgs<IWindow>>(
     window: T
   ) => T extends string ? Maybe<GatheredWindow> : GatheredWindow;
 
@@ -41,7 +41,7 @@ export interface SceneStore {
    * @param groupView - The id of the group view or an object with the group view's properties.
    * @returns The GatheredGroupView that also has the methods to manipulate the group view.
    */
-  groupView: <T extends string | AsRegisterArgs<IGroupView>>(
+  $groupView: <T extends string | AsRegisterArgs<IGroupView>>(
     groupView: T,
     hostId?: string
   ) => T extends string ? Maybe<GatheredGroupView> : GatheredGroupView;
@@ -52,7 +52,7 @@ export interface SceneStore {
    * @param tabView - The id of the tab view or an object with the tab view's properties.
    * @returns The GatheredTabView that also has the methods to manipulate the tab view.
    */
-  tabView: <T extends string | AsRegisterArgs<ITabView>>(
+  $tabView: <T extends string | AsRegisterArgs<ITabView>>(
     tabView: T,
     hostId?: string
   ) => T extends string ? Maybe<GatheredTabView> : GatheredTabView;
@@ -63,7 +63,7 @@ export interface SceneStore {
    * @param tab - The id of the tab or an object with the tab's properties.
    * @returns The GatheredTab that also has the methods to manipulate the tab.
    */
-  tab: <T extends string | AsRegisterArgs<ITab>>(
+  $tab: <T extends string | AsRegisterArgs<ITab>>(
     tab: T,
     hostId?: string
   ) => T extends string ? Maybe<GatheredTab> : GatheredTab;
@@ -141,7 +141,7 @@ export const useScene = create<SceneStore>((set, get) => {
         return windowMembers(win);
       },
       $group: (group) => {
-        return get().groupView(group);
+        return get().$groupView(group);
       },
       $set: (attributes) => {
         set((state) => {
@@ -258,17 +258,17 @@ export const useScene = create<SceneStore>((set, get) => {
         return groupViewMembers(group);
       },
       $tabView: (tabView) => {
-        return get().tabView(tabView);
+        return get().$tabView(tabView);
       },
       $subGroupView: (subGroupView) => {
-        return get().groupView(subGroupView);
+        return get().$groupView(subGroupView);
       },
       $anyChildrenView: (childView) => {
-        const groupViewChildren = get().groupView(childView as string | AsRegisterArgs<IGroupView>);
-        const tabViewChildren = get().tabView(childView as string | AsRegisterArgs<ITabView>);
+        const groupViewChildren = get().$groupView(childView as string | AsRegisterArgs<IGroupView>);
+        const tabViewChildren = get().$tabView(childView as string | AsRegisterArgs<ITabView>);
         return (groupViewChildren || tabViewChildren) as any;
       },
-      $parent: isGroupView(parent) ? get().groupView(parent) : isWindow(parent) ? getWindow(parent) : undefined,
+      $parent: isGroupView(parent) ? get().$groupView(parent) : isWindow(parent) ? getWindow(parent) : undefined,
       $set: (attributes) => {
         set((state) => {
           Object.assign(group, attributes);
@@ -284,9 +284,9 @@ export const useScene = create<SceneStore>((set, get) => {
         return tabViewMembers(tabView);
       },
       $tab: (tab) => {
-        return get().tab(tab);
+        return get().$tab(tab);
       },
-      $parent: get().groupView(parent),
+      $parent: get().$groupView(parent),
       $set: (attributes) => {
         set((state) => {
           Object.assign(tabView, attributes);
@@ -484,7 +484,7 @@ export const useScene = create<SceneStore>((set, get) => {
   const getTab = (tab: ITab, parent: ITabView): GatheredTab => {
     return {
       ...tab,
-      $parent: get().tabView(parent),
+      $parent: get().$tabView(parent),
       $set: (attributes) => {
         set((state) => {
           Object.assign(tab, attributes);
@@ -500,7 +500,7 @@ export const useScene = create<SceneStore>((set, get) => {
     get events() {
       return events;
     },
-    window: (win) => {
+    $window: (win) => {
       if (typeof win === 'string') {
         const window = lookUp<IWindow>(get(), win).item;
         if (isWindow(window)) return getWindow(window);
@@ -521,7 +521,7 @@ export const useScene = create<SceneStore>((set, get) => {
         return getWindow(newWindow);
       }
     },
-    groupView: (groupView, hostId) => {
+    $groupView: (groupView, hostId) => {
       if (typeof groupView === 'string') {
         const { item, parent } = lookUp<IGroupView>(get(), groupView);
         if (!isGroupView(item) || !parent) return undefined as any;
@@ -544,7 +544,7 @@ export const useScene = create<SceneStore>((set, get) => {
         return getGroupView(newGroupView, host);
       }
     },
-    tabView: (tabView, hostId) => {
+    $tabView: (tabView, hostId) => {
       if (typeof tabView === 'string') {
         const { item, parent } = lookUp<ITabView>(get(), tabView);
         if (!isTabView(item) || !parent) return undefined as any;
@@ -567,7 +567,7 @@ export const useScene = create<SceneStore>((set, get) => {
         return getTabView(newTabView, host);
       }
     },
-    tab: (tab, hostId) => {
+    $tab: (tab, hostId) => {
       if (typeof tab === 'string') {
         const { item, parent } = lookUp<ITab>(get(), tab);
         if (!isTab(item) || !parent) return undefined as any;

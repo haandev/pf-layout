@@ -36,7 +36,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
 
       if (!didDrop && type === NodeType.ToolbarWindow) {
         const delta = monitor.getDifferenceFromInitialOffset() || { x: 0, y: 0 };
-        store.toolbarWindow(item.id)?.$move(delta.x, delta.y);
+        store.$toolbarWindow(item.id)?.$move(delta.x, delta.y);
       }
 
       if (!didDrop && type === NodeType.Stack) {
@@ -50,7 +50,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
           x: client.x - offset.x,
           y: client.y - offset.y - 3
         };
-        store.stack(item.id)?.$detach(newPosition.x, newPosition.y);
+        store.$stack(item.id)?.$detach(newPosition.x, newPosition.y);
       }
     }
   }));
@@ -74,7 +74,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
           {store.floating.length > 0
             ? store.floating.map((item) => {
                 return (
-                  <ToolbarWindow {...(store.toolbarWindow(item.id)?.$props as ToolbarWindowProps)} key={item.id} />
+                  <ToolbarWindow {...(store.$toolbarWindow(item.id)?.$props as ToolbarWindowProps)} key={item.id} />
                 );
               })
             : null}
