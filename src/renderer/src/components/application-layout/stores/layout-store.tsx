@@ -247,7 +247,6 @@ export const useLayout = create<LayoutStore>((set, get) => {
         });
       },
       $move: (xDelta, yDelta) => {
-        console.log('move');
         return set((state) => {
           const floating = [...state.floating];
           toolbarWindow.top = (toolbarWindow.top || 0) + yDelta;

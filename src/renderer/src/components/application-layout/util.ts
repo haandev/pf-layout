@@ -262,3 +262,81 @@ export const remapZIndex = (state: IScene) => {
 export const opposite = (direction: Direction) => {
   return direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
 };
+
+/**
+ * Gives screen margins for a given DOMRect.
+ */ export interface DOMMarginsBox {
+  top: number;
+  left: number;
+  right: number;
+  bottom: number;
+  width: number;
+  height: number;
+  leftMargin: number;
+  rightMargin: number;
+  bottomMargin: number;
+  topMargin: number;
+  x: number;
+  y: number;
+  leftSideOfScreen: boolean;
+  rightSideOfScreen: boolean;
+  horizontallyCentered: boolean;
+  verticallyCentered: boolean;
+  topSideOfScreen: boolean;
+  bottomSideOfScreen: boolean;
+  toJSON(): Record<string, any>;
+}
+
+export const getMargins = (element?: HTMLElement): DOMMarginsBox | undefined => {
+  if (!element) return undefined;
+
+  const rect = element.getBoundingClientRect();
+
+  const margins: DOMMarginsBox = {
+    ...rect,
+    get topMargin() {
+      return rect.top;
+    },
+    get leftMargin() {
+      return rect.left;
+    },
+    get rightMargin() {
+      const clientWidth = document.documentElement.clientWidth;
+      return clientWidth - rect.right;
+    },
+    get bottomMargin() {
+      const clientHeight = document.documentElement.clientHeight;
+      return clientHeight - rect.bottom;
+    },
+    get leftSideOfScreen() {
+      const clientWidth = document.documentElement.clientWidth;
+      return rect.left < clientWidth - rect.right;
+    },
+    get rightSideOfScreen() {
+      const clientWidth = document.documentElement.clientWidth;
+      return rect.left > clientWidth - rect.right;
+    },
+    get horizontallyCentered() {
+      const clientWidth = document.documentElement.clientWidth;
+      return rect.left === clientWidth - rect.right;
+    },
+    get verticallyCentered() {
+      const clientHeight = document.documentElement.clientHeight;
+      return rect.top === clientHeight - rect.bottom;
+    },
+    get topSideOfScreen() {
+      const clientHeight = document.documentElement.clientHeight;
+      return rect.top < clientHeight - rect.bottom;
+    },
+    get bottomSideOfScreen() {
+      const clientHeight = document.documentElement.clientHeight;
+      return rect.top > clientHeight - rect.bottom;
+    },
+    toJSON() {
+      const { toJSON, ...json } = this;
+      return json;
+    }
+  };
+
+  return margins;
+};

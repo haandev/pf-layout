@@ -2,7 +2,7 @@ import React, { forwardRef, useRef, useState } from 'react';
 import IconCornerRightBottom from '../icons/IconCornerRightBottom';
 
 import clsx from 'clsx';
-import { useLongPress } from '..';
+import { getMargins, useLongPress } from '..';
 import useEvent from 'react-use-event-hook';
 import { useOnClickOutside } from 'usehooks-ts';
 import IconChevronsRight from '../icons/IconChevronsRight';
@@ -62,6 +62,7 @@ export const StickyGroupButton = forwardRef(
       setIsMenuOpen(false);
     });
 
+    const margins = getMargins((rootRef as any).current?.getBoundingClientRect());
     return (
       <button
         ref={rootRef}
@@ -78,7 +79,14 @@ export const StickyGroupButton = forwardRef(
         {isMenuOpen && (
           <div
             ref={dropDownRef}
-            className={clsx({ 'pf-item-sticky-button-dropdown': true, 'pf-detachable': props.detachable })}
+            className={clsx({
+              'pf-item-sticky-button-dropdown': true,
+              'pf-detachable': props.detachable,
+              'pf-dropdown-right': margins?.leftSideOfScreen,
+              'pf-dropdown-bottom': margins?.topSideOfScreen,
+              'pf-dropdown-left': margins?.rightSideOfScreen,
+              'pf-dropdown-top': margins?.bottomSideOfScreen
+            })}
           >
             <div>
               {Object.keys(props.items).map((key) => {

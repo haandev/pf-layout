@@ -1,5 +1,5 @@
-import { FC, useRef } from 'react';
-import { StickyGroupButton, ToolbarItem } from '../application-layout';
+import { CSSProperties, FC, useRef } from 'react';
+import { StickyGroupButton, ToolbarItem, getMargins } from '../application-layout';
 import { useApp } from '../../stores/app-store';
 import InlineSvg from '../application-layout/elements/InlineSvg';
 import { useLayout } from '../application-layout/stores/layout-store';
@@ -63,34 +63,27 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
     } else if (isToolbarWindow(parent)) {
       layout.$toolbarWindow(parent.id)?.$close();
     }
-    const newPosition = { x: 0, y: 0 };
-    const box = ref.current?.getBoundingClientRect();
-    const viewPort = {
-      width: document.documentElement.clientWidth,
-      height: document.documentElement.clientHeight
-    };
+    const newPosition: CSSProperties = {};
+    if (ref.current) {
+      const margins = getMargins(ref.current);
 
-    const boxLeftSpace = box?.left || 0;
-    const boxRightSpace = viewPort.width - (box?.right || 0);
-    const boxTopSpace = box?.top || 0;
-    const boxBottomSpace = viewPort.height - (box?.bottom || 0);
-    //to bottom
-    if (boxBottomSpace > boxTopSpace) {
-      newPosition.y = box?.bottom || 0;
-    } else {
-      newPosition.y = box?.top || 0 + (box?.height || 0);
-    }
-    if (boxRightSpace > boxLeftSpace) {
-      newPosition.x = box?.right || 0;
-    } else {
-      newPosition.x = box?.left || 0 + (box?.width || 0);
+      if (margins?.leftSideOfScreen) {
+        newPosition.left = margins.right;
+      } else {
+        newPosition.left = (margins?.left || 0) - 300;
+      }
+      if (margins?.topSideOfScreen) {
+        newPosition.top = margins.top + margins.height;
+      } else {
+        newPosition.top = (margins?.top || 0) - 500;
+      }
     }
 
     layout
       .$toolbarWindow({
         id: windowId,
-        top: newPosition.y,
-        left: newPosition.x
+        top: Number(newPosition.top) || 0,
+        left: Number(newPosition.left) || 0
       })
       ?.$stack({
         id: stackId,
