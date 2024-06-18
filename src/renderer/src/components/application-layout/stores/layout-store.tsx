@@ -126,20 +126,29 @@ export const useLayout = create<LayoutStore>((set, get) => {
   };
   const toolbarProps = (item: IToolbar, parent: IStack) => {
     const onClickHandler = (id: string) => {
-      set((state) => {
-        const members = [...state.members];
-        const floating = [...state.floating];
-        if (!isStack(parent)) return { members, floating };
-        parent.activePanelId = id;
-        return { members, floating };
-      });
+      if (parent.activePanelId !== id) {
+        set((state) => {
+          const members = [...state.members];
+          const floating = [...state.floating];
+          if (!isStack(parent)) return { members, floating };
+          parent.activePanelId = id;
+          return { members, floating };
+        });
+      } else {
+        set((state) => {
+          parent.activePanelId = undefined;
+          return { members: state.members };
+        });
+      }
     };
     const children = item.members.map((tool) => {
       return <Panel key={tool.id} {...tool} value={parent?.activePanelId} onClick={() => onClickHandler(tool.id)} />;
     });
 
-    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = {
+    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction' | 'stackActivePanelId' | 'stackAs'>> = {
       ...item,
+      stackActivePanelId: parent.activePanelId,
+      stackAs: parent.as || 'toolbar',
       children: [<Fragment key="content">{item.content}</Fragment>, children]
     };
     return props;

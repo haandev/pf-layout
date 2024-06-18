@@ -54,6 +54,9 @@ export const Stack: FC<StackProps> = (props) => {
         'pf-vertical': props.direction === Direction.Vertical,
         'pf-horizontal': props.direction === Direction.Horizontal,
         'pf-transparent': isDragging,
+        'pf-toolbar-stack-toolbars': props.as !== 'tabs',
+        'pf-toolbar-stack-tabs': props.as === 'tabs',
+
         [props.className || '']: true
       })}
     >

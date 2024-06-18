@@ -90,7 +90,7 @@ function App(): JSX.Element {
             id: 'color-guide-panel',
             icon: <InlineSvg source={colorGuidePanel} />,
             title: 'Color Guide',
-            content: <div>ColorWindow {app.tool}</div>
+            content: <div>Color guide window</div>
           }
         ]
       });

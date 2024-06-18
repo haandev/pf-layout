@@ -90,7 +90,7 @@ export interface IStack {
   maxItems?: number;
   resizable?: boolean;
   size?: number;
-  as?: 'toolbar' | 'tool-tabs';
+  as?: 'toolbar' | 'tabs';
   activePanelId?: string;
   chevronsPosition?: 'start' | 'end'; //default is end
   onExpand?: () => void;
@@ -106,10 +106,12 @@ export interface IToolbar {
   showHandle?: boolean;
   draggable?: boolean;
   fullSize?: boolean;
+  stackAs?: IStack['as'];
   id: string;
   maxItems?: number;
   members: IPanel[];
   rows?: number;
+  stackActivePanelId?: string;
   type: NodeType.Toolbar;
 }
 export interface IPanel {
@@ -160,7 +162,6 @@ export type ParentType<T> = T extends ITab
                 : T extends IPanel
                   ? IToolbar
                   : null;
-
 
 export interface GatheredToolbarWindow extends IToolbarWindow {
   $stack: (stack: string | AsRegisterArgs<IStack>) => Maybe<GatheredStack>;
@@ -255,7 +256,6 @@ export interface GatheredTab extends ITab {
   $parent: Maybe<GatheredTabView>;
   $set: (attributes: Partial<ITab>) => void;
 }
-
 
 export type IPageProps = {
   id: string;

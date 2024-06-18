@@ -1,4 +1,4 @@
-import { NodeType } from './types';
+import { Direction, NodeType } from './types';
 
 //drag sources
 
@@ -41,6 +41,11 @@ export interface StackDragSource {
   id: string;
   x: number;
   y: number;
+}
+export interface ToolbarDragSource {
+  type: NodeType.Toolbar;
+  id: string;
+  direction: Direction;
 }
 
 export interface LayoutDropTarget {}
