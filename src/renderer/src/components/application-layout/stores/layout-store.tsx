@@ -80,28 +80,6 @@ export interface LayoutStore {
 export const useLayout = create<LayoutStore>((set, get) => {
   const both = () => ({ members: [...get().members, ...get().floating] });
   //props generation
-  const containerProps = (item: IContainer): ContainerProps => {
-    const children = item.members.map((stack) => {
-      const childrenProps = stackProps(stack);
-      return (
-        <Stack
-          {...childrenProps}
-          chevronsPosition={item.chevronPosition}
-          parentId={item.id}
-          key={stack.id}
-        />
-      );
-    });
-
-    const props: ContainerProps = {
-      ...item,
-      onDrop: (id: string, type: NodeType, containerId: string) => {
-        get().container(containerId)?.$dropOn(id, type);
-      },
-      children: children
-    };
-    return props;
-  };
   const toolbarWindowProps = (item: IToolbarWindow) => {
     const children = item.members.map((stack) => {
       const childrenProps = stackProps(stack);
@@ -128,6 +106,21 @@ export const useLayout = create<LayoutStore>((set, get) => {
     };
     return props;
   };
+  const containerProps = (item: IContainer): ContainerProps => {
+    const children = item.members.map((stack) => {
+      const childrenProps = stackProps(stack);
+      return <Stack {...childrenProps} chevronsPosition={item.chevronPosition} parentId={item.id} key={stack.id} />;
+    });
+
+    const props: ContainerProps = {
+      ...item,
+      onDrop: (id: string, type: NodeType, containerId: string) => {
+        get().container(containerId)?.$dropOn(id, type);
+      },
+      children: children
+    };
+    return props;
+  };
   const stackProps = (item: IStack) => {
     const children = item.members.map((toolbar) => {
       const childrenProps = toolbarProps(toolbar, item);
@@ -150,23 +143,14 @@ export const useLayout = create<LayoutStore>((set, get) => {
       return <Panel key={tool.id} {...tool} value={parent?.activePanelId} onClick={() => onClickHandler(tool.id)} />;
     });
 
-    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = { ...item, children: [item.content, children] };
+    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = {
+      ...item,
+      children: [item.content, children]
+    };
     return props;
   };
 
   //members generation
-  const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IPanel[] => {
-    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, ...tool }));
-  };
-  const stackMembers = (stack: AsRegisterArgs<IStack>): GatheredToolbar[] => {
-    const typedMembers = (stack.members || []).map((toolbar) => ({
-      ...toolbar,
-      type: NodeType.Toolbar as NodeType.Toolbar,
-      members: toolbarMembers(toolbar)
-    }));
-    const typedStack = { ...stack, type: NodeType.Stack as NodeType.Stack, members: typedMembers };
-    return typedMembers.map((toolbar) => getToolbar(toolbar, typedStack));
-  };
   const toolbarWindowMembers = (toolbarWindow: AsRegisterArgs<IToolbarWindow>): GatheredStack[] => {
     const typedMembers = (toolbarWindow.members || []).map((stack) => ({
       ...stack,
@@ -193,49 +177,20 @@ export const useLayout = create<LayoutStore>((set, get) => {
     };
     return typedMembers.map((stack) => getStack(stack, typedContainer));
   };
+  const stackMembers = (stack: AsRegisterArgs<IStack>): GatheredToolbar[] => {
+    const typedMembers = (stack.members || []).map((toolbar) => ({
+      ...toolbar,
+      type: NodeType.Toolbar as NodeType.Toolbar,
+      members: toolbarMembers(toolbar)
+    }));
+    const typedStack = { ...stack, type: NodeType.Stack as NodeType.Stack, members: typedMembers };
+    return typedMembers.map((toolbar) => getToolbar(toolbar, typedStack));
+  };
+  const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IPanel[] => {
+    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, ...tool }));
+  };
 
   //gather item with methods
-  const getToolbarWindow = (toolbarWindow?: IToolbarWindow): GatheredToolbarWindow => {
-    if (!toolbarWindow) toolbarWindow = { type: NodeType.ToolbarWindow, id: v4(), members: [] };
-    return {
-      ...toolbarWindow,
-      get $props() {
-        return toolbarWindowProps(toolbarWindow);
-      },
-      $stack: (stack) => get().stack(stack, toolbarWindow.id),
-      $set: (attributes) => {
-        set((state) => {
-          const floating = [...state.floating];
-          const item = floating.find((item) => item.id === toolbarWindow.id);
-          if (!isToolbarWindow(item)) return state;
-          Object.assign(item, attributes);
-          return { floating };
-        });
-      },
-      $move: (xDelta, yDelta) => {
-        console.log('move');
-        return set((state) => {
-          const floating = [...state.floating];
-          toolbarWindow.top = (toolbarWindow.top || 0) + yDelta;
-          toolbarWindow.left = (toolbarWindow.left || 0) + xDelta;
-          return { floating };
-        });
-      },
-      $close: () => {
-        return set((state) => {
-          const floating = state.floating.filter((tw) => tw.id !== toolbarWindow.id);
-          return { floating };
-        });
-      },
-      $hide: () => {
-        return set((state) => {
-          const floating = [...state.floating];
-          toolbarWindow.hidden = true;
-          return { floating };
-        });
-      }
-    };
-  };
   const getContainer = (container?: IContainer): GatheredContainer => {
     if (!container) {
       container = {
@@ -275,6 +230,47 @@ export const useLayout = create<LayoutStore>((set, get) => {
             toolbarWindow.$close();
           }
           return { members };
+        });
+      }
+    };
+  };
+  const getToolbarWindow = (toolbarWindow?: IToolbarWindow): GatheredToolbarWindow => {
+    if (!toolbarWindow) toolbarWindow = { type: NodeType.ToolbarWindow, id: v4(), members: [] };
+    return {
+      ...toolbarWindow,
+      get $props() {
+        return toolbarWindowProps(toolbarWindow);
+      },
+      $stack: (stack) => get().stack(stack, toolbarWindow.id),
+      $set: (attributes) => {
+        set((state) => {
+          const floating = [...state.floating];
+          const item = floating.find((item) => item.id === toolbarWindow.id);
+          if (!isToolbarWindow(item)) return state;
+          Object.assign(item, attributes);
+          return { floating };
+        });
+      },
+      $move: (xDelta, yDelta) => {
+        console.log('move');
+        return set((state) => {
+          const floating = [...state.floating];
+          toolbarWindow.top = (toolbarWindow.top || 0) + yDelta;
+          toolbarWindow.left = (toolbarWindow.left || 0) + xDelta;
+          return { floating };
+        });
+      },
+      $close: () => {
+        return set((state) => {
+          const floating = state.floating.filter((tw) => tw.id !== toolbarWindow.id);
+          return { floating };
+        });
+      },
+      $hide: () => {
+        return set((state) => {
+          const floating = [...state.floating];
+          toolbarWindow.hidden = true;
+          return { floating };
         });
       }
     };
