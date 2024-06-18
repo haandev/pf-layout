@@ -49,13 +49,12 @@ export const Stack: FC<StackProps> = (props) => {
       {...(!props.draggable ? noDrag : {})}
       ref={rootRef}
       className={clsx({
-        'pf-toolbar-stack': true,
         'pf-stack': true,
         'pf-vertical': props.direction === Direction.Vertical,
         'pf-horizontal': props.direction === Direction.Horizontal,
         'pf-transparent': isDragging,
-        'pf-toolbar-stack-toolbars': props.as !== 'tabs',
-        'pf-toolbar-stack-tabs': props.as === 'tabs',
+        'pf-stack-toolbars': props.as !== 'tabs',
+        'pf-stack-tabs': props.as === 'tabs',
 
         [props.className || '']: true
       })}

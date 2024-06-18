@@ -1,7 +1,7 @@
 :root {
   --pf-background: #282828;
   --pf-toolbar-row-size: 32px;
-  --pf-toolbar-stack-header-size: 10px;
+  --pf-stack-header-size: 10px;
   --pf-primary-color: #535353;
   --pf-secondary-color: #424242;
   --pf-lighter-color: #565d65;

@@ -21,13 +21,13 @@ export interface StackHeaderProps {
 export const StackHeader: FC<StackHeaderProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const chevronPosition = props.chevronPosition || 'end';
-  useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack' } }, (validation) => {
+  useValidateElement(rootRef, { $parent: { $match: '.pf-stack' } }, (validation) => {
     if (!validation) {
       throw new Error('StackHeader must be used within a Stack.');
     }
   });
 
-  const stackDirection = useParentDirection(rootRef, '.pf-toolbar-stack');
+  const stackDirection = useParentDirection(rootRef, '.pf-stack');
 
   const isVertical = stackDirection === Direction.Vertical;
 
@@ -56,7 +56,7 @@ export const StackHeader: FC<StackHeaderProps> = (props) => {
     )
   ];
   const group = rootRef.current?.closest('.pf-floating-toolbar-window');
-  const stack = rootRef.current?.closest('.pf-toolbar-stack');
+  const stack = rootRef.current?.closest('.pf-stack');
   const isFirstChild = group?.firstElementChild === stack;
 
   const close = props.onClose ? (
@@ -68,7 +68,7 @@ export const StackHeader: FC<StackHeaderProps> = (props) => {
     <div
       ref={rootRef}
       className={clsx({
-        'pf-toolbar-stack-header': true
+        'pf-stack-header': true
       })}
     >
       <div className="pf-stack-header-left">

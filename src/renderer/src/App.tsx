@@ -35,7 +35,7 @@ function App(): JSX.Element {
     //top container
     layout
       .$container({ id: 'container-top', maxItems: 1, direction: Direction.Vertical })
-      .$stack({ id: 'top-toolbar-stack', direction: Direction.Horizontal, draggable: true })
+      .$stack({ id: 'top-stack', direction: Direction.Horizontal, draggable: true })
       .$toolbar({
         draggable: true,
         fullSize: true,

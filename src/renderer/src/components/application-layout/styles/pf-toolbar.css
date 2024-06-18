@@ -7,22 +7,22 @@
   min-height: 300px;
   background: var(--pf-primary-color);
 }
-.pf-toolbar-stack-toolbars .pf-panel-host {
+.pf-stack-toolbars .pf-panel-host {
   position: absolute;
   top: -1px;
   right: 32px;
   border: 1px solid var(--pf-dark-border-color);
   border-radius: 3px;
 }
-.pf-toolbar-stack-tabs .pf-panel-host {
+.pf-stack-tabs .pf-panel-host {
   position: unset;
 }
-.pf-toolbar-stack.pf-vertical .pf-toolbar {
+.pf-stack.pf-vertical .pf-toolbar {
   padding-bottom: 5px;
   padding-top: 5px;
   border-bottom: 1px solid var(--pf-dark-border-color);
 }
-.pf-toolbar-stack.pf-horizontal .pf-toolbar {
+.pf-stack.pf-horizontal .pf-toolbar {
   padding-right: 5px;
   border-right: 1px solid var(--pf-dark-border-color);
 }
@@ -69,7 +69,7 @@
 
 .pf-drag-handle,
 .pf-item-separator,
-.pf-toolbar-stack-header button {
+.pf-stack-header button {
   color: var(--pf-dark-border-color);
   justify-content: center;
   display: flex;

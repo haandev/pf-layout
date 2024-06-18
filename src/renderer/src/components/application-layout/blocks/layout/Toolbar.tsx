@@ -24,7 +24,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
     ...(_columns && { maxWidth: `calc(${_columns} * var(--pf-toolbar-row-size))` })
   };
 
-  const [isDragging, drag] = useDrag<ToolbarDragSource>({
+  const [_isDragging, drag] = useDrag<ToolbarDragSource>({
     type: NodeType.Toolbar,
     item: () => ({
       type: NodeType.Toolbar,
