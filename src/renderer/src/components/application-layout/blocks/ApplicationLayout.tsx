@@ -28,7 +28,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
   const _direction = direction || Direction.Vertical;
 
   const [_collected, drop] = useDrop<LayoutDroppableItems, unknown, LayoutDropTarget>(() => ({
-    accept: [NodeType.ToolbarWindow, NodeType.ToolbarStack],
+    accept: [NodeType.ToolbarWindow, NodeType.Stack],
 
     drop: (item, monitor) => {
       const type = item.type;
@@ -39,7 +39,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
         store.toolbarWindow(item.id)?.$move(delta.x, delta.y);
       }
 
-      if (!didDrop && type === NodeType.ToolbarStack) {
+      if (!didDrop && type === NodeType.Stack) {
         const client = monitor.getClientOffset() || { x: 0, y: 0 };
         const initialClient = monitor.getInitialClientOffset() || { x: 0, y: 0 };
         const offset = {
@@ -50,7 +50,7 @@ export const ApplicationLayout: FC<ApplicationLayoutProps> = ({
           x: client.x - offset.x,
           y: client.y - offset.y - 3
         };
-        store.toolbarStack(item.id)?.$detach(newPosition.x, newPosition.y);
+        store.stack(item.id)?.$detach(newPosition.x, newPosition.y);
       }
     }
   }));

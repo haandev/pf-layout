@@ -54,7 +54,7 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
         })}
       </>
     );
-    const stack = layout.toolbarStack(stackId);
+    const stack = layout.stack(stackId);
     const parent = stack?.$parent;
     if (isContainer(parent)) {
       //nothing, already attached

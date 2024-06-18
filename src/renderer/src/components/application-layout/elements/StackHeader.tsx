@@ -9,7 +9,7 @@ import IconChevronsDown from '../icons/IconChevronsDown';
 import { Direction } from '../types';
 import IconXmark from '../icons/IconXmark';
 
-export interface ToolbarStackHeaderProps {
+export interface StackHeaderProps {
   onExpand?: () => void;
   onCollapse?: () => void;
   isExpanded?: boolean;
@@ -18,18 +18,18 @@ export interface ToolbarStackHeaderProps {
   stackId: string;
   parentId?: string;
 }
-export const ToolbarStackHeader: FC<ToolbarStackHeaderProps> = (props) => {
+export const StackHeader: FC<StackHeaderProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
   const chevronPosition = props.chevronPosition || 'end';
   useValidateElement(rootRef, { $parent: { $match: '.pf-toolbar-stack' } }, (validation) => {
     if (!validation) {
-      throw new Error('ToolbarStackHeader must be used within a ToolbarStack.');
+      throw new Error('StackHeader must be used within a Stack.');
     }
   });
 
-  const toolbarStackDirection = useParentDirection(rootRef, '.pf-toolbar-stack');
+  const stackDirection = useParentDirection(rootRef, '.pf-toolbar-stack');
 
-  const isVertical = toolbarStackDirection === Direction.Vertical;
+  const isVertical = stackDirection === Direction.Vertical;
 
   const _left = chevronPosition === 'start' && [
     !props.isExpanded && (

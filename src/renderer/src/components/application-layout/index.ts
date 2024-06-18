@@ -2,7 +2,7 @@
 export { ApplicationLayout } from './blocks/ApplicationLayout';
 export { Container } from './blocks/Container';
 export { Toolbar } from './blocks/Toolbar';
-export { ToolbarStack } from './blocks/ToolbarStack';
+export { Stack } from './blocks/Stack';
 
 //elements
 export { ToolbarItem } from './elements/ToolbarItem';
@@ -13,7 +13,7 @@ export { DragHandle } from './elements/DragHandle';
 export { Label } from './elements/Label';
 export { StickyButton } from './elements/StickyButton';
 export { StickyGroupButton } from './elements/StickyGroupButton';
-export { ToolbarStackHeader } from './elements/ToolbarStackHeader';
+export { StackHeader } from './elements/StackHeader';
 export { SplitResizeHandle } from './elements/SplitResizeHandle';
 
 //hooks

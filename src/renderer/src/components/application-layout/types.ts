@@ -12,7 +12,7 @@ export enum NodeType {
   TabView = 'TabView',
   GroupView = 'GroupView',
   Window = 'Window',
-  ToolbarStack = 'ToolbarStack',
+  Stack = 'Stack',
   ToolbarWindow = 'ToolbarWindow',
   Container = 'Container',
   Toolbar = 'Toolbar',
@@ -70,12 +70,12 @@ export interface IToolbarWindow {
   left?: number;
   hidden?: boolean;
   zIndex?: number;
-  members: IToolbarStack[];
+  members: IStack[];
 }
 
-export interface IToolbarStack {
+export interface IStack {
   draggable?: boolean;
-  type: NodeType.ToolbarStack;
+  type: NodeType.Stack;
   id: string;
   members: IToolbar[];
   direction: Direction;
@@ -118,7 +118,7 @@ export interface IPanel {
 export interface IContainer {
   type: NodeType.Container;
   id: string;
-  members: IToolbarStack[];
+  members: IStack[];
   maxItems?: number;
   direction: Direction;
   chevronPosition?: 'start' | 'end'; // default is end
@@ -132,7 +132,7 @@ export type StateItem =
   | IToolbarWindow
   | IPanel
   | IToolbar
-  | IToolbarStack
+  | IStack
   | IContainer;
 export type NestedState = StateItem | IScene | ILayout | { members: StateItem[] };
 
@@ -148,10 +148,10 @@ export type ParentType<T> = T extends ITab
           ? ILayout
           : T extends IContainer
             ? ILayout
-            : T extends IToolbarStack
+            : T extends IStack
               ? IContainer | IToolbarWindow
               : T extends IToolbar
-                ? IToolbarStack
+                ? IStack
                 : T extends IPanel
                   ? IToolbar
                   : null;
@@ -165,7 +165,7 @@ type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends 
 export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members'> & OptionalMembersWithoutType<T>;
 
 export interface GatheredToolbarWindow extends IToolbarWindow {
-  $stack: (stack: string | AsRegisterArgs<IToolbarStack>) => Maybe<GatheredStack>;
+  $stack: (stack: string | AsRegisterArgs<IStack>) => Maybe<GatheredStack>;
   $props: PropsWithChildren<Pick<IToolbarWindow, 'id'>>;
   $set: (attributes: Partial<IToolbarWindow>) => void;
   $move: (xDelta: number, yDelta: number) => void;
@@ -174,21 +174,21 @@ export interface GatheredToolbarWindow extends IToolbarWindow {
 }
 export interface GatheredContainer extends IContainer {
   members: GatheredStack[];
-  $stack: <T extends string | AsRegisterArgs<IToolbarStack>>(
+  $stack: <T extends string | AsRegisterArgs<IStack>>(
     stack: T
   ) => T extends string ? Maybe<GatheredStack> : GatheredStack;
   $props: ContainerProps;
   $set: (attributes: Partial<IContainer>) => void;
   $dropOn: (droppedItemId: string, droppedItemType: NodeType) => void;
 }
-export interface GatheredStack extends IToolbarStack {
+export interface GatheredStack extends IStack {
   members: GatheredToolbar[];
   $toolbar: <T extends string | AsRegisterArgs<IToolbar>>(
     toolbar: T
   ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
-  $props: PropsWithChildren<Pick<IToolbarStack, 'id' | 'direction' | 'maxItems'>>;
+  $props: PropsWithChildren<Pick<IStack, 'id' | 'direction' | 'maxItems'>>;
   $parent?: Maybe<GatheredContainer | GatheredToolbarWindow>;
-  $set: (attributes: Partial<IToolbarStack>) => void;
+  $set: (attributes: Partial<IStack>) => void;
   $detach: (x: number, y: number) => void;
   $attach: (containerId: string) => void;
 }

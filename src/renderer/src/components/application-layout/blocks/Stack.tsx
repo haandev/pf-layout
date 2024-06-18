@@ -1,24 +1,24 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IToolbarStack, NodeType } from '../types';
+import { AsComponentProps, Direction, IStack, NodeType } from '../types';
 import clsx from 'clsx';
 import { evalBoolean, noDrag } from '../util';
 import { useDrag } from 'react-dnd';
-import { ToolbarStackDragSource } from '../types.dnd';
-import { ToolbarStackHeader } from '../elements/ToolbarStackHeader';
+import { StackDragSource } from '../types.dnd';
+import { StackHeader } from '../elements/StackHeader';
 
-export interface ToolbarStackProps extends PropsWithChildren, AsComponentProps<IToolbarStack> {
+export interface StackProps extends PropsWithChildren, AsComponentProps<IStack> {
   className?: string;
   style?: React.CSSProperties;
   onClose?: () => void;
   parentId?: string;
 }
-export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
+export const Stack: FC<StackProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
-  const [isDragging, drag] = useDrag<ToolbarStackDragSource>({
-    type: NodeType.ToolbarStack,
+  const [isDragging, drag] = useDrag<StackDragSource>({
+    type: NodeType.Stack,
     item: () => ({
-      type: NodeType.ToolbarStack,
+      type: NodeType.Stack,
       id: props.id,
       x: rootRef.current?.getBoundingClientRect().x || 0,
       y: rootRef.current?.getBoundingClientRect().y || 0,
@@ -33,7 +33,7 @@ export const ToolbarStack: FC<ToolbarStackProps> = (props) => {
   const shouldRenderHeader = props.header === undefined ? props.direction === Direction.Vertical : props.header;
 
   const header = shouldRenderHeader && (
-    <ToolbarStackHeader
+    <StackHeader
       stackId={props.id}
       parentId={props.parentId}
       onClose={props.onClose}

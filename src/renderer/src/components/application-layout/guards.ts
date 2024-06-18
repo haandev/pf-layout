@@ -4,7 +4,7 @@ import {
   ITab,
   ITabView,
   IToolbar,
-  IToolbarStack,
+  IStack,
   IToolbarWindow,
   IWindow,
   NodeType,
@@ -65,12 +65,12 @@ export const isContainer = (state: any): state is IContainer =>
   state && 'type' in state && state.type === NodeType.Container;
 
 /**
- * Type guard to check if the state object is a ToolbarStack.
+ * Type guard to check if the state object is a Stack.
  * @param state The state object to check.
- * @returns true if the state is a ToolbarStack, false otherwise.
+ * @returns true if the state is a Stack, false otherwise.
  */
-export const isToolbarStack = (state: any): state is IToolbarStack =>
-  state && 'type' in state && state.type === NodeType.ToolbarStack;
+export const isStack = (state: any): state is IStack =>
+  state && 'type' in state && state.type === NodeType.Stack;
 
 /**
  * Type guard to check if the state object is a Toolbar.

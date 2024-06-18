@@ -15,7 +15,7 @@ export const Container: FC<ContainerProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   const [isInserting, drop] = useDrop({
-    accept: [NodeType.ToolbarStack, NodeType.ToolbarWindow],
+    accept: [NodeType.Stack, NodeType.ToolbarWindow],
     collect: (monitor) => {
       const isOverOnlyMe = monitor.isOver({ shallow: true });
       const item = monitor.getItem();
@@ -33,7 +33,7 @@ export const Container: FC<ContainerProps> = (props) => {
       )
         return;
 
-      if (item.type === NodeType.ToolbarStack) {
+      if (item.type === NodeType.Stack) {
         props.onDrop(item.id, item.type, props.id);
       }
     }

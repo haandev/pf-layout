@@ -36,8 +36,8 @@ export interface ToolbarWindowDragSource {
   type: NodeType.ToolbarWindow;
   id: string;
 }
-export interface ToolbarStackDragSource {
-  type: NodeType.ToolbarStack;
+export interface StackDragSource {
+  type: NodeType.Stack;
   id: string;
   x: number;
   y: number;
@@ -49,4 +49,4 @@ export interface LayoutDropTarget {}
 export type TabViewDroppableItems = TabViewDragSource | TabDragSource;
 export type SceneDroppableItems = TabViewDragSource | TabDragSource | WindowDragSource;
 export type TabDroppableItems = TabDragSource;
-export type LayoutDroppableItems = ToolbarWindowDragSource | ToolbarStackDragSource;
+export type LayoutDroppableItems = ToolbarWindowDragSource | StackDragSource;
