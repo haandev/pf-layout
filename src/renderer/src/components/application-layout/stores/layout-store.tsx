@@ -333,7 +333,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       get $parent() {
         return getStack(parent, undefined);
       },
-      $panel: (panel) => lookUp<IPanel>(get().both(), panel),
+      $panel: (panel) => lookUp<IPanel>(both(), panel),
       $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
