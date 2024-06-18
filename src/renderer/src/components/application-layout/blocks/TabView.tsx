@@ -174,7 +174,7 @@ const TabView: FC<TabViewProps> = ({
   preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
-    tabViewInstance?.$moveTabToView(tabId, id, beforeTabId);
+    tabViewInstance?.$moveTabToView(tabId, beforeTabId);
   };
   const content = lookUp<ITab>(view.members, activeTabId)?.item?.content;
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height };
