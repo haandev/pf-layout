@@ -1,6 +1,5 @@
 import { PropsWithChildren } from 'react';
 import { ContainerProps } from './blocks/Container';
-import { LookupResult } from './util';
 
 export enum Direction {
   Horizontal = 'horizontal',
@@ -162,7 +161,9 @@ type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends 
   ? { members?: Array<AsRegisterArgs<U>> }
   : {};
 
-export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members'> & OptionalMembersWithoutType<T>;
+export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members' | 'content'> &
+  Partial<Pick<T, 'type' | 'content'>> &
+  OptionalMembersWithoutType<T>;
 
 export interface GatheredToolbarWindow extends IToolbarWindow {
   $stack: (stack: string | AsRegisterArgs<IStack>) => Maybe<GatheredStack>;
@@ -194,15 +195,72 @@ export interface GatheredStack extends IStack {
 }
 export interface GatheredToolbar extends IToolbar {
   //members: GatheredPanel[];
-  $panel: (panel: string) => Maybe<GatheredPanel>;
+  // $panel: (panel: string) => Maybe<GatheredPanel>;
+  $panel: (panel: string) => Maybe<IPanel>;
   $props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction' | 'maxItems'>>;
   $parent: Maybe<GatheredStack>;
   $set: (attributes: Partial<IToolbar>) => void;
 }
 
-export interface GatheredPanel extends LookupResult<IPanel> {}
+export interface GatheredPanel extends IPanel {}
+
+export interface GatheredWindow extends IWindow {
+  members: GatheredGroupView[];
+  $group: <T extends string | AsRegisterArgs<IGroupView>>(
+    group: T
+  ) => T extends string ? Maybe<GatheredGroupView> : GatheredGroupView;
+  $set: (attributes: Partial<IWindow>) => void;
+  $move: (xDelta: number, yDelta: number) => void;
+  $close: () => void;
+  $resize: (width: number, height: number, top: number, left: number) => void;
+  $maximize: () => void;
+  $minimize: () => void;
+  $restore: () => void;
+  $bringToFront: () => void;
+}
+
+export interface GatheredGroupView extends IGroupView {
+  members: (GatheredTabView | GatheredGroupView)[];
+  $tabView: <T extends string | AsRegisterArgs<ITabView>>(
+    tabView: T
+  ) => T extends string ? Maybe<GatheredTabView> : GatheredTabView;
+  $subGroupView: <T extends string | AsRegisterArgs<IGroupView>>(
+    subGroupView: T
+  ) => T extends string ? Maybe<GatheredGroupView> : GatheredGroupView;
+  $anyChildrenView: <T extends string | AsRegisterArgs<IGroupView> | AsRegisterArgs<ITabView>>(
+    childView: T
+  ) => T extends string
+    ? Maybe<GatheredGroupView | GatheredTabView>
+    : T extends AsRegisterArgs<IGroupView>
+      ? GatheredGroupView
+      : T extends AsRegisterArgs<ITabView>
+        ? GatheredTabView
+        : undefined;
+  $parent: Maybe<GatheredWindow | GatheredGroupView>;
+  $set: (attributes: Partial<IGroupView>) => void;
+}
+
+export interface GatheredTabView extends ITabView {
+  members: GatheredTab[];
+  $tab: <T extends string | AsRegisterArgs<ITab>>(tab: T) => T extends string ? Maybe<GatheredTab> : GatheredTab;
+  $parent: Maybe<GatheredGroupView>;
+  $set: (attributes: Partial<ITabView>) => void;
+  $detach: (x: number, y: number) => void;
+  $attach: () => void;
+  $addTab: (tab: PartialBy<AsRegisterArgs<ITab>, 'id' | 'content' | 'title'>) => void;
+  $changeActiveTab: (tabId: string) => void;
+  $split: (direction: Direction) => void;
+  $closeTab: (tabId: string) => void;
+  $moveTabToView: (tabId: string, beforeTabId?: string) => void;
+}
+
+export interface GatheredTab extends ITab {
+  $parent: Maybe<GatheredTabView>;
+  $set: (attributes: Partial<ITab>) => void;
+}
 
 export type Maybe<T> = T | null | undefined;
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type IPageProps = {
   id: string;

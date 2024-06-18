@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, startTransition, useEffect, useRef } from 'react';
+import React, { FC, PropsWithChildren, startTransition, useEffect, useRef, useState } from 'react';
 import clsx from 'clsx';
 import useEvent from 'react-use-event-hook';
 import { useWindowSize } from 'usehooks-ts';
@@ -20,6 +20,8 @@ export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow
 }
 
 export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
+  const [windowInstance] = useState(store.window(id)); // no setter, just stable reference
+
   //validate parent
   const rootRef = useRef<HTMLDivElement>(null);
   useValidateElement(rootRef, { $parent: { $match: '.pf-scene,.pf-floating-windows' } }, (validation) => {
@@ -35,24 +37,24 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     const visible = visibleDimension(element);
-    store.resizeWindow(visible.width, visible.height, props.top || 0, props.left || 0, id);
+    windowInstance?.$resize(visible.width, visible.height, props.top || 0, props.left || 0);
   }, [width, height, props.floating]);
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
-    store.resizeWindow(...args, id);
+    windowInstance?.$resize(...args);
   };
 
   //handle floating window move
   const moveFloatingWindowHandler = useEvent((_e, xDelta, yDelta) => {
     const element = rootRef.current;
     if (!element) return;
-    startTransition(() => store.moveWindow(id, xDelta, yDelta));
+    startTransition(() => windowInstance?.$move(xDelta, yDelta));
   });
 
   //handle set zIndex to the top
   const onClickAnywhere = useEvent(() => {
-    store.windowToFront(id);
+    windowInstance?.$bringToFront();
   });
 
   const header = useDragDelta<HTMLDivElement>({
@@ -75,8 +77,8 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
 
   const onHeaderDoubleClick = useEvent(() => {
     if (props.maximized) {
-      store.restoreWindowSize(id);
-    } else store.maximizeWindow(id);
+      windowInstance?.$restore();
+    } else windowInstance?.$maximize();
   });
   const floatingHeaderRender = () => {
     if (!props.floating) return null;
@@ -87,7 +89,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
             className={clsx({ 'pf-icon pf-icon__close ': true })}
             onClick={(e) => {
               e.stopPropagation();
-              return store.closeWindow(id);
+              return windowInstance?.$close();
             }}
           >
             <IconXmark width={8} height={8} />
@@ -96,7 +98,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
             className={clsx({ 'pf-icon pf-icon__minimize ': true, 'pf-icon__disabled': props.minimized })}
             onClick={(e) => {
               e.stopPropagation();
-              return store.minimizeWindow(id);
+              return windowInstance?.$minimize();
             }}
           >
             <IconMinus width={8} height={8} />
@@ -107,7 +109,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
               className={clsx({ 'pf-icon pf-icon__maximize ': true })}
               onClick={(e) => {
                 e.stopPropagation();
-                return store.restoreWindowSize(id);
+                return windowInstance?.$restore();
               }}
             >
               <IconPlus width={8} height={8} /> {/*TODO: add restore icon here */}
@@ -117,7 +119,7 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
               className={clsx({ 'pf-icon pf-icon__maximize ': true })}
               onClick={(e) => {
                 e.stopPropagation();
-                return store.maximizeWindow(id);
+                return windowInstance?.$maximize();
               }}
             >
               <IconPlus width={8} height={8} />

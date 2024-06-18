@@ -54,6 +54,7 @@ const TabView: FC<TabViewProps> = ({
   attachable,
   ...props
 }) => {
+  const [tabViewInstance] = useState(store.tabView(id));
   const view: ITabView = { type: NodeType.TabView, members: members || [], id, activeTabId, width, height };
 
   const rootRef = useRef<HTMLDivElement>(null);
@@ -66,13 +67,13 @@ const TabView: FC<TabViewProps> = ({
 
   useEffect(() => {
     if (activeTabId === undefined && view.members.length > 0) {
-      store.changeTab(view.members[0].id);
+      tabViewInstance?.$changeActiveTab(view.members[0].id);
     }
   }, []);
 
   const onTabChange = (tabId: string) => {
     if (activeTabId !== tabId) {
-      store.changeTab(tabId);
+      tabViewInstance?.$changeActiveTab(tabId);
     }
   };
 
@@ -82,14 +83,14 @@ const TabView: FC<TabViewProps> = ({
     const previousTabIndex = view.members.findIndex(({ id }) => id === tabId) - 1;
     const nextTabIndex = view.members.findIndex(({ id }) => id === tabId) + 1;
     if (previousTabIndex >= 0) {
-      store.changeTab(view.members[previousTabIndex].id);
+      tabViewInstance?.$changeActiveTab(view.members[previousTabIndex].id);
     } else if (nextTabIndex < view.members.length) {
-      store.changeTab(view.members[nextTabIndex].id);
+      tabViewInstance?.$changeActiveTab(view.members[nextTabIndex].id);
     }
-    store.closeTab(tabId);
+    tabViewInstance?.$closeTab(tabId);
   };
   const onAddNew = () => {
-    store.addTab(id, { recentlyCreated: true });
+    tabViewInstance?.$addTab({ recentlyCreated: true });
   };
 
   const onResize = (size: number, nextItemSize?: number) => {
@@ -115,7 +116,7 @@ const TabView: FC<TabViewProps> = ({
       const type = item.type;
       //tab from somewhere else, not dropped on a tab
       if (!monitor.didDrop() && type === NodeType.Tab) {
-        store.moveTab({ tabId: item.id, toViewId: id });
+        tabViewInstance?.$moveTabToView(item.id, id);
       }
     }
   }));
@@ -132,7 +133,7 @@ const TabView: FC<TabViewProps> = ({
     drop: (item, monitor) => {
       //tab from somewhere else, not dropped on a tab
       if (!monitor.didDrop() && item.type === NodeType.Tab) {
-        store.moveTab({ tabId: item.id, toViewId: id });
+        tabViewInstance?.$moveTabToView(item.id, id);
       }
 
       //self window detach
@@ -147,8 +148,7 @@ const TabView: FC<TabViewProps> = ({
           x: client.x - offset.x,
           y: client.y - offset.y - 25
         };
-
-        store.detachView(view.id, newPosition.x, newPosition.y);
+        tabViewInstance?.$detach(newPosition.x, newPosition.y);
       }
 
       //TODO:implement merge tab views on drop header
@@ -174,7 +174,7 @@ const TabView: FC<TabViewProps> = ({
   preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
-    store.moveTab({ tabId, toViewId: id, beforeTabId });
+    tabViewInstance?.$moveTabToView(tabId, id, beforeTabId);
   };
   const content = lookUp<ITab>(view.members, activeTabId)?.item?.content;
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height };

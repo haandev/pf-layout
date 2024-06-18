@@ -13,7 +13,7 @@ const Welcome: FC<IPageProps> = () => {
 
   const addTabInitial = useCallback(() => {
     const id = v4();
-    scene.addTabInitial({
+    scene.addTab({
       id,
       content: <CadPage id={id} />,
       recentlyCreated: true
