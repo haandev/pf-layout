@@ -29,7 +29,7 @@ export interface SceneProps extends SceneEvents {
 
 export const Scene: FC<SceneProps> = ({ store, ...events }) => {
   //update contents of scene events with props events
-  Object.assign(store.events, events);
+  store.assignEvents(events);
 
   const rootRef = useRef<HTMLDivElement>(null);
   const [collected, drop] = useDrop<SceneDroppableItems, unknown, SceneDropTarget>(() => ({

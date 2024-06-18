@@ -68,13 +68,28 @@ export interface SceneStore {
     hostId?: string
   ) => T extends string ? Maybe<GatheredTab> : GatheredTab;
 
-  ////view actions
-  resizeView: (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
-
-  ////tab actions
+  /**
+   * Adds a new tab to the scene. The tab will be added to the first available tab view.
+   * If there are no tab views, a new window with a new group view and a new tab view will be created.
+   */
   addTab: (tab: PartialBy<AsRegisterArgs<ITab>, 'id' | 'content' | 'title'>) => void;
 
+  /**
+   * Assigns events to the scene store. Not all events are required.
+   * This assignment will not cause a re-render.
+   * @param events - The events to assign.
+   */
+  assignEvents: (events: Partial<SceneEvents>) => void;
+
+  /**
+   * Getter for the events object. Not assignable.
+   * Readonly. Use assignEvents method to assign events.
+   * @returns The events object.
+   */
   events: SceneEvents;
+
+  //draft
+  resizeView: (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
 }
 
 export const useScene = create<SceneStore>((set, get) => {
@@ -482,6 +497,9 @@ export const useScene = create<SceneStore>((set, get) => {
   return {
     members: [],
 
+    get events() {
+      return events;
+    },
     window: (win) => {
       if (typeof win === 'string') {
         const window = lookUp<IWindow>(get(), win).item;
@@ -572,14 +590,13 @@ export const useScene = create<SceneStore>((set, get) => {
         return getTab(newTab, host);
       }
     },
-
-    addTab: (tab) =>
-      set((state) => {
+    addTab: (tab) => {
+      return set((state) => {
         const members = [...state.members];
         const newTab: ITab = {
           type: NodeType.Tab,
           ...tab,
-          content: tab.content || state.events.newTabContent?.(),
+          content: tab.content || events.newTabContent?.(),
           id: tab.id || v4(),
           title: tab.title || `Untitled ${nextUntitledCount({ members: state.members })}`
         };
@@ -629,10 +646,10 @@ export const useScene = create<SceneStore>((set, get) => {
         (firstTabView as ITabView).members.push(newTab);
         state.events.onAddTab?.((firstTabView as ITabView).id, newTab);
         return { members, home: false };
-      }),
-
-    resizeView: (direction: Direction, size, id, nextItemSize) =>
-      set((state) => {
+      });
+    },
+    resizeView: (direction: Direction, size, id, nextItemSize) => {
+      return set((state) => {
         const members = [...state.members];
         if (size < 10) return { members };
         if (nextItemSize && nextItemSize < 200) return { members };
@@ -644,8 +661,10 @@ export const useScene = create<SceneStore>((set, get) => {
         item[sizeProp] = size;
         if (nextView) nextView[sizeProp] = nextItemSize;
         return { members };
-      }),
-
-    events //just export, events is not reactive, constantly created behind return of store,
+      });
+    },
+    assignEvents: (newEvents) => {
+      Object.assign(events, newEvents);
+    }
   };
 });
