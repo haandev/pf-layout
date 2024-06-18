@@ -390,6 +390,7 @@ export const useScene = create<SceneStore>((set) => {
             toView.members.push(item);
           }
         }
+        state.events.onMoveTab?.(tabId, { toViewId, beforeTabId });
         return cleanUp(state);
       }),
     splitTabView: (id, direction) =>

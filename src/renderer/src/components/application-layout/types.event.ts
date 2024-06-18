@@ -11,6 +11,8 @@ export type OnWindowResizeHandler = (
 export type OnWindowMoveHandler = (windowId: string, props: { top: number; left: number }) => void;
 export type OnSceneResizeHandler = (props: { width: number; height: number }) => void;
 export type OnDetachHandler = (id: string) => void;
+export type OnMoveTabHandler = (tabId: string, options: { toViewId: string; beforeTabId?: string }) => void;
+
 /* export type OnNothingLeftHandler = () => void;
 export type OnMaximizeHandler = (id: string) => void;
 export type OnMinimizeHandler = (id: string) => void;
@@ -21,7 +23,6 @@ export type OnSplitViewHandler = (id: string, direction: Direction) => void;
 export type OnMergeViewsHandler = (options: { id: string; targetId: string; beforeTabId: string }) => void;
 export type OnResizeViewHandler = (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
 export type OnChangeTabHandler = (id: string) => void;
-export type OnMoveTabHandler = (options: { tabId: string; toViewId: string; beforeTabId?: string }) => void;
  */
 
 export interface SceneEvents {
@@ -32,6 +33,7 @@ export interface SceneEvents {
   onWindowMove?: OnWindowMoveHandler;
   onSceneResize?: OnSceneResizeHandler;
   onDetach?: OnDetachHandler;
+  onMoveTab?: OnMoveTabHandler;
   /*   onNothingLeft?: OnNothingLeftHandler;
   onMaximize?: OnMaximizeHandler;
   onMinimize?: OnMinimizeHandler;
@@ -42,5 +44,5 @@ export interface SceneEvents {
   onMergeTabViews?: OnMergeViewsHandler;
   onResizeView?: OnResizeViewHandler;
   onChangeTab?: OnChangeTabHandler;
-  onMoveTab?: OnMoveTabHandler; */
+  */
 }

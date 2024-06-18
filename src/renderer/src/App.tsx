@@ -22,7 +22,7 @@ function App(): JSX.Element {
   const scene = useScene();
   const layout = useLayout();
 
-  const windowMoveOrResize = useCallback(() => {
+  const updateBlueprintPointerOffset = useCallback(() => {
     //this is a patch for blueprint component pointer issue
     timeout.current && clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
@@ -102,7 +102,10 @@ function App(): JSX.Element {
   };
 
   const onAddTab = () => app.hideHome();
-  const onCloseTab = () => requestAnimationFrame(() => scene.members.length < 1 && app.showHome());
+  const onCloseTab = () => requestAnimationFrame(() => {
+    updateBlueprintPointerOffset();
+    return scene.members.length < 1 && app.showHome();
+  });
 
   return (
     <ApplicationLayout home={app.home && <Welcome id="welcome" />} store={layout}>
@@ -122,10 +125,11 @@ function App(): JSX.Element {
           newTabContent={newTabContentCtor}
           onAddTab={onAddTab}
           onCloseTab={onCloseTab}
-          onWindowMove={windowMoveOrResize}
-          onWindowResize={windowMoveOrResize}
-          onSceneResize={windowMoveOrResize}
-          onDetach={windowMoveOrResize}
+          onWindowMove={updateBlueprintPointerOffset}
+          onWindowResize={updateBlueprintPointerOffset}
+          onSceneResize={updateBlueprintPointerOffset}
+          onDetach={updateBlueprintPointerOffset}
+          onMoveTab={updateBlueprintPointerOffset}
         />
         <Container {...(layout.container('container-right')?.$props as ContainerProps)} />
       </div>
