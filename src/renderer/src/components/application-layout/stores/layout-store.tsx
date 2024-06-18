@@ -430,17 +430,17 @@ export const useLayout = create<LayoutStore>((set, get) => {
       } else {
         const { item, parent } = lookUp<IToolbar>(both(), toolbar.id);
         if (item && parent) return getToolbar(item, parent);
-        const { item: stack } = lookUp<IStack>(both(), stack);
-        if (!isStack(stack)) return;
+        const { item: stackItem } = lookUp<IStack>(both(), stack);
+        if (!isStack(stackItem)) return;
 
         const newToolbar: IToolbar = { type: NodeType.Toolbar, ...toolbar, members: toolbarMembers(toolbar) };
         set((state) => {
           const members = [...state.members];
           const floating = [...state.floating];
-          stack.members.push(newToolbar);
+          stackItem.members.push(newToolbar);
           return { members, floating };
         });
-        return getToolbar(newToolbar, stack);
+        return getToolbar(newToolbar, stackItem);
       }
     },
 
