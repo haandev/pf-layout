@@ -4,6 +4,7 @@ import { cleanUp, lookUp, nextUntitledCount, nextZIndex, remapZIndex, traverse, 
 import { v4 } from 'uuid';
 import { SceneEvents } from '../types.event';
 import { hasMembers, isGroupView, isTab, isTabView, isWindow } from '../guards';
+import { stat } from 'fs';
 
 let detachOffset = 0;
 
@@ -30,7 +31,10 @@ export interface SceneStore {
 
   ////tab actions
   addTabInitial: (tab: Omit<ITab, 'type' | 'id' | 'title'> & { id?: string; title?: string }) => void;
-  addTab: (id: string, tab: Omit<ITab, 'type' | 'id' | 'title'> & { id?: string; title?: string }) => void;
+  addTab: (
+    id: string,
+    tab: Omit<ITab, 'type' | 'id' | 'title' | 'content'> & Partial<Pick<ITab, 'id' | 'title' | 'content'>>
+  ) => void;
   changeTab: (id: string) => void;
   closeTab: (id: string) => void;
   moveTab: (options: { tabId: string; toViewId: string; beforeTabId?: string }) => void;
@@ -59,6 +63,12 @@ export const useScene = create<SceneStore>((set) => {
           top: top,
           left: left,
           maximized: widthChange === 1 && heightChange === 1 ? item.maximized : false
+        });
+        state.events.onWindowResize?.(id, {
+          width: item.width || 0,
+          height: item.height || 0,
+          top: item.top || 0,
+          left: item.left || 0
         });
 
         return { members };
@@ -173,6 +183,7 @@ export const useScene = create<SceneStore>((set) => {
           left: item.left !== undefined ? item.left + xDelta : 0,
           zIndex: nextZIndex(state)
         });
+        state.events.onWindowMove?.(id, { top: item.top || 0, left: item.left || 0 });
         return remapZIndex({ members });
       }),
     windowToFront: (id) =>
@@ -213,7 +224,7 @@ export const useScene = create<SceneStore>((set) => {
         members.push(newWindow);
 
         parent.members.splice(index, 1);
-
+        state.events.onDetach?.(id);
         return cleanUp({ members });
       }),
     attachView: (id) =>
@@ -249,7 +260,7 @@ export const useScene = create<SceneStore>((set) => {
     addTabInitial: (tab) =>
       set((state) => {
         const members = [...state.members];
-
+        tab.content = tab.content || state.events.newTabContent?.() || null;
         const newTab: ITab = {
           type: NodeType.Tab,
           ...tab,
@@ -328,6 +339,7 @@ export const useScene = create<SceneStore>((set) => {
         const members = [...state.members];
         const { item, parent } = lookUp<ITabView>(state, id);
         if (!isTabView(item) || !parent) return { members };
+        tab.content = tab.content || state.events.newTabContent?.() || null;
         const newTab: ITab = {
           type: NodeType.Tab,
           ...tab,
@@ -443,7 +455,6 @@ export const useScene = create<SceneStore>((set) => {
         const sizeProp = direction === Direction.Horizontal ? 'width' : 'height';
         item[sizeProp] = size;
         if (nextView) nextView[sizeProp] = nextItemSize;
-
         return { members };
       }),
     mergeTabViews: (options) =>

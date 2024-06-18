@@ -10,6 +10,7 @@ import { NestedTabView } from './NestedTabView';
 import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
 import { SceneEvents } from '../types.event';
 import { createPortal } from 'react-dom';
+import { useResizeObserver } from 'usehooks-ts';
 
 /*
  * Determines if a window can be detached based on its floating status and the structure of its members.
@@ -31,7 +32,6 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
   Object.assign(store.events, events);
 
   const rootRef = useRef<HTMLDivElement>(null);
-
   const [collected, drop] = useDrop<SceneDroppableItems, unknown, SceneDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
     collect: (monitor) => {
@@ -58,6 +58,17 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
       //
     }
   }));
+
+  useResizeObserver({
+    ref: rootRef,
+    onResize: (entry) => {
+      store.events.onSceneResize?.({
+        width: entry.width || 0,
+        height: entry.height || 0
+      });
+    }
+  });
+
   drop(rootRef);
 
   return (

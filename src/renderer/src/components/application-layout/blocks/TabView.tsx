@@ -89,8 +89,7 @@ const TabView: FC<TabViewProps> = ({
     store.closeTab(tabId);
   };
   const onAddNew = () => {
-    const content = store.events.newTabContent?.() || null;
-    store.addTab(id, { content, recentlyCreated: true });
+    store.addTab(id, { recentlyCreated: true });
   };
 
   const onResize = (size: number, nextItemSize?: number) => {

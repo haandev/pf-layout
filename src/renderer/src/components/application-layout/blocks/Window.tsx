@@ -36,25 +36,11 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     if (!element) return;
     const visible = visibleDimension(element);
     store.resizeWindow(visible.width, visible.height, props.top || 0, props.left || 0, id);
-    store.events.onWindowResize?.(id, {
-      width: visible.width,
-      height: visible.height,
-      top: props.top || 0,
-      left: props.left || 0,
-      id
-    });
   }, [width, height, props.floating]);
 
   //handle resize floating window
   const resizeBoxHandler: UseBoxResizeHandler = (_e, ...args) => {
     store.resizeWindow(...args, id);
-    store.events.onWindowResize?.(id, {
-      width: args[0],
-      height: args[1],
-      top: props.top || 0,
-      left: props.left || 0,
-      id
-    });
   };
 
   //handle floating window move
@@ -62,8 +48,6 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     const element = rootRef.current;
     if (!element) return;
     startTransition(() => store.moveWindow(id, xDelta, yDelta));
-    store.events.onWindowMove?.(id, { top: props.top || 0, left: props.left || 0, id });
-
   });
 
   //handle set zIndex to the top

@@ -124,6 +124,8 @@ function App(): JSX.Element {
           onCloseTab={onCloseTab}
           onWindowMove={windowMoveOrResize}
           onWindowResize={windowMoveOrResize}
+          onSceneResize={windowMoveOrResize}
+          onDetach={windowMoveOrResize}
         />
         <Container {...(layout.container('container-right')?.$props as ContainerProps)} />
       </div>
