@@ -182,7 +182,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
     return typedMembers.map((toolbar) => getToolbar(toolbar, typedStack));
   };
   const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IPanel[] => {
-    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, ...tool }));
+    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, content: tool.content || null, ...tool }));
   };
 
   //gather item with methods
@@ -280,7 +280,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return stackProps(stack);
       },
       get $parent() {
-        return parent ? (isContainer(parent) ? getContainer(parent) : getToolbarWindow(parent)) : undefined;
+        return parent ? (isContainer(parent) ? get().container(parent) : get().toolbarWindow(parent)) : undefined;
       },
       $toolbar: (toolbar) => get().toolbar(toolbar, stack.id),
       $set: (attributes) => {
@@ -330,9 +330,9 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return toolbarProps(toolbar, parent);
       },
       get $parent() {
-        return getStack(parent, undefined);
+        return get().stack(parent);
       },
-      $panel: (panel) => lookUp<IPanel>(both(), panel),
+      $panel: (panel) => lookUp<IPanel>(both(), panel).item,
       $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
@@ -353,7 +353,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       if (typeof toolbarWindow === 'string') {
         const { item } = lookUp<IToolbarWindow>(get().floating, toolbarWindow);
         if (item) return getToolbarWindow(item);
-        return getToolbarWindow(); //default empty toolbar window
+        return undefined as any; //default empty toolbar window
       } else {
         const { item } = lookUp<IToolbarWindow>(get().floating, toolbarWindow.id);
         if (item) return getToolbarWindow(item);
