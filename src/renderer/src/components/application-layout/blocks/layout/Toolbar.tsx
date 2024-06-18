@@ -25,6 +25,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   };
 
   const [_isDragging, drag] = useDrag<ToolbarDragSource>({
+    canDrag: () => !!props.draggable,
     type: NodeType.Toolbar,
     item: () => ({
       type: NodeType.Toolbar,

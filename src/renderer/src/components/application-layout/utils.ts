@@ -293,7 +293,30 @@ export const getMargins = (element?: HTMLElement): DOMMarginsBox | undefined => 
   const rect = element.getBoundingClientRect();
 
   const margins: DOMMarginsBox = {
-    ...rect,
+    get left(){
+      return rect.left;
+    },
+    get right(){
+      return rect.right;
+    },
+    get top(){
+      return rect.top;
+    },
+    get bottom(){
+      return rect.bottom;
+    },
+    get width(){
+      return rect.width;
+    },
+    get height(){
+      return rect.height;
+    },
+    get x(){
+      return rect.x;
+    },
+    get y(){
+      return rect.y;
+    },
     get topMargin() {
       return rect.top;
     },

@@ -94,6 +94,7 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
         isExpanded: () => layout.$toolbar(toolbarId)?.columns === Object.keys(items).length
       })
       ?.$toolbar({
+        draggable: false,
         id: toolbarId,
         fullSize: true,
         content: toolbarItems,
