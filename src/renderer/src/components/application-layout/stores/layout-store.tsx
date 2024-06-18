@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LookupResult, lookUp as _lookUp, lookUp } from '../util';
+import { lookUp } from '../util';
 import {
   AsRegisterArgs,
   Direction,
@@ -10,7 +10,6 @@ import {
   IToolbar,
   IStack,
   NodeType,
-  StateItem,
   GatheredStack,
   Maybe,
   GatheredToolbar,
@@ -433,6 +432,6 @@ export const useLayout = create<LayoutStore>((set, get) => {
         });
         return getToolbar(newToolbar, stackItem);
       }
-    },
+    }
   };
 });
