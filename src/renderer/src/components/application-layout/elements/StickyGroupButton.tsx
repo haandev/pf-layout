@@ -109,7 +109,7 @@ export const StickyGroupButton = forwardRef(
               })}
             </div>
             {props.detachable && (
-              <button
+              <div
                 className="pf-detach-group-button"
                 onClick={() => {
                   setIsMenuOpen(false);
@@ -117,7 +117,7 @@ export const StickyGroupButton = forwardRef(
                 }}
               >
                 <IconChevronsRight />
-              </button>
+              </div>
             )}
           </div>
         )}
