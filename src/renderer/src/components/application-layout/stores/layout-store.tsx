@@ -16,7 +16,7 @@ import {
   GatheredToolbarWindow
 } from '../types';
 import { isContainer, isToolbarWindow, isToolbar, isStack, isString } from '../guards';
-import { PropsWithChildren } from 'react';
+import { Fragment, PropsWithChildren } from 'react';
 import { Stack } from '../blocks/Stack';
 import { Toolbar } from '../blocks/Toolbar';
 import { v4 } from 'uuid';
@@ -140,7 +140,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
 
     const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction'>> = {
       ...item,
-      children: [item.content, children]
+      children: [<Fragment key="content">{item.content}</Fragment>, children]
     };
     return props;
   };

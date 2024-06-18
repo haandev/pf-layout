@@ -30,9 +30,10 @@ const Blueprint: React.FunctionComponent<BlueprintProps> = (props) => {
 
   var width = view.scale,
     height = view.scale;
+
   if (content.svgNode && content.svgNode.props) {
-    width = parseFloat(content.svgNode.props.width) * view.scale;
-    height = parseFloat(content.svgNode.props.height) * view.scale;
+    width = (parseFloat(content.svgNode.props.width) || 0) * view.scale;
+    height = (parseFloat(content.svgNode.props.height) || 0) * view.scale;
   }
   const mainViewRef = useRef<HTMLDivElement>(null);
 
