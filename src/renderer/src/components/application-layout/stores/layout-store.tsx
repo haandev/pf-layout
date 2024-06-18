@@ -27,7 +27,6 @@ import Panel from '../blocks/Panel';
 export interface LayoutStore {
   members: IContainer[];
   floating: IToolbarWindow[];
-  //container actions
 
   /**
    * Retrieves a container with the given id or creates a new one if it doesn't exist.
@@ -72,9 +71,6 @@ export interface LayoutStore {
     toolbar: T,
     stack?: string
   ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
-
-  lookUp: <T extends StateItem>(id: string | undefined) => LookupResult<T>;
-  both: () => { members: (IContainer | IToolbarWindow)[] };
 }
 
 export const useLayout = create<LayoutStore>((set, get) => {
@@ -351,7 +347,6 @@ export const useLayout = create<LayoutStore>((set, get) => {
   };
 
   return {
-    both,
     members: [],
     floating: [],
 
@@ -439,9 +434,5 @@ export const useLayout = create<LayoutStore>((set, get) => {
         return getToolbar(newToolbar, stackItem);
       }
     },
-
-    lookUp: <T extends StateItem>(id: string | undefined) => {
-      return lookUp<T>(both(), id);
-    }
   };
 });
