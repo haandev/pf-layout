@@ -293,28 +293,28 @@ export const getMargins = (element?: HTMLElement): DOMMarginsBox | undefined => 
   const rect = element.getBoundingClientRect();
 
   const margins: DOMMarginsBox = {
-    get left(){
+    get left() {
       return rect.left;
     },
-    get right(){
+    get right() {
       return rect.right;
     },
-    get top(){
+    get top() {
       return rect.top;
     },
-    get bottom(){
+    get bottom() {
       return rect.bottom;
     },
-    get width(){
+    get width() {
       return rect.width;
     },
-    get height(){
+    get height() {
       return rect.height;
     },
-    get x(){
+    get x() {
       return rect.x;
     },
-    get y(){
+    get y() {
       return rect.y;
     },
     get topMargin() {
@@ -357,7 +357,7 @@ export const getMargins = (element?: HTMLElement): DOMMarginsBox | undefined => 
     },
     toJSON() {
       const { toJSON, ...json } = this;
-      return json;
+      return JSON.parse(JSON.stringify(json));
     }
   };
 
