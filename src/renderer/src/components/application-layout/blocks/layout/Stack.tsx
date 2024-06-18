@@ -1,10 +1,10 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IStack, NodeType } from '../types';
+import { AsComponentProps, Direction, IStack, NodeType } from '../../types';
 import clsx from 'clsx';
-import { evalBoolean, noDrag } from '../util';
+import { evalBoolean, noDrag } from '../../utils';
 import { useDrag } from 'react-dnd';
-import { StackDragSource } from '../types.dnd';
-import { StackHeader } from '../elements/StackHeader';
+import { StackDragSource } from '../../types.dnd';
+import { StackHeader } from '../../elements';
 
 export interface StackProps extends PropsWithChildren, AsComponentProps<IStack> {
   className?: string;

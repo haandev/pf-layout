@@ -14,7 +14,7 @@ import {
   NodeType,
   PartialBy
 } from '../types';
-import { cleanUp, lookUp, nextUntitledCount, nextZIndex, remapZIndex, traverse } from '../util';
+import { cleanUp, lookUp, nextUntitledCount, nextZIndex, remapZIndex, traverse } from '../utils';
 import { v4 } from 'uuid';
 import { SceneEvents } from '../types.event';
 import { isGroupView, isTab, isTabView, isWindow } from '../guards';

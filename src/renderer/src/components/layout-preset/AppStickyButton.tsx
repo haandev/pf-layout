@@ -1,7 +1,6 @@
 import { FC } from 'react';
-import { StickyButton } from '../application-layout';
+import { StickyButton,InlineSvg } from '../application-layout/elements';
 import { useApp } from '../../stores/app-store';
-import InlineSvg from '../application-layout/elements/InlineSvg';
 
 export interface AppStickyButtonProps {
   source: string | URL | Request;

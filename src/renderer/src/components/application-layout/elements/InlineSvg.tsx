@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from 'react';
 export interface InlineSvgProps extends React.SVGProps<SVGSVGElement> {
   source: string | URL | Request;
 }
-const InlineSvg: FC<InlineSvgProps> = ({ source, style, className, ...props }) => {
+export const InlineSvg: FC<InlineSvgProps> = React.memo(({ source, style, className, ...props }) => {
   const [svgContent, setSvgContent] = useState<string>('');
   const [viewBox, setViewBox] = useState<string>('0 0 24 24');
 
@@ -44,6 +44,4 @@ const InlineSvg: FC<InlineSvgProps> = ({ source, style, className, ...props }) =
       {...props}
     />
   );
-};
-
-export default React.memo(InlineSvg);
+});

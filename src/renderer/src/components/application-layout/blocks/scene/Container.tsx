@@ -1,8 +1,10 @@
 import React, { FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IContainer, NodeType } from '../types';
 import clsx from 'clsx';
 import { useDrop } from 'react-dnd';
-import { isEmpty } from '../util';
+
+import { isEmpty } from '../../utils';
+
+import { AsComponentProps, Direction, IContainer, NodeType } from '../../types';
 
 export interface ContainerProps extends PropsWithChildren, AsComponentProps<IContainer> {
   className?: string;

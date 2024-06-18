@@ -62,7 +62,7 @@ export const StickyGroupButton = forwardRef(
       setIsMenuOpen(false);
     });
 
-    const margins = getMargins((rootRef as any).current?.getBoundingClientRect());
+    const margins = getMargins((rootRef as any).current);
     return (
       <button
         ref={rootRef}

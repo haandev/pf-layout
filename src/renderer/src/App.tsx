@@ -4,15 +4,15 @@ import { ApplicationLayout, Container, useInitialize } from './components/applic
 import { Direction } from './components/application-layout/types';
 
 import CadPage from './pages/CadPage';
-import InlineSvg from './components/application-layout/elements/InlineSvg';
+import { InlineSvg } from './components/application-layout/elements';
 import MainTools from './components/layout-preset/MainTools';
 import TopToolbar from './components/layout-preset/TopToolbar';
 import Welcome from './pages/Welcome';
 import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
 import colorPanel from './icons/illustrator/color-panel.svg';
-import { ContainerProps } from './components/application-layout/blocks/Container';
+import { ContainerProps } from './components/application-layout/blocks/scene/Container';
 import { OnCloseTabHandler } from './components/application-layout/types.event';
-import { Scene } from './components/application-layout/blocks/Scene';
+import { Scene } from './components/application-layout/blocks/scene/Scene';
 import { useApp } from './stores/app-store';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import { useScene } from './components/application-layout/stores/scene-store';

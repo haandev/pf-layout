@@ -1,10 +1,12 @@
-import { FC, PropsWithChildren, useRef } from 'react';
-import { useValidateElement } from '../hooks/use-validate-element';
+import React, { FC, PropsWithChildren, useRef } from 'react';
 import clsx from 'clsx';
-import React from 'react';
-import { Direction } from '../types';
-import { SplitResizeHandle } from '../elements/SplitResizeHandle';
-import { SceneStore } from '../stores/scene-store';
+
+import { useValidateElement } from '../../hooks';
+import { SplitResizeHandle } from '../../elements';
+
+import { SceneStore } from '../../stores/scene-store';
+
+import { Direction } from '../../types';
 
 export interface ViewGroupProps extends PropsWithChildren {
   store: SceneStore;

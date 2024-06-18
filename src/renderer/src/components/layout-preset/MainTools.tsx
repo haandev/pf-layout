@@ -47,7 +47,7 @@ import reflectTool from '../../icons/illustrator/reflect-tool.svg';
 
 import { AppStickyGroupButton } from './AppStickyGroupButton';
 import { AppToolsStickySvgButton } from './AppStickyButton';
-import { ToolbarItem } from '../application-layout';
+import { ToolbarItem } from '../application-layout/elements';
 import React from 'react';
 
 const MainTools = React.memo(() => {

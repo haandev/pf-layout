@@ -1,7 +1,7 @@
 import { CSSProperties, FC, useRef } from 'react';
-import { StickyGroupButton, ToolbarItem, getMargins } from '../application-layout';
+import { StickyGroupButton, ToolbarItem, InlineSvg } from '../application-layout/elements';
+import { getMargins } from '../application-layout/utils';
 import { useApp } from '../../stores/app-store';
-import InlineSvg from '../application-layout/elements/InlineSvg';
 import { useLayout } from '../application-layout/stores/layout-store';
 import { Direction } from '../application-layout/types';
 import { isContainer, isToolbarWindow } from '../application-layout/guards';

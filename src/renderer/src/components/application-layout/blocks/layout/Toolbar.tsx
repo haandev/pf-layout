@@ -1,8 +1,8 @@
-import React, { FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IToolbar } from '../types';
+import React, { CSSProperties, FC, PropsWithChildren, useRef } from 'react';
+import { AsComponentProps, Direction, IToolbar } from '../../types';
 import clsx from 'clsx';
-import { noDrag } from '../util';
-import { DragHandle } from '../elements/DragHandle';
+import { noDrag } from '../../utils';
+import { DragHandle } from '../../elements';
 
 export interface ToolbarProps extends PropsWithChildren, AsComponentProps<IToolbar> {
   className?: string;
@@ -17,13 +17,13 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
   // If the direction is vertical and columns are not set, set columns to 1
   const _columns = props.direction === Direction.Vertical && props.columns;
 
-  const itemsStyle = {
+  const itemsStyle: CSSProperties = {
     ...(_rows && { maxHeight: `calc(${_rows} * var(--pf-toolbar-row-size))` }),
     ...(_columns && { maxWidth: `calc(${_columns} * var(--pf-toolbar-row-size))` })
   };
   return (
     <div
-    /*   {...(!props.draggable ? noDrag : {})} */
+      /*   {...(!props.draggable ? noDrag : {})} */
       ref={rootRef}
       className={clsx({
         'pf-toolbar': true,

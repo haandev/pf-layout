@@ -1,11 +1,11 @@
-import '../styles/main.css';
+import '../../styles/main.css';
 
 import clsx from 'clsx';
 import { FC, PropsWithChildren, useRef } from 'react';
-import { Direction, NodeType } from '../types';
-import { LayoutDropTarget, LayoutDroppableItems } from '../types.dnd';
+import { Direction, NodeType } from '../../types';
+import { LayoutDropTarget, LayoutDroppableItems } from '../../types.dnd';
 import { useDrop } from 'react-dnd';
-import { LayoutStore } from '../stores/layout-store';
+import { LayoutStore } from '../../stores/layout-store';
 import { ToolbarWindow, ToolbarWindowProps } from './ToolbarWindow';
 
 export interface ApplicationLayoutProps extends PropsWithChildren {

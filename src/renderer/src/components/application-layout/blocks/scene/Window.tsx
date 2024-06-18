@@ -3,15 +3,17 @@ import clsx from 'clsx';
 import useEvent from 'react-use-event-hook';
 import { useWindowSize } from 'usehooks-ts';
 
-import { AsComponentProps, Direction, IWindow } from '../types';
-import { useDragDelta, useValidateElement } from '..';
-import IconXmark from '../icons/IconXmark';
-import IconMinus from '../icons/IconMinus';
-import IconPlus from '../icons/IconPlus';
-import { UseBoxResizeHandler } from '../hooks/use-box-resize';
-import ResizeBox from '../elements/ResizeBox';
-import { useDropDelta } from '../hooks/use-drop-delta';
-import { SceneStore } from '../stores/scene-store';
+import { ResizeBox } from '../../elements';
+
+import { SceneStore } from '../../stores/scene-store';
+
+import { AsComponentProps, Direction, IWindow } from '../../types';
+import { useDragDelta, useValidateElement } from '../../hooks';
+import { UseBoxResizeHandler } from '../../hooks/use-box-resize';
+
+import IconXmark from '../../icons/IconXmark';
+import IconMinus from '../../icons/IconMinus';
+import IconPlus from '../../icons/IconPlus';
 
 export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow> {
@@ -61,12 +63,6 @@ export const Window: FC<WindowProps> = React.memo(({ id, store, ...props }) => {
     onDrag: moveFloatingWindowHandler,
     safetyMargins: { top: 1, left: 1, right: 1, bottom: 1 },
     type: 'window'
-  });
-
-  useDropDelta({
-    ref: header,
-    accepts: ['window'],
-    onDrop: (_e) => {}
   });
 
   //drag(header)

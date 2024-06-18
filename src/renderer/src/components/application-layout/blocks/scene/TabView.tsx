@@ -1,13 +1,13 @@
 import clsx from 'clsx';
 import { useDrag, useDrop } from 'react-dnd';
-
 import React, { CSSProperties, FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
-import { useParentDirection, useValidateElement, SplitResizeHandle } from '..';
-import { AsComponentProps, Direction, ITab, ITabView, NodeType } from '../types';
 
-import IconXmark from '../icons/IconXmark';
-import IconAdd from '../icons/IconAdd';
-import { evalBoolean, lookUp } from '../util';
+import { useParentDirection, useValidateElement } from '../../hooks';
+import { evalBoolean, lookUp } from '../../utils';
+import { AsComponentProps, Direction, ITab, ITabView, NodeType } from '../../types';
+
+import IconXmark from '../../icons/IconXmark';
+import IconAdd from '../../icons/IconAdd';
 import useEvent from 'react-use-event-hook';
 import {
   TabDragSource,
@@ -16,8 +16,9 @@ import {
   TabViewDragSource,
   TabViewDropTarget,
   TabViewDroppableItems
-} from '../types.dnd';
-import { SceneStore } from '../stores/scene-store';
+} from '../../types.dnd';
+import { SceneStore } from '../../stores/scene-store';
+import { SplitResizeHandle } from '../../elements';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -42,7 +43,7 @@ export interface TabViewProps extends TabViewCommonProps, AsComponentProps<ITabV
   noCache?: boolean;
 }
 
-const TabView: FC<TabViewProps> = ({
+export const TabView: FC<TabViewProps> = ({
   store,
   members,
   titleFormatter,
@@ -319,5 +320,3 @@ const Tab: FC<TabProps> = ({ id, title, tabViewId, onDrop, ...props }) => {
     </>
   );
 };
-
-export default TabView;

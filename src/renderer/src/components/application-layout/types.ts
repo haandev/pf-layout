@@ -1,5 +1,16 @@
 import { PropsWithChildren } from 'react';
-import { ContainerProps } from './blocks/Container';
+import { ContainerProps } from './blocks/scene/Container';
+
+//util
+export type Maybe<T> = T | null | undefined;
+export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
+export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;
+export type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends Record<string, any>> }
+  ? { members?: Array<AsRegisterArgs<U>> }
+  : {};
+export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members' | 'content'> &
+  Partial<Pick<T, 'type' | 'content'>> &
+  OptionalMembersWithoutType<T>;
 
 export enum Direction {
   Horizontal = 'horizontal',
@@ -53,15 +64,12 @@ export type IWindow = {
   previousPosition?: { top: number; left: number; width?: number; height?: number };
   zIndex?: number;
 };
-
 export type IScene = {
   members: IWindow[];
 } & { [key: string]: any };
-
 export type ILayout = {
   members: IContainer[];
 } & { [key: string]: any };
-
 export interface IToolbarWindow {
   type: NodeType.ToolbarWindow;
   id: string;
@@ -71,7 +79,6 @@ export interface IToolbarWindow {
   zIndex?: number;
   members: IStack[];
 }
-
 export interface IStack {
   draggable?: boolean;
   type: NodeType.Stack;
@@ -105,7 +112,6 @@ export interface IToolbar {
   rows?: number;
   type: NodeType.Toolbar;
 }
-
 export interface IPanel {
   type: NodeType.Panel;
   id: string;
@@ -113,7 +119,6 @@ export interface IPanel {
   title: string;
   content: React.ReactNode;
 }
-
 export interface IContainer {
   type: NodeType.Container;
   id: string;
@@ -122,7 +127,6 @@ export interface IContainer {
   direction: Direction;
   chevronPosition?: 'start' | 'end'; // default is end
 }
-
 export type StateItem =
   | ITab
   | ITabView
@@ -133,8 +137,10 @@ export type StateItem =
   | IToolbar
   | IStack
   | IContainer;
+
 export type NestedState = StateItem | IScene | ILayout | { members: StateItem[] };
 
+//explains parent type of known type
 export type ParentType<T> = T extends ITab
   ? ITabView
   : T extends ITabView
@@ -155,15 +161,6 @@ export type ParentType<T> = T extends ITab
                   ? IToolbar
                   : null;
 
-export type AsComponentProps<T extends Record<string, any>> = Partial<Omit<T, 'id' | 'type'>> & Pick<T, 'id'>;
-
-type OptionalMembersWithoutType<T> = T extends { members: Array<infer U extends Record<string, any>> }
-  ? { members?: Array<AsRegisterArgs<U>> }
-  : {};
-
-export type AsRegisterArgs<T extends Record<string, any>> = Omit<T, 'type' | 'members' | 'content'> &
-  Partial<Pick<T, 'type' | 'content'>> &
-  OptionalMembersWithoutType<T>;
 
 export interface GatheredToolbarWindow extends IToolbarWindow {
   $stack: (stack: string | AsRegisterArgs<IStack>) => Maybe<GatheredStack>;
@@ -259,8 +256,6 @@ export interface GatheredTab extends ITab {
   $set: (attributes: Partial<ITab>) => void;
 }
 
-export type Maybe<T> = T | null | undefined;
-export type PartialBy<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type IPageProps = {
   id: string;

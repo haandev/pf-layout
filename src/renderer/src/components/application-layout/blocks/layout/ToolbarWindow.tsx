@@ -1,8 +1,8 @@
 import { FC, PropsWithChildren, cloneElement, useRef } from 'react';
 import clsx from 'clsx';
-import { AsComponentProps, IToolbarWindow, NodeType } from '../types';
+import { AsComponentProps, IToolbarWindow, NodeType } from '../../types';
 import { useDrag } from 'react-dnd';
-import { ToolbarWindowDragSource } from '../types.dnd';
+import { ToolbarWindowDragSource } from '../../types.dnd';
 
 export interface ToolbarWindowEvents {
   onClose?: () => void;

@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { lookUp } from '../util';
+import { lookUp } from '../utils';
 import {
   AsRegisterArgs,
   Direction,
@@ -17,11 +17,11 @@ import {
 } from '../types';
 import { isContainer, isToolbarWindow, isToolbar, isStack, isString } from '../guards';
 import { Fragment, PropsWithChildren } from 'react';
-import { Stack } from '../blocks/Stack';
-import { Toolbar } from '../blocks/Toolbar';
+import { Stack } from '../blocks/layout/Stack';
+import { Toolbar } from '../blocks/layout/Toolbar';
 import { v4 } from 'uuid';
-import { ContainerProps } from '../blocks/Container';
-import Panel from '../blocks/Panel';
+import { ContainerProps } from '../blocks/scene/Container';
+import { Panel } from '../blocks/layout/Panel';
 
 export interface LayoutStore {
   members: IContainer[];

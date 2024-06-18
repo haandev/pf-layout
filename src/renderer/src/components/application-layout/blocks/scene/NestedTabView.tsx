@@ -1,10 +1,13 @@
-import { Direction, IGroupView, ITabView, IWindow, NodeType } from '../types';
+import { FC } from 'react';
+
+import { TabView, TabViewCommonProps } from './TabView';
 import { ViewGroup } from './ViewGroup';
 
-import { FC } from 'react';
-import TabView, { TabViewCommonProps } from './TabView';
-import { evalBoolean } from '../util';
-import { SceneStore } from '../stores/scene-store';
+import { SceneStore } from '../../stores/scene-store';
+
+import { evalBoolean } from '../../utils';
+
+import { Direction, IGroupView, ITabView, IWindow, NodeType } from '../../types';
 
 export interface NestedTabViewProps extends TabViewCommonProps {
   store: SceneStore;
@@ -46,8 +49,21 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
         );
       } else {
         return (
-          <ViewGroup store={props.store} id={viewItem.id} key={viewItem.id} direction={oppositeDirection} width={viewItem.width} height={viewItem.height}>
-            <NestedTabView direction={oppositeDirection} headerControls={headerControls} id={viewItem.id} view={viewItem} {...props} />
+          <ViewGroup
+            store={props.store}
+            id={viewItem.id}
+            key={viewItem.id}
+            direction={oppositeDirection}
+            width={viewItem.width}
+            height={viewItem.height}
+          >
+            <NestedTabView
+              direction={oppositeDirection}
+              headerControls={headerControls}
+              id={viewItem.id}
+              view={viewItem}
+              {...props}
+            />
           </ViewGroup>
         );
       }

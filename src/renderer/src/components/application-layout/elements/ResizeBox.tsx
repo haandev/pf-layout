@@ -2,7 +2,7 @@ import { forwardRef, useRef } from 'react';
 import { useBoxResize } from '../';
 import { UseBoxResizeHandler } from '../hooks/use-box-resize';
 
-const ResizeBox = forwardRef(
+export const ResizeBox = forwardRef(
   (
     props: {
       handler: UseBoxResizeHandler;
@@ -40,5 +40,3 @@ const ResizeBox = forwardRef(
     );
   }
 );
-
-export default ResizeBox;

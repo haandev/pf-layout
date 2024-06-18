@@ -1,16 +1,20 @@
 import clsx from 'clsx';
 import { FC, useRef } from 'react';
-import { useDrop } from 'react-dnd';
-import { Direction, IWindow, NodeType } from '../types';
-import { SceneDropTarget, SceneDroppableItems } from '../types.dnd';
-import { SceneStore } from '../stores/scene-store';
-import IconSplitSquareHorizontal from '../icons/IconSplitSquareHorizontal';
-import { Window } from './Window';
-import { NestedTabView } from './NestedTabView';
-import IconSplitSquareVertical from '../icons/IconSplitSquareVertical';
-import { SceneEvents } from '../types.event';
 import { createPortal } from 'react-dom';
+import { useDrop } from 'react-dnd';
 import { useResizeObserver } from 'usehooks-ts';
+
+import { NestedTabView } from './NestedTabView';
+import { Window } from './Window';
+
+import { SceneStore } from '../../stores/scene-store';
+
+import { Direction, IWindow, NodeType } from '../../types';
+import { SceneDropTarget, SceneDroppableItems } from '../../types.dnd';
+import { SceneEvents } from '../../types.event';
+
+import IconSplitSquareHorizontal from '../../icons/IconSplitSquareHorizontal';
+import IconSplitSquareVertical from '../../icons/IconSplitSquareVertical';
 
 /*
  * Determines if a window can be detached based on its floating status and the structure of its members.
