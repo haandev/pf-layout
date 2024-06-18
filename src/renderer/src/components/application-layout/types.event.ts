@@ -1,17 +1,22 @@
-import { ITab } from './types';
+import { ITab, IWindow } from './types';
 
 //TODO: this page is still draft
 
-export type OnAddTabHandlerHandler = (tabViewId: string, tab: ITab) => void;
-export type OnCloseTabHandler = (tabViewId: string, id: string) => void;
+export type OnAddTabHandlerHandler = (tabViewId: string, tab: ITab, state: IWindow[]) => void;
+export type OnCloseTabHandler = (tabViewId: string, id: string, state: IWindow[]) => void;
 export type OnWindowResizeHandler = (
   windowId: string,
-  props: { width: number; height: number; top: number; left: number }
+  props: { width: number; height: number; top: number; left: number },
+  state: IWindow[]
 ) => void;
-export type OnWindowMoveHandler = (windowId: string, props: { top: number; left: number }) => void;
-export type OnSceneResizeHandler = (props: { width: number; height: number }) => void;
-export type OnDetachHandler = (id: string) => void;
-export type OnMoveTabHandler = (tabId: string, options: { toViewId: string; beforeTabId?: string }) => void;
+export type OnWindowMoveHandler = (windowId: string, props: { top: number; left: number }, state: IWindow[]) => void;
+export type OnSceneResizeHandler = (props: { width: number; height: number }, state: IWindow[]) => void;
+export type OnDetachHandler = (id: string, state: IWindow[]) => void;
+export type OnMoveTabHandler = (
+  tabId: string,
+  options: { toViewId: string; beforeTabId?: string },
+  state: IWindow[]
+) => void;
 
 /* export type OnNothingLeftHandler = () => void;
 export type OnMaximizeHandler = (id: string) => void;
@@ -26,13 +31,39 @@ export type OnChangeTabHandler = (id: string) => void;
  */
 
 export interface SceneEvents {
-  onAddTab?: OnAddTabHandlerHandler;
-  onCloseTab?: OnCloseTabHandler;
+  /**
+   * Called when a new tab content is requested.
+   * This is used to create a new tab content when a new tab is added.
+   * @returns The JSX element to be used as the new tab content.
+   */
   newTabContent?: () => JSX.Element;
+  /**
+   * Called when a new tab is added to a tab view.
+   */
+  onAddTab?: OnAddTabHandlerHandler;
+  /**
+   * Called when a tab is closed in a tab view.
+   */
+  onCloseTab?: OnCloseTabHandler;
+  /**
+   * Called when a window is resized.
+   */
   onWindowResize?: OnWindowResizeHandler;
+  /**
+   * Called when a window is moved.
+   */
   onWindowMove?: OnWindowMoveHandler;
+  /**
+   * Called when the scene is resized.
+   */
   onSceneResize?: OnSceneResizeHandler;
+  /**
+   * Called when a tab view is detached.
+   */
   onDetach?: OnDetachHandler;
+  /**
+   * Called when a tab is moved to another tab view.
+   */
   onMoveTab?: OnMoveTabHandler;
   /*   onNothingLeft?: OnNothingLeftHandler;
   onMaximize?: OnMaximizeHandler;

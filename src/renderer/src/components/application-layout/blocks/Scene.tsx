@@ -62,10 +62,13 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
   useResizeObserver({
     ref: rootRef,
     onResize: (entry) => {
-      store.events.onSceneResize?.({
-        width: entry.width || 0,
-        height: entry.height || 0
-      });
+      return store.events.onSceneResize?.(
+        {
+          width: entry.width || 0,
+          height: entry.height || 0
+        },
+        store.members
+      );
     }
   });
 

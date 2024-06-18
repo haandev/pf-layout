@@ -1,20 +1,21 @@
-import { ApplicationLayout, Container, useInitialize } from './components/application-layout';
+import { useCallback, useRef } from 'react';
 
+import { ApplicationLayout, Container, useInitialize } from './components/application-layout';
 import { Direction } from './components/application-layout/types';
 
-import { Scene } from './components/application-layout/blocks/Scene';
-import { useApp } from './stores/app-store';
-import Welcome from './pages/Welcome';
-import { useScene } from './components/application-layout/stores/scene-store';
-import { useLayout } from './components/application-layout/stores/layout-store';
+import CadPage from './pages/CadPage';
+import InlineSvg from './components/application-layout/elements/InlineSvg';
 import MainTools from './components/layout-preset/MainTools';
 import TopToolbar from './components/layout-preset/TopToolbar';
-import InlineSvg from './components/application-layout/elements/InlineSvg';
-import colorPanel from './icons/illustrator/color-panel.svg';
+import Welcome from './pages/Welcome';
 import colorGuidePanel from './icons/illustrator/color-guide-panel.svg';
+import colorPanel from './icons/illustrator/color-panel.svg';
 import { ContainerProps } from './components/application-layout/blocks/Container';
-import CadPage from './pages/CadPage';
-import { useCallback, useRef } from 'react';
+import { OnCloseTabHandler } from './components/application-layout/types.event';
+import { Scene } from './components/application-layout/blocks/Scene';
+import { useApp } from './stores/app-store';
+import { useLayout } from './components/application-layout/stores/layout-store';
+import { useScene } from './components/application-layout/stores/scene-store';
 
 function App(): JSX.Element {
   const timeout = useRef<any | null>(null);
@@ -102,10 +103,10 @@ function App(): JSX.Element {
   };
 
   const onAddTab = () => app.hideHome();
-  const onCloseTab = () => requestAnimationFrame(() => {
+  const onCloseTab: OnCloseTabHandler = (_, __, state) => {
     updateBlueprintPointerOffset();
-    return scene.members.length < 1 && app.showHome();
-  });
+    return state.length < 1 && app.showHome();
+  };
 
   return (
     <ApplicationLayout home={app.home && <Welcome id="welcome" />} store={layout}>

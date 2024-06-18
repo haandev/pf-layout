@@ -161,7 +161,6 @@ const cleanObject = (obj: NestedState, depth = 0): boolean => {
 export const cleanUp = (state: { members: IWindow[] }) => {
   do {} while (cleanObject(state));
   let newWindows = state.members.filter(Boolean);
-
   return { members: newWindows, home: newWindows.length === 0 };
 };
 
@@ -263,5 +262,3 @@ export const remapZIndex = (state: IScene) => {
 export const opposite = (direction: Direction) => {
   return direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
 };
-
-

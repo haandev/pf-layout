@@ -155,8 +155,9 @@ export const useScene = create<SceneStore>((set, get) => {
             top: win.top !== undefined ? win.top + yDelta : 0,
             left: win.left !== undefined ? win.left + xDelta : 0
           });
-          events.onWindowMove?.(win.id, { top: win.top || 0, left: win.left || 0 });
-          return remapZIndex({ members: state.members });
+          const newState = remapZIndex({ members: state.members });
+          events.onWindowMove?.(win.id, { top: win.top || 0, left: win.left || 0 }, newState.members);
+          return newState;
         });
       },
       $close: () => {
@@ -169,7 +170,7 @@ export const useScene = create<SceneStore>((set, get) => {
       $resize: (width, height, top, left) => {
         set((state) => {
           Object.assign(win, { width, height, top, left });
-          events.onWindowResize?.(win.id, { width, height, top, left });
+          events.onWindowResize?.(win.id, { width, height, top, left }, state.members);
           return { members: state.members };
         });
       },
@@ -185,7 +186,7 @@ export const useScene = create<SceneStore>((set, get) => {
             left: 0,
             zIndex: nextZIndex(state)
           });
-          events.onWindowResize?.(win.id, { width: clientWidth, height: clientHeight, top: 0, left: 0 });
+          events.onWindowResize?.(win.id, { width: clientWidth, height: clientHeight, top: 0, left: 0 }, state.members);
           return { members: state.members };
         });
       },
@@ -234,12 +235,16 @@ export const useScene = create<SceneStore>((set, get) => {
               zIndex: nextZIndex(state)
             });
           }
-          events.onWindowResize?.(win.id, {
-            width: win.width || 0,
-            height: win.height || 0,
-            top: win.top || 0,
-            left: win.left || 0
-          });
+          events.onWindowResize?.(
+            win.id,
+            {
+              width: win.width || 0,
+              height: win.height || 0,
+              top: win.top || 0,
+              left: win.left || 0
+            },
+            state.members
+          );
           return { members: state.members };
         });
       },
@@ -320,8 +325,9 @@ export const useScene = create<SceneStore>((set, get) => {
           members.push(newWindow);
 
           parent.members.splice(parent.members.indexOf(tabView), 1);
-          state.events.onDetach?.(tabView.id);
-          return cleanUp({ members });
+          const newState = cleanUp({ members });
+          state.events.onDetach?.(tabView.id, newState.members);
+          return newState;
         });
       },
       $attach: () => {
@@ -365,7 +371,7 @@ export const useScene = create<SceneStore>((set, get) => {
           };
           tabView.members.push(newTab);
           tabView.activeTabId = newTab.id;
-          state.events.onAddTab?.(tabView.id, newTab);
+          state.events.onAddTab?.(tabView.id, newTab, members);
           return { members };
         });
       },
@@ -430,10 +436,11 @@ export const useScene = create<SceneStore>((set, get) => {
       $closeTab: (tabId) => {
         set((state) => {
           const members = [...state.members];
-          const index = parent.members.findIndex((f) => f.id === tabView.id);
-          parent.members.splice(index, 1);
-          state.events.onCloseTab?.(parent.id, tabId);
-          return cleanUp({ members });
+          const index = tabView.members.findIndex((f) => f.id === tabId);
+          tabView.members.splice(index, 1);
+          const newState = cleanUp({ members });
+          state.events.onCloseTab?.(tabView.id, tabId, newState.members);
+          return newState;
         });
       },
       $moveTabToView: (tabId, beforeTabId) => {
@@ -445,9 +452,7 @@ export const useScene = create<SceneStore>((set, get) => {
 
           const beforeTab = lookUp<ITab>(tabView, beforeTabId || '') || {};
 
-          //just reorder
           if (tabView === parent) {
-            console.log('reorder');
             if (tabId === beforeTabId) return { members };
             if (beforeTab.item) {
               tabView.members.splice(index, 1);
@@ -462,8 +467,6 @@ export const useScene = create<SceneStore>((set, get) => {
               tabView.members.push(tab);
             }
           } else {
-            console.log('move');
-            //move to another view
             const newActiveTabId =
               tabView.members[index - 1]?.id || (index !== 0 && tabView.members[0]?.id) || tabView.members[1]?.id;
             if (tabView.activeTabId === tab.id) tabView.activeTabId = newActiveTabId;
@@ -475,8 +478,9 @@ export const useScene = create<SceneStore>((set, get) => {
               tabView.members.push(tab);
             }
           }
-          state.events.onMoveTab?.(tab.id, { toViewId: tabView.id, beforeTabId });
-          return cleanUp({ members });
+          const newState = cleanUp({ members });
+          state.events.onMoveTab?.(tab.id, { toViewId: tabView.id, beforeTabId }, newState.members);
+          return newState;
         });
       }
     };
@@ -614,7 +618,7 @@ export const useScene = create<SceneStore>((set, get) => {
         });
         if (!firstAttachedWindow) {
           members.push(newWindow);
-          state.events.onAddTab?.(newTabView.id, newTab);
+          state.events.onAddTab?.(newTabView.id, newTab, members);
           return { members, home: false };
         }
         let firstGroupView: IGroupView | undefined = undefined;
@@ -627,7 +631,7 @@ export const useScene = create<SceneStore>((set, get) => {
         });
         if (!firstGroupView) {
           (firstAttachedWindow as IWindow).members.push(newGroupView);
-          state.events.onAddTab?.(newTabView.id, newTab);
+          state.events.onAddTab?.(newTabView.id, newTab, members);
           return { members, home: false };
         }
         let firstTabView: ITabView | undefined = undefined;
@@ -640,11 +644,11 @@ export const useScene = create<SceneStore>((set, get) => {
         });
         if (!firstTabView) {
           (firstGroupView as IGroupView).members.push(newTabView);
-          state.events.onAddTab?.(newTabView.id, newTab);
+          state.events.onAddTab?.(newTabView.id, newTab, members);
           return { members, home: false };
         }
         (firstTabView as ITabView).members.push(newTab);
-        state.events.onAddTab?.((firstTabView as ITabView).id, newTab);
+        state.events.onAddTab?.((firstTabView as ITabView).id, newTab, members);
         return { members, home: false };
       });
     },
