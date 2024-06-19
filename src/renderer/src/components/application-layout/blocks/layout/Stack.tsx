@@ -1,4 +1,4 @@
-import React, { FC, PropsWithChildren, useRef, useState } from 'react';
+import React, { FC, PropsWithChildren, useRef } from 'react';
 import { AsComponentProps, Direction, GatheredStack, IStack, NodeType } from '../../types';
 import clsx from 'clsx';
 import { evalBoolean, noDrag } from '../../utils';

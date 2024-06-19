@@ -1,4 +1,4 @@
-import React, { FC } from 'react';
+import { FC } from 'react';
 import { GatheredToolbar } from '../../types';
 import { noDrag } from '../../utils';
 import clsx from 'clsx';
