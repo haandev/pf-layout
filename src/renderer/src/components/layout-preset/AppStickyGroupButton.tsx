@@ -83,7 +83,10 @@ export const AppStickyGroupButton: FC<AppStickyGroupButtonProps> = ({ items, id 
       .$toolbarWindow({
         id: windowId,
         top: Number(newPosition.top) || 0,
-        left: Number(newPosition.left) || 0
+        left: Number(newPosition.left) || 0,
+        onClose: () => {
+          console.log('closed');
+        }
       })
       ?.$stack({
         id: stackId,

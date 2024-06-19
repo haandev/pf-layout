@@ -155,13 +155,12 @@ const MainTools = React.memo(() => {
           />
         }
       />
-
-<ToolbarItem
+      <ToolbarItem
         children={
           <AppStickyGroupButton
             items={{
               rotate: { source: rotateTool, label: 'Rotate Tool' },
-              reflect: { source: reflectTool, label: 'Reflect Tool' },
+              reflect: { source: reflectTool, label: 'Reflect Tool' }
             }}
           />
         }

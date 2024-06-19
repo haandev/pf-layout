@@ -184,7 +184,13 @@ export const useScene = create<SceneStore>((set, get) => {
             height: clientHeight,
             top: 0,
             left: 0,
-            zIndex: nextZIndex(state)
+            zIndex: nextZIndex(state),
+            previousPosition: {
+              top: win.top,
+              left: win.left,
+              width: win.width,
+              height: win.height
+            }
           });
           events.onWindowResize?.(win.id, { width: clientWidth, height: clientHeight, top: 0, left: 0 }, state.members);
           return { members: state.members };
@@ -216,7 +222,14 @@ export const useScene = create<SceneStore>((set, get) => {
             height: 58,
             top: newPosition.top,
             left: newPosition.left,
-            zIndex: 0
+            zIndex: 0,
+            minimized: true,
+            previousPosition: {
+              top: win.top,
+              left: win.left,
+              width: win.width,
+              height: win.height
+            }
           });
           return { members: state.members };
         });

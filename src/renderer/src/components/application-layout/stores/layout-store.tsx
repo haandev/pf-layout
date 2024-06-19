@@ -90,7 +90,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
   //props generation
   const toolbarWindowProps = (item: IToolbarWindow) => {
     const children = item.members.map((stack) => {
-      const childrenProps = stackProps(stack);
+      const childrenProps = stackProps(stack, item);
       return <Stack {...childrenProps} parentId={item.id} key={stack.id} />;
     });
 
@@ -107,7 +107,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
   const containerProps = (item: IContainer): ContainerProps => {
     const containerInstance = getContainer(item);
     const children = item.members.map((stack) => {
-      const childrenProps = stackProps(stack);
+      const childrenProps = stackProps(stack, item);
       return <Stack {...childrenProps} chevronsPosition={item.chevronPosition} parentId={item.id} key={stack.id} />;
     });
 
@@ -121,8 +121,8 @@ export const useLayout = create<LayoutStore>((set, get) => {
     };
     return props;
   };
-  const stackProps = (item: IStack) => {
-    const stackInstance = getStack(item);
+  const stackProps = (item: IStack, parent: IContainer | IToolbarWindow) => {
+    const stackInstance = getStack(item, parent);
     const children = item.members.map((toolbar) => {
       const childrenProps = toolbarProps(toolbar, item);
       return <Toolbar {...childrenProps} key={toolbar.id} />;
@@ -134,6 +134,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
       onClose: () => {
         const parent = stackInstance?.$parent;
         if (parent?.type === NodeType.ToolbarWindow) return parent.$hide();
+        console.log('closing stack', item, parent);
       }
     };
     return props;
@@ -299,14 +300,14 @@ export const useLayout = create<LayoutStore>((set, get) => {
       }
     };
   };
-  const getStack = (stack: IStack, parent?: IToolbarWindow | IContainer): GatheredStack => {
+  const getStack = (stack: IStack, parent: IToolbarWindow | IContainer): GatheredStack => {
     return {
       ...stack,
       get members() {
         return stackMembers(stack);
       },
       get $props() {
-        return stackProps(stack);
+        return stackProps(stack, parent);
       },
       get $parent() {
         return parent ? (isContainer(parent) ? get().$container(parent) : get().$toolbarWindow(parent)) : undefined;
