@@ -4,9 +4,10 @@ import { useDrop } from 'react-dnd';
 
 import { isEmpty } from '../../utils';
 
-import { AsComponentProps, Direction, IContainer, NodeType } from '../../types';
+import { AsComponentProps, Direction, GatheredContainer, IContainer, NodeType } from '../../types';
 
 export interface ContainerProps extends PropsWithChildren, AsComponentProps<IContainer> {
+  containerInstance?: GatheredContainer;
   className?: string;
   direction: Direction;
   style?: React.CSSProperties;

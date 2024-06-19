@@ -8,7 +8,8 @@ import {
   IToolbarWindow,
   IWindow,
   NodeType,
-  StateItem
+  StateItem,
+  IPanel
 } from './types';
 
 /**
@@ -69,8 +70,7 @@ export const isContainer = (state: any): state is IContainer =>
  * @param state The state object to check.
  * @returns true if the state is a Stack, false otherwise.
  */
-export const isStack = (state: any): state is IStack =>
-  state && 'type' in state && state.type === NodeType.Stack;
+export const isStack = (state: any): state is IStack => state && 'type' in state && state.type === NodeType.Stack;
 
 /**
  * Type guard to check if the state object is a Toolbar.
@@ -78,5 +78,12 @@ export const isStack = (state: any): state is IStack =>
  * @returns true if the state is a Toolbar, false otherwise.
  */
 export const isToolbar = (state: any): state is IToolbar => state && 'type' in state && state.type === NodeType.Toolbar;
+
+/**
+ * Type guard to check if the state object is a Panel.
+ * @param state The state object to check.
+ * @returns true if the state is a Panel, false otherwise.
+ */
+export const isPanel = (state: any): state is IPanel => state && 'type' in state && state.type === NodeType.Panel;
 
 export const isString = (value: any): value is string => typeof value === 'string';

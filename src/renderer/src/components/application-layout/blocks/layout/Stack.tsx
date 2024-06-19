@@ -1,5 +1,5 @@
-import React, { FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IStack, NodeType } from '../../types';
+import React, { FC, PropsWithChildren, useRef, useState } from 'react';
+import { AsComponentProps, Direction, GatheredStack, IStack, NodeType } from '../../types';
 import clsx from 'clsx';
 import { evalBoolean, noDrag } from '../../utils';
 import { useDrag } from 'react-dnd';
@@ -11,6 +11,7 @@ export interface StackProps extends PropsWithChildren, AsComponentProps<IStack> 
   style?: React.CSSProperties;
   onClose?: () => void;
   parentId?: string;
+  stackInstance?: GatheredStack | null;
 }
 export const Stack: FC<StackProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -37,8 +38,8 @@ export const Stack: FC<StackProps> = (props) => {
       stackId={props.id}
       parentId={props.parentId}
       onClose={props.onClose}
-      onCollapse={props.onCollapse}
-      onExpand={props.onExpand}
+      onCollapse={() => props.onCollapse?.(props.stackInstance)}
+      onExpand={() => props.onExpand?.(props.stackInstance)}
       isExpanded={evalBoolean(props.isExpanded)}
       chevronPosition={props.chevronsPosition}
     />

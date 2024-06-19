@@ -1,5 +1,7 @@
 import { PropsWithChildren } from 'react';
 import { ContainerProps } from './blocks/scene/Container';
+import { StackProps } from './blocks/layout/Stack';
+import { ToolbarProps } from './blocks/layout/Toolbar';
 
 //util
 export type Maybe<T> = T | null | undefined;
@@ -90,8 +92,8 @@ export interface IStack {
   isExpanded?: boolean | (() => boolean);
   maxItems?: number;
   members: IToolbar[];
-  onCollapse?: () => void;
-  onExpand?: () => void;
+  onCollapse?: (stackInstance?: GatheredStack | null) => void;
+  onExpand?: (stackInstance?: GatheredStack | null) => void;
   resizable?: boolean;
   size?: number;
   type: NodeType.Stack;
@@ -111,8 +113,6 @@ export interface IToolbar {
   members: IPanel[];
   rows?: number;
   showHandle?: boolean;
-  stackActivePanelId?: string;
-  stackAs?: IStack['as'];
   type: NodeType.Toolbar;
 }
 export interface IPanel {
@@ -123,6 +123,7 @@ export interface IPanel {
   compactContent?: React.ReactNode;
   content: React.ReactNode;
   contextMenu?: ContextMenu;
+  visibility?: 'full' | 'compact' | 'collapsed';
 }
 
 export interface IContainer {
@@ -189,7 +190,7 @@ export interface GatheredStack extends IStack {
   $toolbar: <T extends string | AsRegisterArgs<IToolbar>>(
     toolbar: T
   ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
-  $props: PropsWithChildren<Pick<IStack, 'id' | 'direction' | 'maxItems'>>;
+  $props: StackProps;
   $parent?: Maybe<GatheredContainer | GatheredToolbarWindow>;
   $set: (attributes: Partial<IStack>) => void;
   $detach: (x: number, y: number) => void;
@@ -198,15 +199,19 @@ export interface GatheredStack extends IStack {
   $asToolbar: () => void;
 }
 export interface GatheredToolbar extends IToolbar {
-  //members: GatheredPanel[];
+  members: GatheredPanel[];
   // $panel: (panel: string) => Maybe<GatheredPanel>;
-  $panel: (panel: string) => Maybe<IPanel>;
-  $props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction' | 'maxItems'>>;
+  $panel: <T extends string | AsRegisterArgs<IPanel>>(
+    panel: T
+  ) => T extends string ? Maybe<GatheredPanel> : GatheredPanel;
+  $props: ToolbarProps;
   $parent: Maybe<GatheredStack>;
   $set: (attributes: Partial<IToolbar>) => void;
 }
 
-export interface GatheredPanel extends IPanel {}
+export interface GatheredPanel extends IPanel {
+  $toggleVisibility: (as:"tabs" | "toolbar") => void;
+}
 
 export interface GatheredWindow extends IWindow {
   members: GatheredGroupView[];

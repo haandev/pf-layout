@@ -13,12 +13,13 @@ import {
   GatheredStack,
   Maybe,
   GatheredToolbar,
-  GatheredToolbarWindow
+  GatheredToolbarWindow,
+  GatheredPanel
 } from '../types';
-import { isContainer, isToolbarWindow, isToolbar, isStack, isString } from '../guards';
+import { isContainer, isToolbarWindow, isToolbar, isStack, isString, isPanel } from '../guards';
 import { Fragment, PropsWithChildren } from 'react';
-import { Stack } from '../blocks/layout/Stack';
-import { Toolbar } from '../blocks/layout/Toolbar';
+import { Stack, StackProps } from '../blocks/layout/Stack';
+import { Toolbar, ToolbarProps } from '../blocks/layout/Toolbar';
 import { v4 } from 'uuid';
 import { ContainerProps } from '../blocks/scene/Container';
 import { Panel } from '../blocks/layout/Panel';
@@ -70,6 +71,18 @@ export interface LayoutStore {
     toolbar: T,
     stack?: string
   ) => T extends string ? Maybe<GatheredToolbar> : GatheredToolbar;
+
+  /**
+   * Retrieves a panel with the given id or creates a new one if it doesn't exist.
+   * To create a new panel, pass an object with the panel's properties.
+   * @param panel - The id of the panel or an object with the panel's properties.
+   * @param toolbar - The id of the toolbar where the panel will be placed.
+   * @returns The GatheredPanel that also has the methods to manipulate the panel.
+   */
+  $panel: <T extends string | AsRegisterArgs<IPanel>>(
+    panel: T,
+    toolbar: string
+  ) => T extends string ? Maybe<GatheredPanel> : GatheredPanel;
 }
 
 export const useLayout = create<LayoutStore>((set, get) => {
@@ -78,17 +91,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
   const toolbarWindowProps = (item: IToolbarWindow) => {
     const children = item.members.map((stack) => {
       const childrenProps = stackProps(stack);
-      return (
-        <Stack
-          onClose={() => {
-            const parent = get().$stack(stack.id)?.$parent;
-            if (parent?.type === NodeType.ToolbarWindow) return parent.$hide();
-          }}
-          {...childrenProps}
-          parentId={item.id}
-          key={stack.id}
-        />
-      );
+      return <Stack {...childrenProps} parentId={item.id} key={stack.id} />;
     });
 
     const props: PropsWithChildren<Pick<IToolbarWindow, 'id' | 'top' | 'left' | 'zIndex' | 'hidden'>> = {
@@ -102,6 +105,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
     return props;
   };
   const containerProps = (item: IContainer): ContainerProps => {
+    const containerInstance = getContainer(item);
     const children = item.members.map((stack) => {
       const childrenProps = stackProps(stack);
       return <Stack {...childrenProps} chevronsPosition={item.chevronPosition} parentId={item.id} key={stack.id} />;
@@ -109,22 +113,33 @@ export const useLayout = create<LayoutStore>((set, get) => {
 
     const props: ContainerProps = {
       ...item,
-      onDrop: (id: string, type: NodeType, containerId: string) => {
-        get().$container(containerId)?.$dropOn(id, type);
+      containerInstance,
+      onDrop: (id: string, type: NodeType) => {
+        containerInstance?.$dropOn(id, type);
       },
       children: children
     };
     return props;
   };
   const stackProps = (item: IStack) => {
+    const stackInstance = getStack(item);
     const children = item.members.map((toolbar) => {
       const childrenProps = toolbarProps(toolbar, item);
       return <Toolbar {...childrenProps} key={toolbar.id} />;
     });
-    const props: PropsWithChildren<Pick<IStack, 'id' | 'direction' | 'maxItems'>> = { ...item, children };
+    const props: StackProps = {
+      ...item,
+      children,
+      stackInstance,
+      onClose: () => {
+        const parent = stackInstance?.$parent;
+        if (parent?.type === NodeType.ToolbarWindow) return parent.$hide();
+      }
+    };
     return props;
   };
   const toolbarProps = (item: IToolbar, parent: IStack) => {
+    const toolbarInstance = getToolbar(item, parent);
     const onClickHandler = (id: string) => {
       if (parent.activePanelId !== id) {
         set((state) => {
@@ -146,10 +161,9 @@ export const useLayout = create<LayoutStore>((set, get) => {
       return <Panel key={tool.id} {...tool} value={parent?.activePanelId} onClick={() => onClickHandler(tool.id)} />;
     });
 
-    const props: PropsWithChildren<Pick<IToolbar, 'id' | 'direction' | 'stackActivePanelId' | 'stackAs'>> = {
+    const props: ToolbarProps = {
       ...item,
-      stackActivePanelId: parent.activePanelId,
-      stackAs: parent.as || 'toolbar',
+      toolbarInstance: toolbarInstance,
       children: [<Fragment key="content">{item.content}</Fragment>, children]
     };
     return props;
@@ -191,8 +205,14 @@ export const useLayout = create<LayoutStore>((set, get) => {
     const typedStack = { ...stack, type: NodeType.Stack as NodeType.Stack, members: typedMembers };
     return typedMembers.map((toolbar) => getToolbar(toolbar, typedStack));
   };
-  const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): IPanel[] => {
-    return (toolbar.members || []).map((tool) => ({ type: NodeType.Panel, content: tool.content || null, ...tool }));
+  const toolbarMembers = (toolbar: AsRegisterArgs<IToolbar>): GatheredPanel[] => {
+    const typedMembers = (toolbar.members || []).map((panel) => ({
+      ...panel,
+      content: panel.content || null,
+      type: NodeType.Panel as NodeType.Panel
+    }));
+    const typedToolbar = { ...toolbar, type: NodeType.Toolbar as NodeType.Toolbar, members: typedMembers };
+    return typedMembers.map((panel) => getPanel(panel, typedToolbar));
   };
 
   //gather item with methods
@@ -350,13 +370,16 @@ export const useLayout = create<LayoutStore>((set, get) => {
   const getToolbar = (toolbar: IToolbar, parent: IStack): GatheredToolbar => {
     return {
       ...toolbar,
+      get members() {
+        return toolbarMembers(toolbar);
+      },
       get $props() {
         return toolbarProps(toolbar, parent);
       },
       get $parent() {
         return get().$stack(parent);
       },
-      $panel: (panel) => lookUp<IPanel>(both(), panel).item,
+      $panel: (panel) => get().$panel(panel, toolbar.id),
       $set: (attributes) => {
         set((state) => {
           const members = [...state.members];
@@ -364,6 +387,29 @@ export const useLayout = create<LayoutStore>((set, get) => {
           if (!isToolbar(item)) return state;
           Object.assign(item, attributes);
           return { members };
+        });
+      }
+    };
+  };
+  const getPanel = (panel: IPanel, _toolbar: IToolbar): GatheredPanel => {
+    return {
+      ...panel,
+      $toggleVisibility: (as_: 'tabs' | 'toolbar') => {
+        set((state) => {
+          const { item } = lookUp<IPanel>(both(), panel.id);
+          if (!isPanel(item)) return state;
+          const currentVisibility = panel.visibility || 'full';
+          let targetVisibility;
+          if (as_ === 'toolbar') {
+            targetVisibility = currentVisibility === 'full' ? 'compact' : 'full';
+          }
+          if (as_ === 'tabs') {
+            targetVisibility =
+              currentVisibility === 'full' ? 'compact' : currentVisibility === 'compact' ? 'collapsed' : 'full';
+          }
+
+          item.visibility = targetVisibility as any;
+          return { members: state.members, floating: state.floating };
         });
       }
     };
@@ -455,6 +501,26 @@ export const useLayout = create<LayoutStore>((set, get) => {
           return { members, floating };
         });
         return getToolbar(newToolbar, stackItem);
+      }
+    },
+    $panel: (panel, toolbar) => {
+      if (typeof panel === 'string') {
+        const { item, parent } = lookUp<IPanel>(both(), panel);
+        if (item && parent) return getPanel(item, parent);
+        return undefined as any;
+      } else {
+        const { item, parent } = lookUp<IPanel>(both(), panel.id);
+        if (item && parent) return getPanel(item, parent);
+        const { item: toolbarItem } = lookUp<IToolbar>(both(), toolbar);
+        if (!isToolbar(toolbarItem)) return;
+
+        const newPanel: IPanel = { type: NodeType.Panel, content: panel.content || null, ...panel };
+        set((state) => {
+          const members = [...state.members];
+          toolbarItem.members.push(newPanel);
+          return { members };
+        });
+        return getPanel(newPanel, toolbarItem);
       }
     }
   };

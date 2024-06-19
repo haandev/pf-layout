@@ -1,16 +1,18 @@
 import React, { CSSProperties, FC, PropsWithChildren, useRef } from 'react';
-import { AsComponentProps, Direction, IToolbar, NodeType } from '../../types';
+import { AsComponentProps, Direction, GatheredToolbar, IToolbar, NodeType } from '../../types';
 import clsx from 'clsx';
 import { noDrag } from '../../utils';
 import { DragHandle } from '../../elements';
 import { useDrag } from 'react-dnd';
 import { ToolbarDragSource } from '../../types.dnd';
+import PanelHost from './PanelHost';
 
 export interface ToolbarProps extends PropsWithChildren, AsComponentProps<IToolbar> {
   className?: string;
   style?: React.CSSProperties;
+  toolbarInstance?: GatheredToolbar;
 }
-export const Toolbar: FC<ToolbarProps> = (props) => {
+export const Toolbar: FC<ToolbarProps> = ({ toolbarInstance, ...props }) => {
   const rootRef = useRef<HTMLDivElement>(null);
 
   // If the direction is horizontal and rows are not set, set rows to 1
@@ -35,11 +37,9 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
     collect: (monitor) => monitor.isDragging()
   });
 
-  drag(rootRef);
+  drag(rootRef)
+  const parent = toolbarInstance?.$parent;
 
-  const panel = props.members?.find((member) => member.id === props.stackActivePanelId);
-  const willRenderPanel = props.stackAs === 'tabs' ? true : panel && panel.id === props.stackActivePanelId;
-  const lastUsed = props.members?.find((member) => member.id === props.lastUsedPanelId) || props.members?.[0] || null;
   return (
     <div
       /*   {...(!props.draggable ? noDrag : {})} */
@@ -52,7 +52,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
         [props.className || '']: true
       })}
     >
-      {props.stackAs !== 'tabs' && (
+      {parent?.as !== 'tabs' && (
         <>
           {props.showHandle ? props.dragHandle || <DragHandle /> : null}
           <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
@@ -60,24 +60,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
           </div>
         </>
       )}
-      {willRenderPanel && (
-        <div className="pf-panel-host" {...noDrag}>
-          <div className="pf-panel-host-header">
-            {props.members?.map((member) => (
-              <button
-                key={member.id}
-                className={clsx({
-                  'pf-panel-host-header-item': true,
-                  'pf-active': member.id === lastUsed?.id
-                })}
-                onClick={() => /*props.onPanelClick?.(member.id)*/ {}}
-              >
-                {member.title}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <PanelHost toolbarInstance={toolbarInstance} />
     </div>
   );
 };

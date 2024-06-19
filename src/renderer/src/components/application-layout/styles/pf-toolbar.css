@@ -4,7 +4,6 @@
 
 .pf-panel-host {
   min-width: 300px;
-  min-height: 300px;
   background: var(--pf-primary-color);
 }
 .pf-stack-toolbars .pf-panel-host {
@@ -28,9 +27,22 @@
   height: 25px;
   background: var(--pf-secondary-color);
 }
+.pf-panel-host-header button {
+  margin-right: 5px;
+  border:1px solid rgba(0,0,0,0);
+  border-radius: 2px;
+  padding:1px;
+  display:flex;
+  margin-left:-5px;
+}
+.pf-panel-host-header button:hover {
+  border:1px solid var(--pf-dark-border-color);
+}
 .pf-panel-host-header-item {
-  padding: 0px 10px;
+  padding: 0px 10px 0px 10px;
   background: var(--pf-secondary-color);
+  align-items: center;
+  display: flex;
 }
 .pf-panel-host-header-item.pf-active {
   background: var(--pf-primary-color);

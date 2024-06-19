@@ -16,6 +16,7 @@ import { Scene } from './components/application-layout/blocks/scene/Scene';
 import { useApp } from './stores/app-store';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import { useScene } from './components/application-layout/stores/scene-store';
+import { ColorPanel, CompactColorPanel } from './components/layout-preset/ColorPanel';
 
 function App(): JSX.Element {
   const timeout = useRef<any | null>(null);
@@ -72,12 +73,8 @@ function App(): JSX.Element {
         id: 'right-container-col-1',
         direction: Direction.Vertical,
         draggable: true,
-        onExpand() {
-          layout.$stack('right-container-col-1')?.$asTabs();
-        },
-        onCollapse() {
-          layout.$stack('right-container-col-1')?.$asToolbar();
-        }
+        onExpand: (thisStack) => thisStack?.$asTabs(),
+        onCollapse: (thisStack) => thisStack?.$asToolbar()
       })
       .$toolbar({
         id: 'right-stack-1-toolbar-1',
@@ -90,7 +87,8 @@ function App(): JSX.Element {
             id: 'color-panel',
             icon: <InlineSvg source={colorPanel} />,
             title: 'Color',
-            content: <div>ColorWindow {app.tool}</div>
+            content: <ColorPanel />,
+            compactContent: <CompactColorPanel />
           },
           {
             id: 'color-guide-panel',
