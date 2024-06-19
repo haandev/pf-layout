@@ -3,7 +3,6 @@ import { useCallback, useRef } from 'react';
 import { ApplicationLayout, Container, useInitialize } from './components/application-layout';
 import { Direction } from './components/application-layout/types';
 
-import CadPage from './pages/CadPage';
 import { InlineSvg } from './components/application-layout/elements';
 import MainTools from './components/layout-preset/MainTools';
 import TopToolbar from './components/layout-preset/TopToolbar';
@@ -101,7 +100,7 @@ function App(): JSX.Element {
   });
 
   const newTabContentCtor = () => {
-    const id = Math.random().toString(36).substring(7);
+    //const id = Math.random().toString(36).substring(7);
     //const content = <CadPage id={id} />;
     const content = <div></div>;
     return content;
