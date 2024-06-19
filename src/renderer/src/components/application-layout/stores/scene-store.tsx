@@ -356,7 +356,7 @@ export const useScene = create<SceneStore>((set, get) => {
           }
           parent.members.splice(parent.members.indexOf(tabView), 1);
 
-          return cleanUp(state);
+          return cleanUp({ members });
         });
       },
       $addTab: (tab) => {
@@ -468,8 +468,8 @@ export const useScene = create<SceneStore>((set, get) => {
             }
           } else {
             const newActiveTabId =
-              tabView.members[index - 1]?.id || (index !== 0 && tabView.members[0]?.id) || tabView.members[1]?.id;
-            if (tabView.activeTabId === tab.id) tabView.activeTabId = newActiveTabId;
+              parent.members[index - 1]?.id || (index !== 0 && parent.members[0]?.id) || parent.members[1]?.id;
+            parent.activeTabId = newActiveTabId;
 
             parent.members.splice(index, 1);
             if (beforeTab.item) {

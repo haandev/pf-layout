@@ -6,7 +6,6 @@ import { IPageProps } from '@renderer/components/application-layout/types';
 import { useApp } from '../../stores/app-store';
 import { useScene } from '@renderer/components/application-layout/stores/scene-store';
 import { v4 } from 'uuid';
-import CadPage from '../CadPage';
 const Welcome: FC<IPageProps> = () => {
   const app = useApp();
   const scene = useScene();
@@ -15,7 +14,6 @@ const Welcome: FC<IPageProps> = () => {
     const id = v4();
     scene.addTab({
       id,
-      content: <CadPage id={id} />,
       recentlyCreated: true
     });
   }, [scene]);

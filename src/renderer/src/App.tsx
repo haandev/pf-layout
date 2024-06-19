@@ -102,7 +102,8 @@ function App(): JSX.Element {
 
   const newTabContentCtor = () => {
     const id = Math.random().toString(36).substring(7);
-    const content = <CadPage id={id} />;
+    //const content = <CadPage id={id} />;
+    const content = <div></div>;
     return content;
   };
 

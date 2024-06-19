@@ -121,3 +121,6 @@
 .pf-tab-is-dragging {
   opacity: 0.2;
 }
+.pf-tab-view__content-inner {
+  background:white;
+}
