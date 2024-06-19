@@ -80,22 +80,22 @@ export interface IToolbarWindow {
   members: IStack[];
 }
 export interface IStack {
-  draggable?: boolean;
-  type: NodeType.Stack;
-  id: string;
-  members: IToolbar[];
+  activePanelId?: string;
+  as?: 'toolbar' | 'tabs';
+  chevronsPosition?: 'start' | 'end'; //default is end
   direction: Direction;
-  //undefined is default behavior (hidden in horizontal, shown in vertical)
-  header?: boolean;
+  draggable?: boolean;
+  header?: boolean; //undefined is default behavior (hidden in horizontal, shown in vertical)
+  id: string;
+  isExpanded?: boolean | (() => boolean);
   maxItems?: number;
+  members: IToolbar[];
+  onCollapse?: () => void;
+  onExpand?: () => void;
   resizable?: boolean;
   size?: number;
-  as?: 'toolbar' | 'tabs';
-  activePanelId?: string;
-  chevronsPosition?: 'start' | 'end'; //default is end
-  onExpand?: () => void;
-  onCollapse?: () => void;
-  isExpanded?: boolean | (() => boolean);
+  type: NodeType.Stack;
+  width?: number;
 }
 export interface IToolbar {
   allowPanels?: boolean;
@@ -103,15 +103,16 @@ export interface IToolbar {
   content?: React.ReactNode;
   direction: Direction;
   dragHandle?: React.ReactNode;
-  showHandle?: boolean;
   draggable?: boolean;
   fullSize?: boolean;
-  stackAs?: IStack['as'];
   id: string;
+  lastUsedPanelId?: string;
   maxItems?: number;
   members: IPanel[];
   rows?: number;
+  showHandle?: boolean;
   stackActivePanelId?: string;
+  stackAs?: IStack['as'];
   type: NodeType.Toolbar;
 }
 export interface IPanel {
@@ -119,8 +120,11 @@ export interface IPanel {
   id: string;
   icon: React.ReactNode;
   title: string;
+  compactContent?: React.ReactNode;
   content: React.ReactNode;
+  contextMenu?: ContextMenu;
 }
+
 export interface IContainer {
   type: NodeType.Container;
   id: string;
@@ -190,6 +194,8 @@ export interface GatheredStack extends IStack {
   $set: (attributes: Partial<IStack>) => void;
   $detach: (x: number, y: number) => void;
   $attach: (containerId: string) => void;
+  $asTabs: () => void;
+  $asToolbar: () => void;
 }
 export interface GatheredToolbar extends IToolbar {
   //members: GatheredPanel[];
@@ -260,3 +266,15 @@ export interface GatheredTab extends ITab {
 export type IPageProps = {
   id: string;
 };
+
+export type ContextMenuItem =
+  | ContextMenu
+  | {
+      title: string;
+      id: string;
+      checked: boolean | (() => boolean);
+      disabled: boolean | (() => boolean);
+      children: ContextMenu;
+    };
+
+export type ContextMenu = ContextMenuItem[];

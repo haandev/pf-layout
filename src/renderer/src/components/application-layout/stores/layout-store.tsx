@@ -132,6 +132,7 @@ export const useLayout = create<LayoutStore>((set, get) => {
           const floating = [...state.floating];
           if (!isStack(parent)) return { members, floating };
           parent.activePanelId = id;
+          item.lastUsedPanelId = id;
           return { members, floating };
         });
       } else {
@@ -327,6 +328,21 @@ export const useLayout = create<LayoutStore>((set, get) => {
           parent && (parent.members = parent.members.filter((item) => item.id !== stack.id));
           container.members.push(stack);
           return { members, floating };
+        });
+      },
+      $asTabs: () => {
+        set((state) => {
+          stack.as = 'tabs';
+          stack.isExpanded = true;
+          return { members: state.members, floating: state.floating };
+        });
+      },
+      $asToolbar: () => {
+        set((state) => {
+          stack.as = 'toolbar';
+          stack.isExpanded = false;
+          stack.activePanelId = undefined;
+          return { members: state.members, floating: state.floating };
         });
       }
     };

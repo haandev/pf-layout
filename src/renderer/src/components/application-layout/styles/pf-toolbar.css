@@ -10,14 +10,32 @@
 .pf-stack-toolbars .pf-panel-host {
   position: absolute;
   top: -1px;
-  right: 32px;
-  border: 1px solid var(--pf-dark-border-color);
-  border-radius: 3px;
+  right: 36px;
+  box-shadow:
+    rgba(0, 0, 0, 0.4) 0px 2px 4px,
+    rgba(0, 0, 0, 0.3) 0px 7px 13px -3px,
+    rgba(0, 0, 0, 0.2) 0px -3px 0px inset;
+}
+.pf-stack-tabs .pf-toolbar {
+  padding-top: 0px;
 }
 .pf-stack-tabs .pf-panel-host {
   position: unset;
 }
-.pf-stack.pf-vertical .pf-toolbar {
+.pf-panel-host-header {
+  display: flex;
+  align-items: stretch;
+  height: 25px;
+  background: var(--pf-secondary-color);
+}
+.pf-panel-host-header-item {
+  padding: 0px 10px;
+  background: var(--pf-secondary-color);
+}
+.pf-panel-host-header-item.pf-active {
+  background: var(--pf-primary-color);
+}
+.pf-stack-toolbars.pf-vertical .pf-toolbar {
   padding-bottom: 5px;
   padding-top: 5px;
   border-bottom: 1px solid var(--pf-dark-border-color);

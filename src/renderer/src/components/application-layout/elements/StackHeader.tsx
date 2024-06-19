@@ -46,12 +46,12 @@ export const StackHeader: FC<StackHeaderProps> = (props) => {
   const _right = chevronPosition === 'end' && [
     !props.isExpanded && (
       <button key="right-right" onClick={() => props.onExpand?.()}>
-        {isVertical ? <IconChevronsRight width={10} height={10} /> : <IconChevronsDown width={10} height={10} />}
+        {isVertical ? <IconChevronsLeft width={10} height={10} /> : <IconChevronsUp width={10} height={10} />}
       </button>
     ),
     props.isExpanded && (
       <button key="right-left" onClick={() => props.onCollapse?.()}>
-        {isVertical ? <IconChevronsLeft width={10} height={10} /> : <IconChevronsUp width={10} height={10} />}
+        {isVertical ? <IconChevronsRight width={10} height={10} /> : <IconChevronsDown width={10} height={10} />}
       </button>
     )
   ];

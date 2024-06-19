@@ -39,7 +39,7 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
 
   const panel = props.members?.find((member) => member.id === props.stackActivePanelId);
   const willRenderPanel = props.stackAs === 'tabs' ? true : panel && panel.id === props.stackActivePanelId;
-
+  const lastUsed = props.members?.find((member) => member.id === props.lastUsedPanelId) || props.members?.[0] || null;
   return (
     <div
       /*   {...(!props.draggable ? noDrag : {})} */
@@ -52,11 +52,32 @@ export const Toolbar: FC<ToolbarProps> = (props) => {
         [props.className || '']: true
       })}
     >
-      {props.showHandle ? props.dragHandle || <DragHandle /> : null}
-      <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
-        {props.children}
-      </div>
-      {willRenderPanel && <div className="pf-panel-host">{panel?.content}</div>}
+      {props.stackAs !== 'tabs' && (
+        <>
+          {props.showHandle ? props.dragHandle || <DragHandle /> : null}
+          <div className={clsx({ 'pf-toolbar-items': true })} style={itemsStyle} {...noDrag}>
+            {props.children}
+          </div>
+        </>
+      )}
+      {willRenderPanel && (
+        <div className="pf-panel-host" {...noDrag}>
+          <div className="pf-panel-host-header">
+            {props.members?.map((member) => (
+              <button
+                key={member.id}
+                className={clsx({
+                  'pf-panel-host-header-item': true,
+                  'pf-active': member.id === lastUsed?.id
+                })}
+                onClick={() => /*props.onPanelClick?.(member.id)*/ {}}
+              >
+                {member.title}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

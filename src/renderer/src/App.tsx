@@ -57,7 +57,7 @@ function App(): JSX.Element {
       })
       .$toolbar({
         id: 'main-tools',
-        draggable: true,
+        draggable: false,
         direction: Direction.Vertical,
         columns: 2,
         fullSize: true,
@@ -71,7 +71,13 @@ function App(): JSX.Element {
       .$stack({
         id: 'right-container-col-1',
         direction: Direction.Vertical,
-        draggable: true
+        draggable: true,
+        onExpand() {
+          layout.$stack('right-container-col-1')?.$asTabs();
+        },
+        onCollapse() {
+          layout.$stack('right-container-col-1')?.$asToolbar();
+        }
       })
       .$toolbar({
         id: 'right-stack-1-toolbar-1',
