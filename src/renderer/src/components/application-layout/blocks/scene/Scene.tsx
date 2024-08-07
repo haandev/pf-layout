@@ -3,7 +3,6 @@ import { FC, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useDrop } from 'react-dnd';
 import { useResizeObserver } from 'usehooks-ts';
-import { PanelGroup } from 'react-resizable-panels';
 
 import { NestedTabView } from './NestedTabView';
 import { Window } from './Window';

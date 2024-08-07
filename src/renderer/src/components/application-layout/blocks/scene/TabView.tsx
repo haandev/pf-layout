@@ -2,7 +2,6 @@ import clsx from 'clsx';
 import { useDrag, useDrop } from 'react-dnd';
 import React, { CSSProperties, FC, PropsWithChildren, useEffect, useRef, useState } from 'react';
 
-import { useParentDirection, useValidateElement } from '../../hooks';
 import { evalBoolean, lookUp } from '../../utils';
 import { AsComponentProps, Direction, ITab, ITabView, NodeType } from '../../types';
 
@@ -18,7 +17,6 @@ import {
   TabViewDroppableItems
 } from '../../types.dnd';
 import { SceneStore } from '../../stores/scene-store';
-import { SplitResizeHandle } from '../../elements';
 
 export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
@@ -74,8 +72,6 @@ export const TabView: FC<TabViewProps> = ({
     }
   };
 
-  const direction = useParentDirection(rootRef, '.pf-view-group');
-
   const onTabClose = (tabId: string) => {
     const previousTabIndex = view.members.findIndex(({ id }) => id === tabId) - 1;
     const nextTabIndex = view.members.findIndex(({ id }) => id === tabId) + 1;
@@ -89,10 +85,10 @@ export const TabView: FC<TabViewProps> = ({
   const onAddNew = () => {
     tabViewInstance?.$addTab({ recentlyCreated: true });
   };
-
+/*
   const onResize = (size: number, nextItemSize?: number) => {
     store.resizeView(direction, size, id, nextItemSize);
-  };
+  }; */
 
   const [collected, drop] = useDrop<TabViewDroppableItems, any, TabViewDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
