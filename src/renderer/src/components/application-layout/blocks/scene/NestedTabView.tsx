@@ -9,52 +9,49 @@ import { evalBoolean } from '../../utils';
 import { Direction, IGroupView, ITabView, IWindow, NodeType } from '../../types';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
+export type HeaderControl = {
+  isVisible: (view: ITabView) => boolean;
+  onClick: (viewId: string) => void;
+  render: JSX.Element;
+};
 export interface NestedTabViewProps extends TabViewCommonProps {
   store: SceneStore;
   view: IWindow | IGroupView;
-  headerControls?: {
-    isVisible: (view: ITabView) => boolean;
-    onClick: (viewId: string) => void;
-    render: JSX.Element;
-  }[];
+  headerControls?: HeaderControl[];
 }
 export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id, direction, ...props }) => {
   const _direction = direction || Direction.Horizontal;
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
+  const renderHeaderControls = (viewItem: ITabView) =>
+    headerControls?.length &&
+    headerControls.map(
+      (control, idx) =>
+        evalBoolean(control.isVisible, viewItem) && (
+          <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(viewItem.id)}>
+            {control.render}
+          </button>
+        )
+    );
   return (
-    <>
+    <PanelGroup direction={_direction}>
       {'members' in view &&
         view.members.map((viewItem, idx) => {
           if (!viewItem) return null;
-          let render: JSX.Element;
-          if (viewItem.type === NodeType.TabView) {
-            const activeTabId = viewItem.activeTabId;
-            const renderedHeaderControls = headerControls?.map(
-              (control, idx) =>
-                evalBoolean(control.isVisible, viewItem) && (
-                  <button key={idx} className="pf-tab-header-button" onClick={() => control.onClick(viewItem.id)}>
-                    {control.render}
-                  </button>
-                )
-            );
-            render = (
+          return (
+            <>
               <Panel>
-                <TabView
-                  activeTabId={activeTabId}
-                  direction={_direction}
-                  headerControls={!!renderedHeaderControls?.length && renderedHeaderControls}
-                  height={viewItem.height}
-                  members={viewItem.members}
-                  id={viewItem.id}
-                  key={viewItem.id}
-                  {...props}
-                />
-              </Panel>
-            );
-          } else {
-            render = (
-              <Panel>
-                <PanelGroup direction={oppositeDirection}>
+                {viewItem.type === NodeType.TabView ? (
+                  <TabView
+                    activeTabId={viewItem.activeTabId}
+                    direction={_direction}
+                    headerControls={renderHeaderControls(viewItem)}
+                    height={viewItem.height}
+                    members={viewItem.members}
+                    id={viewItem.id}
+                    key={viewItem.id}
+                    {...props}
+                  />
+                ) : (
                   <NestedTabView
                     direction={oppositeDirection}
                     headerControls={headerControls}
@@ -62,20 +59,12 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
                     view={viewItem}
                     {...props}
                   />
-                </PanelGroup>
+                )}
               </Panel>
-            );
-          }
-
-          if (idx !== view.members.length - 1) {
-            render = (
-              <>
-                {render} <PanelResizeHandle />
-              </>
-            );
-          }
-          return render;
+              {idx !== view.members.length - 1 && <PanelResizeHandle />}
+            </>
+          );
         })}
-    </>
+    </PanelGroup>
   );
 };

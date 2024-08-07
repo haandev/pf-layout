@@ -99,7 +99,6 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                 minimized={win.minimized}
                 maximized={win.maximized}
               >
-                <PanelGroup direction="horizontal">
                   <NestedTabView
                     store={store}
                     id={win.id}
@@ -125,7 +124,6 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                         : []
                     }
                   />
-                </PanelGroup>
               </Window>
             );
 
