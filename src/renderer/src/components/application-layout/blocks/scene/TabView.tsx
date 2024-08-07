@@ -60,11 +60,7 @@ export const TabView: FC<TabViewProps> = ({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-  useValidateElement(rootRef, { $parent: { $match: '.pf-view-group' } }, (validation) => {
-    if (!validation) {
-      throw new Error('TabView must be used within a ViewGroup.');
-    }
-  });
+
 
   useEffect(() => {
     if (activeTabId === undefined && view.members.length > 0) {
@@ -182,7 +178,6 @@ export const TabView: FC<TabViewProps> = ({
 
   return (
     <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
-      <SplitResizeHandle direction={direction} onResize={onResize} />
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collectedOnContentSection.isDroppable })} />
       <div
         ref={headerRef}

@@ -3,6 +3,7 @@ import { FC, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useDrop } from 'react-dnd';
 import { useResizeObserver } from 'usehooks-ts';
+import { PanelGroup } from 'react-resizable-panels';
 
 import { NestedTabView } from './NestedTabView';
 import { Window } from './Window';
@@ -98,31 +99,33 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                 minimized={win.minimized}
                 maximized={win.maximized}
               >
-                <NestedTabView
-                  store={store}
-                  id={win.id}
-                  view={win}
-                  titleFormatter={(_tabView, tab) => tab.title}
-                  titleEditable={true}
-                  detachable={canWindowDetachable(win)}
-                  attachable={!!win.floating}
-                  headerControls={
-                    !win.minimized
-                      ? [
-                          {
-                            isVisible: (view) => view && view.members.length > 1,
-                            render: <IconSplitSquareHorizontal width={16} height={16} />,
-                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Horizontal)
-                          },
-                          {
-                            isVisible: (view) => view && view.members.length > 1,
-                            render: <IconSplitSquareVertical width={16} height={16} />,
-                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Vertical)
-                          }
-                        ]
-                      : []
-                  }
-                />
+                <PanelGroup direction="horizontal">
+                  <NestedTabView
+                    store={store}
+                    id={win.id}
+                    view={win}
+                    titleFormatter={(_tabView, tab) => tab.title}
+                    titleEditable={true}
+                    detachable={canWindowDetachable(win)}
+                    attachable={!!win.floating}
+                    headerControls={
+                      !win.minimized
+                        ? [
+                            {
+                              isVisible: (view) => view && view.members.length > 1,
+                              render: <IconSplitSquareHorizontal width={16} height={16} />,
+                              onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Horizontal)
+                            },
+                            {
+                              isVisible: (view) => view && view.members.length > 1,
+                              render: <IconSplitSquareVertical width={16} height={16} />,
+                              onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Vertical)
+                            }
+                          ]
+                        : []
+                    }
+                  />
+                </PanelGroup>
               </Window>
             );
 

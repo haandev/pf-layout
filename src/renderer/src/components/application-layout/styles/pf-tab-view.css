@@ -6,6 +6,7 @@
   border: 1px solid var(--pf-dark-border-color);
   min-height: 100px;
   min-width: 100px;
+  height: 100%;
 }
 
 .pf-tab-view__tabs,
@@ -122,5 +123,5 @@
   opacity: 0.2;
 }
 .pf-tab-view__content-inner {
-  background:white;
+  background: white;
 }
