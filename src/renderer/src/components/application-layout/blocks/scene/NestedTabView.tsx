@@ -39,7 +39,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
           if (!viewItem) return null;
           return (
             <>
-              <Panel>
+              <Panel minSize={10} >
                 {viewItem.type === NodeType.TabView ? (
                   <TabView
                     activeTabId={viewItem.activeTabId}
