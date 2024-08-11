@@ -9,9 +9,33 @@ import zoomOut from '../../icons/illustrator/zoom-out.svg';
 import IconHome from '../../icons/IconHome';
 import IconSave from '../../icons/IconSave';
 import IconFolderOpen from '../../icons/IconFolderOpen';
+import { TopToolbar } from '../application-layout/types';
 
 const TopToolbar = React.memo(() => {
-  const app = {} as any; // tempoprary
+  const app: TopToolbar = {
+    flow: {
+      fitView: () => {
+        const elem = document.documentElement;
+
+        if (!document.fullscreenElement) {
+          elem.requestFullscreen().catch((err) => {
+            console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+          });
+        } else {
+          document.exitFullscreen().catch((err) => {
+            console.error(`Error attempting to exit full-screen mode: ${err.message} (${err.name})`);
+          });
+        }
+      },
+      zoomIn: () => {
+        // Zoom in
+      },
+      zoomOut: () => {
+        // Zoom out
+      },
+    },
+  };
+
   return (
     <>
       <ToolbarItem children={<IconButton children={<IconHome />} onClick={app.showHome} />} />

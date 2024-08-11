@@ -210,7 +210,7 @@ export interface GatheredToolbar extends IToolbar {
 }
 
 export interface GatheredPanel extends IPanel {
-  $toggleVisibility: (as:"tabs" | "toolbar") => void;
+  $toggleVisibility: (as: 'tabs' | 'toolbar') => void;
 }
 
 export interface GatheredWindow extends IWindow {
@@ -283,3 +283,14 @@ export type ContextMenuItem =
     };
 
 export type ContextMenu = ContextMenuItem[];
+
+export interface TopToolbarFlows {
+  fitView: () => void;
+  zoomIn: () => void;
+  zoomOut: () => void;
+}
+
+export interface TopToolbar {
+  flow?: TopToolbarFlows;
+  showHome?: () => void;
+}
