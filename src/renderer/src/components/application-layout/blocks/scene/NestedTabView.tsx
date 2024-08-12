@@ -33,13 +33,13 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
         )
     );
   return (
-    <PanelGroup direction={_direction}  autoSaveId={id} >
+    <PanelGroup direction={_direction}>
       {'members' in view &&
         view.members.map((viewItem, idx) => {
           if (!viewItem) return null;
           return (
             <>
-              <Panel minSize={10}>
+              <Panel minSize={10} >
                 {viewItem.type === NodeType.TabView ? (
                   <TabView
                     activeTabId={viewItem.activeTabId}
