@@ -12,7 +12,6 @@ export { Container } from './blocks/scene/Container';
 export { NestedTabView } from './blocks/scene/NestedTabView';
 export { Scene } from './blocks/scene/Scene';
 export { TabView } from './blocks/scene/TabView';
-export { ViewGroup } from './blocks/scene/ViewGroup';
 export { Window } from './blocks/scene/Window';
 
 //hooks

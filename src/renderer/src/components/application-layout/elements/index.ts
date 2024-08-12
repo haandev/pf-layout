@@ -6,7 +6,6 @@ export { InlineSvg } from './InlineSvg';
 export { Label } from './Label';
 export { ResizeBox } from './ResizeBox';
 export { Separator } from './Separator';
-export { SplitResizeHandle } from './SplitResizeHandle';
 export { StackHeader } from './StackHeader';
 export { StickyButton } from './StickyButton';
 export { StickyGroupButton } from './StickyGroupButton';
