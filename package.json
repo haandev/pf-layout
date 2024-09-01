@@ -24,6 +24,7 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@mescius/spread-sheets-react": "^17.1.4",
     "@dnd-kit/core": "^6.1.0",
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
