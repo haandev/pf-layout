@@ -16,6 +16,7 @@ import { useApp } from './stores/app-store';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import { useScene } from './components/application-layout/stores/scene-store';
 import { ColorPanel, CompactColorPanel } from './components/layout-preset/ColorPanel';
+import Spread from './components/spread/Spread';
 
 function App(): JSX.Element {
   const timeout = useRef<any | null>(null);
@@ -100,9 +101,9 @@ function App(): JSX.Element {
   });
 
   const newTabContentCtor = () => {
-    //const id = Math.random().toString(36).substring(7);
+    const id = Math.random().toString(36).substring(7);
     //const content = <CadPage id={id} />;
-    const content = <div></div>;
+    const content = <Spread key={id} />;
     return content;
   };
 
