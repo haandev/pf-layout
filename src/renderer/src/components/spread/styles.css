@@ -1,0 +1,16 @@
+.formula-bar {
+  height:100%;
+  padding: 3px 0px;
+  min-height: 32px;
+  display:flex;
+  flex-direction: row;
+  align-items: center;
+  & > .formula-text-box {
+    height: 100%;
+  }
+}
+
+.formula-editor {
+  min-height:100px;
+  background:white;
+}

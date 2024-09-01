@@ -1,0 +1,2 @@
+- FormulaPanel has attach function, FormulaTextBox has workbook function for same purpose
+- FormulaPanel is not accessible on GC.Spread.Sheets when use npm package, made some hacks to make it work

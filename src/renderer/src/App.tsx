@@ -17,37 +17,67 @@ import { useLayout } from './components/application-layout/stores/layout-store';
 import { useScene } from './components/application-layout/stores/scene-store';
 import { ColorPanel, CompactColorPanel } from './components/layout-preset/ColorPanel';
 import Spread from './components/spread/Spread';
-
+import FormulaBar from './components/spread/FormulaBar';
+import { useWorkbook } from './components/spread/workbook-store';
+import GC from '@mescius/spread-sheets';
+import FormulaPanel from './components/spread/FormulaPanel';
 function App(): JSX.Element {
+  const formulaPanelRef = useRef<any>(null);
+  const formulaTextBoxRef = useRef<any>(null); //TODO:type ref type of FormulaBar component
+
+  const setWorkbook = useCallback((workbook?: GC.Spread.Sheets.Workbook) => {
+    if (!workbook) return;
+    formulaTextBoxRef.current?.setWorkbook(workbook);
+    formulaPanelRef.current?.setWorkbook(workbook);
+  }, []);
   const timeout = useRef<any | null>(null);
   const app = useApp();
   const scene = useScene();
   const layout = useLayout();
+  const workbook = useWorkbook();
 
-  const updateBlueprintPointerOffset = useCallback(() => {
+  const evaluateResize = useCallback(() => {
+    console.log('resized');
     //this is a patch for blueprint component pointer issue
     timeout.current && clearTimeout(timeout.current);
     timeout.current = setTimeout(() => {
       window.dispatchEvent(new Event('resize')); //due to blueprint component pointer issue //TODO:onwindowmove handler on scene component
-    }, 500);
+    }, 30);
   }, []);
 
   useInitialize(() => {
     //top container
-    layout
-      .$container({ id: 'container-top', maxItems: 1, direction: Direction.Vertical })
-      .$stack({ id: 'top-stack', direction: Direction.Horizontal, draggable: true })
+    const topContainer = layout.$container({
+      id: 'container-top',
+      maxItems: 2,
+      direction: Direction.Vertical
+    });
+    topContainer.$stack({ id: 'top-stack', direction: Direction.Horizontal, draggable: true }).$toolbar({
+      draggable: true,
+      fullSize: true,
+      id: 'top-tools',
+      direction: Direction.Horizontal,
+      content: <TopToolbar />
+    });
+    topContainer
+      .$stack({ id: 'init-formula', direction: Direction.Horizontal, draggable: true, header: true })
       .$toolbar({
         draggable: true,
-        fullSize: true,
-        id: 'top-tools',
+        fullSize: false,
+        showHandle: true,
+        id: 'top-tools-2',
         direction: Direction.Horizontal,
-        content: <TopToolbar />
+        content: <FormulaBar ref={formulaTextBoxRef} />
       });
 
     //left container
     layout
-      .$container({ id: 'container-left', maxItems: 2, direction: Direction.Horizontal, chevronPosition: 'start' })
+      .$container({
+        id: 'container-left',
+        direction: Direction.Horizontal,
+        chevronPosition: 'start',
+        maxItems: 2
+      })
       .$stack({
         id: 'main-tools-stack',
         draggable: true,
@@ -84,6 +114,12 @@ function App(): JSX.Element {
         columns: 1,
         members: [
           {
+            id: 'fx-panel',
+            icon: 'FX',
+            title: 'Formula Panel',
+            content: <FormulaPanel ref={formulaPanelRef} />
+          },
+          {
             id: 'color-panel',
             icon: <InlineSvg source={colorPanel} />,
             title: 'Color',
@@ -102,14 +138,27 @@ function App(): JSX.Element {
 
   const newTabContentCtor = () => {
     const id = Math.random().toString(36).substring(7);
-    //const content = <CadPage id={id} />;
-    const content = <Spread key={id} />;
+    const instance = workbook.getWorkbook(id);
+
+    const content = (
+      <Spread
+        key={id}
+        workbook={instance}
+        workbookInitialized={(initializedInstance) => {
+          workbook.register(id, initializedInstance);
+        }}
+        hostFocused={setWorkbook}
+      />
+    );
     return content;
   };
 
-  const onAddTab = () => app.hideHome();
+  const onAddTab = () => {
+    evaluateResize();
+    app.hideHome();
+  };
   const onCloseTab: OnCloseTabHandler = (_, __, state) => {
-    updateBlueprintPointerOffset();
+    evaluateResize();
     return state.length < 1 && app.showHome();
   };
 
@@ -131,11 +180,13 @@ function App(): JSX.Element {
           newTabContent={newTabContentCtor}
           onAddTab={onAddTab}
           onCloseTab={onCloseTab}
-          onWindowMove={updateBlueprintPointerOffset}
-          onWindowResize={updateBlueprintPointerOffset}
-          onSceneResize={updateBlueprintPointerOffset}
-          onDetach={updateBlueprintPointerOffset}
-          onMoveTab={updateBlueprintPointerOffset}
+          onWindowMove={evaluateResize}
+          onWindowResize={evaluateResize}
+          onSceneResize={evaluateResize}
+          onPanelResize={evaluateResize}
+          onDetach={evaluateResize}
+          onMoveTab={evaluateResize}
+          onTabChange={evaluateResize}
         />
         <Container {...(layout.$container('container-right')?.$props as ContainerProps)} />
       </div>
