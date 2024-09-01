@@ -13,28 +13,33 @@ export interface ContainerProps extends PropsWithChildren, AsComponentProps<ICon
   style?: React.CSSProperties;
   onDrop?: (id: string, type: NodeType, containerId: string) => void;
 }
-
 export const Container: FC<ContainerProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
+  const canDrop = props.canDrop || (() => true);
 
   const [isInserting, drop] = useDrop({
     accept: [NodeType.Stack, NodeType.ToolbarWindow],
+    canDrop: (item, monitor) => {
+      const isOverShallow = monitor.isOver({ shallow: true });
+      return Boolean(
+        isOverShallow &&
+          canDrop?.(item as any, props.containerInstance as any) &&
+          (props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
+          item.direction !== props.direction
+      );
+    },
     collect: (monitor) => {
-      const isOverOnlyMe = monitor.isOver({ shallow: true });
       const item = monitor.getItem();
-      return (
-        isOverOnlyMe &&
-        (props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
-        item.direction !== props.direction
+      const isOverShallow = monitor.isOver({ shallow: true });
+      return Boolean(
+        isOverShallow &&
+          canDrop?.(item as any, props.containerInstance as any) &&
+          (props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
+          item.direction !== props.direction
       );
     },
     drop: (item: any) => {
       if (!props.onDrop) return;
-      if (
-        !(props.maxItems ? (props.members?.length || 0) < props.maxItems : true) &&
-        item.direction !== props.direction
-      )
-        return;
 
       if (item.type === NodeType.Stack) {
         props.onDrop(item.id, item.type, props.id);

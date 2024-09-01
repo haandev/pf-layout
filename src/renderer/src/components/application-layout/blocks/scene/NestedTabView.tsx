@@ -1,4 +1,4 @@
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 
 import { TabView, TabViewCommonProps } from './TabView';
 
@@ -8,6 +8,7 @@ import { evalBoolean } from '../../utils';
 
 import { Direction, IGroupView, ITabView, IWindow, NodeType } from '../../types';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { OnPanelResizeHandler } from '../../types.event';
 
 export type HeaderControl = {
   isVisible: (view: ITabView) => boolean;
@@ -15,11 +16,19 @@ export type HeaderControl = {
   render: JSX.Element;
 };
 export interface NestedTabViewProps extends TabViewCommonProps {
+  onPanelResize?: OnPanelResizeHandler;
   store: SceneStore;
   view: IWindow | IGroupView;
   headerControls?: HeaderControl[];
 }
-export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id, direction, ...props }) => {
+export const NestedTabView: FC<NestedTabViewProps> = ({
+  onPanelResize,
+  view,
+  headerControls,
+  id,
+  direction,
+  ...tabViewProps
+}) => {
   const _direction = direction || Direction.Horizontal;
   const oppositeDirection = _direction === Direction.Horizontal ? Direction.Vertical : Direction.Horizontal;
   const renderHeaderControls = (viewItem: ITabView) =>
@@ -33,13 +42,13 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
         )
     );
   return (
-    <PanelGroup direction={_direction}>
+    <PanelGroup direction={_direction} onLayout={onPanelResize}>
       {'members' in view &&
         view.members.map((viewItem, idx) => {
           if (!viewItem) return null;
           return (
-            <>
-              <Panel minSize={10} >
+            <Fragment key={viewItem.id}>
+              <Panel minSize={10}>
                 {viewItem.type === NodeType.TabView ? (
                   <TabView
                     activeTabId={viewItem.activeTabId}
@@ -49,7 +58,7 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
                     members={viewItem.members}
                     id={viewItem.id}
                     key={viewItem.id}
-                    {...props}
+                    {...tabViewProps}
                   />
                 ) : (
                   <NestedTabView
@@ -57,12 +66,13 @@ export const NestedTabView: FC<NestedTabViewProps> = ({ view, headerControls, id
                     headerControls={headerControls}
                     id={viewItem.id}
                     view={viewItem}
-                    {...props}
+                    onPanelResize={onPanelResize}
+                    {...tabViewProps}
                   />
                 )}
               </Panel>
               {idx !== view.members.length - 1 && <PanelResizeHandle className="pf-split" />}
-            </>
+            </Fragment>
           );
         })}
     </PanelGroup>

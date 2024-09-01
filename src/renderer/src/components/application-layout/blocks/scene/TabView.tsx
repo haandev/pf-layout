@@ -17,8 +17,8 @@ import {
   TabViewDroppableItems
 } from '../../types.dnd';
 import { SceneStore } from '../../stores/scene-store';
+import { OnTabChangeHandler } from '../../types.event';
 
-export type OnTabChangeHandler = (tabId: string) => void;
 export type OnTabCloseHandler = (tabId: string) => void;
 export type OnAddNewClickHandler = (viewId: string) => void;
 export type OnTabMoveHandler = (options: { tabId: string; toViewId: string; beforeTabId?: string }) => void;
@@ -33,6 +33,8 @@ export interface TabViewCommonProps {
   titleEditable?: boolean | ((tabView: ITabView, tab: ITab) => boolean);
   detachable: boolean | ((tabView: ITabView) => boolean);
   attachable: boolean | ((tabView: ITabView) => boolean);
+
+  onTabChange?: OnTabChangeHandler;
 }
 export interface TabViewProps extends TabViewCommonProps, AsComponentProps<ITabView> {
   store: SceneStore;
@@ -58,7 +60,7 @@ export const TabView: FC<TabViewProps> = ({
 
   const rootRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLDivElement>(null);
-
+  const activeTabRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (activeTabId === undefined && view.members.length > 0) {
@@ -66,9 +68,15 @@ export const TabView: FC<TabViewProps> = ({
     }
   }, []);
 
-  const onTabChange = (tabId: string) => {
+  const onTabChange: OnTabChangeHandler = (tabId: string) => {
     if (activeTabId !== tabId) {
       tabViewInstance?.$changeActiveTab(tabId);
+      props.onTabChange?.(tabId);
+      setTimeout(() => {
+        const activeTabContent = activeTabRef.current?.firstElementChild;
+        if (!activeTabContent) return;
+        (activeTabContent as HTMLDivElement).click();
+      }, 50);
     }
   };
 
@@ -85,10 +93,6 @@ export const TabView: FC<TabViewProps> = ({
   const onAddNew = () => {
     tabViewInstance?.$addTab({ recentlyCreated: true });
   };
-/*
-  const onResize = (size: number, nextItemSize?: number) => {
-    store.resizeView(direction, size, id, nextItemSize);
-  }; */
 
   const [collected, drop] = useDrop<TabViewDroppableItems, any, TabViewDropTarget>(() => ({
     accept: [NodeType.Tab, NodeType.TabView],
@@ -148,7 +152,7 @@ export const TabView: FC<TabViewProps> = ({
     }
   }));
 
-  const [isDragging, drag, preview] = useDrag<TabViewDragSource>({
+  const [_isDragging, drag] = useDrag<TabViewDragSource>({
     type: NodeType.TabView,
     canDrag: () => detachable && evalBoolean(detachable, view),
     collect: (monitor) => monitor.isDragging(),
@@ -164,7 +168,6 @@ export const TabView: FC<TabViewProps> = ({
 
   drop(rootRef);
   drag(headerRef);
-  preview(rootRef);
 
   const onDrop = (tabId: string, beforeTabId: string) => {
     tabViewInstance?.$moveTabToView(tabId, beforeTabId);
@@ -173,7 +176,7 @@ export const TabView: FC<TabViewProps> = ({
   const style: CSSProperties = { width, height, minWidth: width, minHeight: height };
 
   return (
-    <div ref={rootRef} className={clsx({ 'pf-tab-view': true, 'pf-transparent': isDragging })} style={style}>
+    <div ref={rootRef} className={clsx({ 'pf-tab-view': true })} style={style}>
       <div className={clsx({ 'pf-drop-zone': true, 'pf-highlight': collectedOnContentSection.isDroppable })} />
       <div
         ref={headerRef}
@@ -212,6 +215,7 @@ export const TabView: FC<TabViewProps> = ({
           view.members.map((tab) => (
             <div
               key={tab.id}
+              ref={tab.id === activeTabId ? activeTabRef : null}
               className={clsx({
                 'pf-tab-view__content-inner': true,
                 'pf-hidden': tab.id !== activeTabId

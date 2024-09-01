@@ -15,7 +15,6 @@ import IconXmark from '../../icons/IconXmark';
 import IconMinus from '../../icons/IconMinus';
 import IconPlus from '../../icons/IconPlus';
 
-export type OnResizeHandler = (width: number, height: number, top: number, left: number, id: string) => void;
 export interface WindowProps extends PropsWithChildren, AsComponentProps<IWindow> {
   store: SceneStore;
   direction?: Direction;

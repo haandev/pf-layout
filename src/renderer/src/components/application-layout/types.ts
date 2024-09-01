@@ -128,11 +128,12 @@ export interface IPanel {
 
 export interface IContainer {
   type: NodeType.Container;
+  maxItems?: number;
   id: string;
   members: IStack[];
-  maxItems?: number;
   direction: Direction;
   chevronPosition?: 'start' | 'end'; // default is end
+  canDrop?: (source: IStack, target: IContainer) => boolean;
 }
 export type StateItem =
   | ITab

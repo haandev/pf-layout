@@ -1,5 +1,6 @@
 .pf-toolbar {
   position: relative;
+  background: var(--pf-primary-color);
 }
 
 .pf-panel-host {
@@ -29,14 +30,14 @@
 }
 .pf-panel-host-header button {
   margin-right: 5px;
-  border:1px solid rgba(0,0,0,0);
+  border: 1px solid rgba(0, 0, 0, 0);
   border-radius: 2px;
-  padding:1px;
-  display:flex;
-  margin-left:-5px;
+  padding: 1px;
+  display: flex;
+  margin-left: -5px;
 }
 .pf-panel-host-header button:hover {
-  border:1px solid var(--pf-dark-border-color);
+  border: 1px solid var(--pf-dark-border-color);
 }
 .pf-panel-host-header-item {
   padding: 0px 10px 0px 10px;

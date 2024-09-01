@@ -42,6 +42,7 @@ export const Stack: FC<StackProps> = (props) => {
       onExpand={() => props.onExpand?.(props.stackInstance)}
       isExpanded={evalBoolean(props.isExpanded)}
       chevronPosition={props.chevronsPosition}
+      showChevrons={props.direction === Direction.Vertical}
     />
   );
 

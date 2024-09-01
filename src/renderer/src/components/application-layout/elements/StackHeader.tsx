@@ -17,6 +17,7 @@ export interface StackHeaderProps {
   onClose?: (stackId?: string, parentId?: string) => void;
   stackId: string;
   parentId?: string;
+  showChevrons?: boolean;
 }
 export const StackHeader: FC<StackHeaderProps> = (props) => {
   const rootRef = useRef<HTMLDivElement>(null);
@@ -71,11 +72,15 @@ export const StackHeader: FC<StackHeaderProps> = (props) => {
         'pf-stack-header': true
       })}
     >
-      <div className="pf-stack-header-left">
-        {isFirstChild && close}
-        {_left}
-      </div>
-      <div className="pf-stack-header-right">{_right}</div>
+      {props.showChevrons && (
+        <>
+          <div className="pf-stack-header-left">
+            {isFirstChild && close}
+            {_left}
+          </div>
+          <div className="pf-stack-header-right">{_right}</div>
+        </>
+      )}
     </div>
   );
 };

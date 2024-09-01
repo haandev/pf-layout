@@ -98,31 +98,33 @@ export const Scene: FC<SceneProps> = ({ store, ...events }) => {
                 minimized={win.minimized}
                 maximized={win.maximized}
               >
-                  <NestedTabView
-                    store={store}
-                    id={win.id}
-                    view={win}
-                    titleFormatter={(_tabView, tab) => tab.title}
-                    titleEditable={true}
-                    detachable={canWindowDetachable(win)}
-                    attachable={!!win.floating}
-                    headerControls={
-                      !win.minimized
-                        ? [
-                            {
-                              isVisible: (view) => view && view.members.length > 1,
-                              render: <IconSplitSquareHorizontal width={16} height={16} />,
-                              onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Horizontal)
-                            },
-                            {
-                              isVisible: (view) => view && view.members.length > 1,
-                              render: <IconSplitSquareVertical width={16} height={16} />,
-                              onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Vertical)
-                            }
-                          ]
-                        : []
-                    }
-                  />
+                <NestedTabView
+                  store={store}
+                  id={win.id}
+                  view={win}
+                  titleFormatter={(_tabView, tab) => tab.title}
+                  titleEditable={true}
+                  detachable={canWindowDetachable(win)}
+                  attachable={!!win.floating}
+                  onTabChange={events.onTabChange}
+                  onPanelResize={events.onPanelResize}
+                  headerControls={
+                    !win.minimized
+                      ? [
+                          {
+                            isVisible: (view) => view && view.members.length > 1,
+                            render: <IconSplitSquareHorizontal width={16} height={16} />,
+                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Horizontal)
+                          },
+                          {
+                            isVisible: (view) => view && view.members.length > 1,
+                            render: <IconSplitSquareVertical width={16} height={16} />,
+                            onClick: (viewId) => store.$tabView(viewId)?.$split(Direction.Vertical)
+                          }
+                        ]
+                      : []
+                  }
+                />
               </Window>
             );
 

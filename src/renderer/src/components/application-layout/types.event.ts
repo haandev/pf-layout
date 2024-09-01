@@ -9,6 +9,7 @@ export type OnWindowResizeHandler = (
   props: { width: number; height: number; top: number; left: number },
   state: IWindow[]
 ) => void;
+export type OnPanelResizeHandler = (layout: number[]) => void;
 export type OnWindowMoveHandler = (windowId: string, props: { top: number; left: number }, state: IWindow[]) => void;
 export type OnSceneResizeHandler = (props: { width: number; height: number }, state: IWindow[]) => void;
 export type OnDetachHandler = (id: string, state: IWindow[]) => void;
@@ -17,6 +18,7 @@ export type OnMoveTabHandler = (
   options: { toViewId: string; beforeTabId?: string },
   state: IWindow[]
 ) => void;
+export type OnTabChangeHandler = (tabId: string) => void;
 
 /* export type OnNothingLeftHandler = () => void;
 export type OnMaximizeHandler = (id: string) => void;
@@ -27,7 +29,6 @@ export type OnAttachHandler = (id: string) => void;
 export type OnSplitViewHandler = (id: string, direction: Direction) => void;
 export type OnMergeViewsHandler = (options: { id: string; targetId: string; beforeTabId: string }) => void;
 export type OnResizeViewHandler = (direction: Direction, size: number, id: string, nextItemSize?: number) => void;
-export type OnChangeTabHandler = (id: string) => void;
  */
 
 export interface SceneEvents {
@@ -65,6 +66,15 @@ export interface SceneEvents {
    * Called when a tab is moved to another tab view.
    */
   onMoveTab?: OnMoveTabHandler;
+  /**
+   * Called when a tab is changed.
+   */
+  onTabChange?: OnTabChangeHandler;
+
+  /**
+   * Called when a panel is resized.
+   */
+  onPanelResize?: OnPanelResizeHandler;
   /*   onNothingLeft?: OnNothingLeftHandler;
   onMaximize?: OnMaximizeHandler;
   onMinimize?: OnMinimizeHandler;
@@ -74,6 +84,5 @@ export interface SceneEvents {
   onSplitTabView?: OnSplitViewHandler;
   onMergeTabViews?: OnMergeViewsHandler;
   onResizeView?: OnResizeViewHandler;
-  onChangeTab?: OnChangeTabHandler;
   */
 }
