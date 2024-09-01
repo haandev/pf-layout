@@ -1,4 +1,3 @@
-import React from 'react';
 import './gc.spread.sheets.all.17.1.4.min.js';
 import '@mescius/spread-sheets/styles/gc.spread.sheets.excel2013white.css';
 import GC from '@mescius/spread-sheets';
