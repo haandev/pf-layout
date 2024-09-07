@@ -16,25 +16,25 @@ import { useApp } from './stores/app-store';
 import { useLayout } from './components/application-layout/stores/layout-store';
 import { useScene } from './components/application-layout/stores/scene-store';
 import { ColorPanel, CompactColorPanel } from './components/layout-preset/ColorPanel';
-import Spread from './components/spread/Spread';
+//import Spread from './components/spread/Spread';
 import FormulaBar from './components/spread/FormulaBar';
-import { useWorkbook } from './components/spread/workbook-store';
-import GC from '@mescius/spread-sheets';
+//import { useWorkbook } from './components/spread/workbook-store';
+//import GC from '@mescius/spread-sheets';
 import FormulaPanel from './components/spread/FormulaPanel';
 function App(): JSX.Element {
   const formulaPanelRef = useRef<any>(null);
   const formulaTextBoxRef = useRef<any>(null); //TODO:type ref type of FormulaBar component
 
-  const setWorkbook = useCallback((workbook?: GC.Spread.Sheets.Workbook) => {
+  /* const setWorkbook = useCallback((workbook?: GC.Spread.Sheets.Workbook) => {
     if (!workbook) return;
     formulaTextBoxRef.current?.setWorkbook(workbook);
     formulaPanelRef.current?.setWorkbook(workbook);
-  }, []);
+  }, []); */
   const timeout = useRef<any | null>(null);
   const app = useApp();
   const scene = useScene();
   const layout = useLayout();
-  const workbook = useWorkbook();
+  //const workbook = useWorkbook();
 
   const evaluateResize = useCallback(() => {
     console.log('resized');
@@ -138,9 +138,9 @@ function App(): JSX.Element {
 
   const newTabContentCtor = () => {
     const id = Math.random().toString(36).substring(7);
-    const instance = workbook.getWorkbook(id);
+    //const instance = workbook.getWorkbook(id);
 
-    const content = (
+    /* const content = (
       <Spread
         key={id}
         workbook={instance}
@@ -149,7 +149,9 @@ function App(): JSX.Element {
         }}
         hostFocused={setWorkbook}
       />
-    );
+    ); */
+
+    const content = <div id={id} key={id}></div>;
     return content;
   };
 
