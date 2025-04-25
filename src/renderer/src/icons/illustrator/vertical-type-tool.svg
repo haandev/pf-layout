@@ -1,23 +1,5 @@
-<svg xmlns:x="http://ns.adobe.com/Extensibility/1.0/" xmlns:i="http://ns.adobe.com/AdobeIllustrator/10.0/" xmlns:graph="http://ns.adobe.com/Graphs/1.0/" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" viewBox="0 0 95 95" style="enable-background:new 0 0 95 95;" xml:space="preserve"><style type="text/css">
-	.st0{fill:#C3C3C3;}
-	.st1{fill:none;stroke:#C3C3C3;stroke-width:0.9289;stroke-miterlimit:10;}
-	.st2{fill:none;stroke:#C3C3C3;stroke-width:0.9276;stroke-miterlimit:10;}
-	.st3{fill:none;stroke:#C3C3C3;stroke-width:0.9625;stroke-miterlimit:10;}
-	.st4{fill:#FFFFFF;stroke:#000000;stroke-width:0.5;stroke-miterlimit:10;}
-	.st5{stroke:#FFFFFF;stroke-miterlimit:10;}
-	.st6{fill:#58595B;stroke:#FFFFFF;stroke-miterlimit:10;}
-	.st7{stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
-	.st8{fill:#58595B;stroke:#FFFFFF;stroke-width:0.5;stroke-miterlimit:10;}
-	.st9{fill:url(#SVGID_1_);}
-	.st10{fill:#FFFFFF;}
-	.st11{fill:none;stroke:#808285;stroke-width:1.2969;stroke-miterlimit:10;}
-	.st12{fill:#808285;}
-	.st13{fill:none;stroke:#B0B0AF;stroke-width:2.1752;stroke-miterlimit:10;}
-	.st14{fill:none;stroke:#000000;stroke-width:0.25;stroke-miterlimit:10;}
-	.st15{fill:none;stroke:#C3C3C3;stroke-width:1.0281;stroke-miterlimit:10;}
-	.st16{fill:none;}
-	.st17{fill:#FFFFFF;stroke:#ED1C24;stroke-width:0.75;stroke-miterlimit:10;}
-	.st18{fill:none;stroke:#000000;stroke-miterlimit:10;}
-	.st19{fill:none;stroke:#000000;stroke-width:0.2982;stroke-miterlimit:10;}
-	.st20{fill:none;stroke:#000000;stroke-width:2.0327;stroke-miterlimit:10;}
-</style><switch><foreignObject requiredExtensions="http://ns.adobe.com/AdobeIllustrator/10.0/" x="0" y="0" width="1" height="1"/><g i:extraneous="self"><polygon points="23.3,14.4 23.3,30.1 32.5,30.1 32.5,23.6 51.2,23.6 51.2,72.2 45.1,72.2 45.1,81.3 66.9,81.3 66.9,72.2     60.4,72.2 60.4,23.6 79.5,23.6 79.5,30.1 88.7,30.1 88.7,14.4   "/><polygon points="16.4,72.6 16.4,14.4 14.2,14.4 14.2,72.6 6.8,72.6 15.3,81.1 23.9,72.6   "/></g></switch><text x="0" y="110" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">Created by Chris Meier</text><text x="0" y="115" fill="#000000" font-size="5px" font-weight="bold" font-family="'Helvetica Neue', Helvetica, Arial-Unicode, Arial, Sans-serif">from the Noun Project</text></svg>
+<svg version="1.1" x="0px" y="0px" viewBox="0 0 95 95">
+  <polygon
+    points="23.3,14.4 23.3,30.1 32.5,30.1 32.5,23.6 51.2,23.6 51.2,72.2 45.1,72.2 45.1,81.3 66.9,81.3 66.9,72.2     60.4,72.2 60.4,23.6 79.5,23.6 79.5,30.1 88.7,30.1 88.7,14.4   " />
+  <polygon points="16.4,72.6 16.4,14.4 14.2,14.4 14.2,72.6 6.8,72.6 15.3,81.1 23.9,72.6   " />
+</svg>

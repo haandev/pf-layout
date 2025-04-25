@@ -28,6 +28,10 @@
   height: 25px;
   background: var(--pf-secondary-color);
 }
+.pf-panel-host-header-tabs {
+  display: flex;
+  flex: 1;
+}
 .pf-panel-host-header button {
   margin-right: 5px;
   border: 1px solid rgba(0, 0, 0, 0);
@@ -38,6 +42,13 @@
 }
 .pf-panel-host-header button:hover {
   border: 1px solid var(--pf-dark-border-color);
+}
+.pf-panel-host-header .context-menu-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+  margin-left:1rem
 }
 .pf-panel-host-header-item {
   padding: 0px 10px 0px 10px;

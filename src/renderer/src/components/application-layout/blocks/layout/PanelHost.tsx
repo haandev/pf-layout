@@ -4,6 +4,7 @@ import { noDrag } from '../../utils';
 import clsx from 'clsx';
 import IconArrowsExpand from '../../icons/IconArrowsExpand';
 import IconArrowsCollapse from '../../icons/IconArrowsCollapse';
+import IconContextMenu from '../../icons/IconContextMenu';
 
 export interface PanelHostProps {
   toolbarInstance?: GatheredToolbar;
@@ -20,34 +21,40 @@ const PanelHost: FC<PanelHostProps> = ({ toolbarInstance }) => {
   return willRenderPanel ? (
     <div className="pf-panel-host" {...noDrag}>
       <div className="pf-panel-host-header">
-        {toolbarInstance?.members?.map((member) => {
-          return (
-            <div
-              key={member.id}
-              className={clsx({
-                'pf-panel-host-header-item': true,
-                'pf-active': member.id === toolbarInstance?.lastUsedPanelId
-              })}
-              onClick={() => {
-                toolbarInstance?.$set({ lastUsedPanelId: member.id });
-                toolbarInstance?.$parent?.$set({ activePanelId: member.id });
-              }}
-            >
-              {member.compactContent && (
-                <button onClick={() => member.$toggleVisibility(toolbarInstance.$parent?.as || 'toolbar')}>
-                  {member.visibility === 'collapsed' ||
-                  (member.visibility === 'compact' && toolbarInstance.$parent?.as !== 'tabs') ? (
-                    <IconArrowsExpand width={8} />
-                  ) : (
-                    <IconArrowsCollapse width={8} />
-                  )}
-                </button>
-              )}
+        <div className="pf-panel-host-header-tabs">
+          {toolbarInstance?.members?.map((member) => {
+            return (
+              <div
+                key={member.id}
+                className={clsx({
+                  'pf-panel-host-header-item': true,
+                  'pf-active': member.id === toolbarInstance?.lastUsedPanelId
+                })}
+                onClick={() => {
+                  toolbarInstance?.$set({ lastUsedPanelId: member.id });
+                  toolbarInstance?.$parent?.$set({ activePanelId: member.id });
+                }}
+              >
+                {member.compactContent && (
+                  <button onClick={() => member.$toggleVisibility(toolbarInstance.$parent?.as || 'toolbar')}>
+                    {member.visibility === 'collapsed' ||
+                    (member.visibility === 'compact' && toolbarInstance.$parent?.as !== 'tabs') ? (
+                      <IconArrowsExpand width={8} />
+                    ) : (
+                      <IconArrowsCollapse width={8} />
+                    )}
+                  </button>
+                )}
 
-              {member.title}
-            </div>
-          );
-        })}
+                {member.title}
+              </div>
+            );
+          })}
+        </div>
+
+        <button className="context-menu-button">
+          <IconContextMenu />
+        </button>
       </div>
       <div className="pf-panel-compact-content">
         {panel?.visibility !== 'collapsed' ||
